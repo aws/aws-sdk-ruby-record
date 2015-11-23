@@ -3,9 +3,6 @@ module Aws
     module Attributes
       module StringMarshaler
 
-        STRING_TYPE = :s
-        NULL_TYPE = :null
-
         class << self
 
           def type_cast(raw_value, options = {})

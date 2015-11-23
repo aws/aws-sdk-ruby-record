@@ -89,7 +89,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def boolean_attr(id, opts = {})
-          attr(id, BooleanAttr, opts)
+          attr(id, Attributes::BooleanMarshaler, opts)
         end
 
         # Define a integer-type attribute for your model.
@@ -172,23 +172,6 @@ module Aws
 
       # Base class for all of the Aws::Record attributes.
       class BaseAttr
-      end
-
-      class StringAttr < BaseAttr
-        def self.type_cast(raw)
-          raw.to_s
-        end
-      end
-
-      class BooleanAttr < BaseAttr
-        def self.type_cast(raw)
-          case raw
-          when nil then nil
-          when '' then nil
-          when false, 'false', '0', 0 then false
-          else true
-          end
-        end
       end
 
       class IntegerAttr < BaseAttr

@@ -7,7 +7,8 @@ module Aws
     autoload :Attributes, 'aws-record/record/attributes'
 
     module Attributes
-      autoload :StringMarshaler, 'aws-record/record/attributes/string_marshaler'
+      autoload :StringMarshaler,  'aws-record/record/attributes/string_marshaler'
+      autoload :BooleanMarshaler, 'aws-record/record/attributes/boolean_marshaler'
     end
 
   end
