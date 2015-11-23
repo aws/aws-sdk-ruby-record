@@ -46,7 +46,9 @@ module Aws
 
           validators = opts[:validators]
 
-          attribute = Attribute.new(attr_name, marshaler, validators)
+          attribute = Attribute.new(attr_name,
+            marshaler: marshaler,
+            validators: validators)
           @attributes[name] = attribute
 
           define_method(attr_name) do
@@ -56,11 +58,6 @@ module Aws
 
           define_method("#{attr_name}=") do |value|
             @data[attr_name] = value
-          end
-
-          # In an ActiveModel support module?
-          define_method("#{attr_name}_before_type_cast") do
-            @data[attr_name]
           end
 
           key_attributes(name, opts)

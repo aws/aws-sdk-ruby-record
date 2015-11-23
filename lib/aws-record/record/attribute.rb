@@ -4,10 +4,10 @@ module Aws
 
       attr_reader :name
 
-      def initialize(name, marshaler, validators = [])
+      def initialize(name, options = {})
         @name = name
-        @marshaler = marshaler
-        @validators = validators
+        @marshaler = options[:marshaler] || DefaultMarshaler
+        @validators = options[:validators] || []
       end
 
       def type_cast(raw_value)
@@ -20,16 +20,21 @@ module Aws
 
       def valid?(raw_value)
         value = type_cast(raw_value)
-        valid = true
-        @validators.each do |validator|
-          if !validator.validate(value)
-            valid = false
-            break
-          end
+        @validators.all? do |validator|
+          validator.validate(value)
         end
-        valid
       end
 
+    end
+
+    module DefaultMarshaler
+      def self.type_cast(raw_value, options = {})
+        raw_value
+      end
+
+      def self.serialize(raw_value, options = {})
+        { s: raw_value }
+      end
     end
   end
 end
