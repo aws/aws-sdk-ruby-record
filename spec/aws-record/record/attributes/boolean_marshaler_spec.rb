@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 module Aws
   module Record
     module Attributes
