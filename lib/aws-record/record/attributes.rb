@@ -171,20 +171,6 @@ module Aws
       class BaseAttr
       end
 
-      class FloatAttr < BaseAttr
-        def self.type_cast(raw)
-          case raw_value
-          when nil   then nil
-          when ''    then nil
-          when Float then raw_value
-          else
-            raw_value.respond_to?(:to_f) ?
-              raw_value.to_f :
-              raw_value.to_s.to_f
-          end
-        end
-      end
-
       class DateAttr < BaseAttr
         def self.type_cast(raw)
           case raw
