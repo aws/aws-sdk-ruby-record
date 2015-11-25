@@ -1,7 +1,7 @@
 module Aws
   module Record
     module Attributes
-      module IntegerMarshaler
+      module FloatMarshaler
 
         class << self
 
@@ -11,23 +11,23 @@ module Aws
               nil
             when ''
               nil
-            when Integer
+            when Float
               raw_value
             else
-              raw_value.respond_to?(:to_i) ?
-                raw_value.to_i :
-                raw_value.to_s.to_i
+              raw_value.respond_to?(:to_f) ?
+                raw_value.to_f :
+                raw_value.to_s.to_f
             end
           end
 
           def serialize(raw_value, options = {})
-            integer = type_cast(raw_value, options = {})
-            if integer.nil?
+            float = type_cast(raw_value, options = {})
+            if float.nil?
               { null: true }
-            elsif integer.is_a?(Integer)
-              { n: integer }
+            elsif float.is_a?(Float)
+              { n: float }
             else
-              msg = "expected an Integer value or nil, got #{value.class}"
+              msg = "expected a Float value or nil, got #{value.class}"
               raise ArgumentError, msg
             end
           end

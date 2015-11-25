@@ -112,7 +112,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def float_attr(id, opts = {})
-          attr(id, FloatAttr, opts)
+          attr(id, Attributes::FloatMarshaler, opts)
         end
 
         # Define a date-type attribute for your model.
@@ -141,7 +141,7 @@ module Aws
           attr(id, DateTimeAttr, opts)
         end
 
-        # @return [???,nil]
+        # @return [Aws::Record::Attribute,nil]
         def hash_key
           @attributes[@keys[:hash]]
         end

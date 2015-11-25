@@ -10,6 +10,7 @@ module Aws
       autoload :StringMarshaler,  'aws-record/record/attributes/string_marshaler'
       autoload :BooleanMarshaler, 'aws-record/record/attributes/boolean_marshaler'
       autoload :IntegerMarshaler, 'aws-record/record/attributes/integer_marshaler'
+      autoload :FloatMarshaler,   'aws-record/record/attributes/float_marshaler'
     end
 
   end
