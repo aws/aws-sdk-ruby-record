@@ -125,7 +125,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def date_attr(id, opts = {})
-          attr(id, DateAttr, opts)
+          attr(id, Attributes::DateMarshaler, opts)
         end
 
         # Define a datetime-type attribute for your model.
@@ -138,7 +138,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def datetime_attr(id, opts = {})
-          attr(id, DateTimeAttr, opts)
+          attr(id, Attributes::DateTimeMarshaler, opts)
         end
 
         # @return [Aws::Record::Attribute,nil]
@@ -164,54 +164,6 @@ module Aws
 
         def define_key(id, type)
           @keys[type] = id
-        end
-      end
-
-      # Base class for all of the Aws::Record attributes.
-      class BaseAttr
-      end
-
-      class DateAttr < BaseAttr
-        def self.type_cast(raw)
-          case raw
-          when nil      then nil
-          when ''       then nil
-          when Date     then raw
-          when Integer  then
-            begin
-              Date.parse(Time.at(raw).to_s) # assumed timestamp
-            rescue
-              nil
-            end
-          else
-            begin
-              Date.parse(raw.to_s) # Time, DateTime or String
-            rescue
-              nil
-            end
-          end
-        end
-      end
-
-      class DateTimeAttr < BaseAttr
-        def self.type_cast(raw)
-          case raw
-          when nil      then nil
-          when ''       then nil
-          when DateTime then raw
-          when Integer  then
-            begin
-              DateTime.parse(Time.at(raw).to_s) # timestamp
-            rescue
-              nil
-            end
-          else
-            begin
-              DateTime.parse(raw.to_s) # Time, Date or String
-            rescue
-              nil
-            end
-          end
         end
       end
 
