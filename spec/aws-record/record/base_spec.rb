@@ -52,6 +52,12 @@ module Aws
           expect(x.to_h).to eq({"a" => "5", "b" => 5})
         end
 
+        it 'should allow specification of a separate storage attribute name' do
+          klass.string_attr(:a, database_attribute_name: 'column_a')
+          klass.string_attr(:b)
+          expect(klass.attributes[:a].database_name).to eq('column_a')
+          expect(klass.attributes[:b].database_name).to eq('b')
+        end
       end
     end
 

@@ -2,10 +2,11 @@ module Aws
   module Record
     class Attribute
 
-      attr_reader :name
+      attr_reader :name, :database_name
 
       def initialize(name, options = {})
         @name = name
+        @database_name = options[:database_attribute_name] || name
         @marshaler = options[:marshaler] || DefaultMarshaler
         @validators = options[:validators] || []
       end

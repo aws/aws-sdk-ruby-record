@@ -44,11 +44,8 @@ module Aws
             raise "Cannot overwrite existing attribute #{name}"
           end
 
-          validators = opts[:validators]
-
-          attribute = Attribute.new(attr_name,
-            marshaler: marshaler,
-            validators: validators)
+          opts = opts.merge(marshaler: marshaler)
+          attribute = Attribute.new(attr_name, opts)
           @attributes[name] = attribute
 
           define_method(attr_name) do
@@ -141,12 +138,17 @@ module Aws
           attr(id, Attributes::DateTimeMarshaler, opts)
         end
 
+        # @return [Hash] hash of symbolized attribute names to attribute objects
+        def attributes
+          @attributes
+        end
+
         # @return [Aws::Record::Attribute,nil]
         def hash_key
           @attributes[@keys[:hash]]
         end
 
-        # @return [???,nil]
+        # @return [Aws::Record::Attribute,nil]
         def range_key
           @attributes[@keys[:range]]
         end
