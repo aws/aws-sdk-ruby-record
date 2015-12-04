@@ -33,10 +33,9 @@ module Aws
           def serialize(raw_value, options = {})
             date = type_cast(raw_value)
             if date.nil?
-              { null: true }
+              nil
             elsif date.is_a?(Date)
-              str = date.strftime('%Y-%m-%d')
-              { s: str }
+              date.strftime('%Y-%m-%d')
             else
               raise ArgumentError, "expected a Date value or nil, got #{date.class}"
             end

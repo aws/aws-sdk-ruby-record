@@ -19,16 +19,16 @@ module Aws
         end
 
         describe 'serialization for storage' do
-          it 'stores strings as themselves' do
-            expect(BooleanMarshaler.serialize(true)).to eq({bool: true})
+          it 'stores booleans as themselves' do
+            expect(BooleanMarshaler.serialize(true)).to eq(true)
           end
 
           it 'attempts to type cast before storage' do
-            expect(BooleanMarshaler.serialize(0)).to eq(bool:false)
+            expect(BooleanMarshaler.serialize(0)).to eq(false)
           end
 
           it 'identifies nil objects as the NULL type' do
-            expect(BooleanMarshaler.serialize(nil)).to eq({null:true})
+            expect(BooleanMarshaler.serialize(nil)).to eq(nil)
           end
         end
 

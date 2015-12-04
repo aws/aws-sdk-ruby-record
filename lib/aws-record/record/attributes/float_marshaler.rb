@@ -23,9 +23,9 @@ module Aws
           def serialize(raw_value, options = {})
             float = type_cast(raw_value, options = {})
             if float.nil?
-              { null: true }
+              nil
             elsif float.is_a?(Float)
-              { n: float }
+              float
             else
               msg = "expected a Float value or nil, got #{value.class}"
               raise ArgumentError, msg

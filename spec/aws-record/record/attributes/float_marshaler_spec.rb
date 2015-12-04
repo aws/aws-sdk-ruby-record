@@ -22,11 +22,11 @@ module Aws
 
         describe 'serialization for storage' do
           it 'serializes nil as null' do
-            expect(FloatMarshaler.serialize(nil)).to eq({null: true})
+            expect(FloatMarshaler.serialize(nil)).to eq(nil)
           end
 
           it 'serializes floats with the numeric type' do
-            expect(FloatMarshaler.serialize(3.0)).to eq({n: 3.0})
+            expect(FloatMarshaler.serialize(3.0)).to eq(3.0)
           end
         end
 

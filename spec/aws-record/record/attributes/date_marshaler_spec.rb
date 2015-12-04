@@ -33,12 +33,12 @@ module Aws
 
         describe 'serialization for storage' do
           it 'serializes nil as null' do
-            expect(DateMarshaler.serialize(nil)).to eq({null: true})
+            expect(DateMarshaler.serialize(nil)).to eq(nil)
           end
 
           it 'serializes dates as strings' do
             date = Date.parse('2015-11-25')
-            expect(DateMarshaler.serialize(date)).to eq({s: '2015-11-25'})
+            expect(DateMarshaler.serialize(date)).to eq('2015-11-25')
           end
         end
 

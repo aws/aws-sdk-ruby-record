@@ -22,11 +22,11 @@ module Aws
             boolean = type_cast(raw_value, options)
             case boolean
             when nil
-              { null: true }
+              nil
             when false
-              { bool: false }
+              false
             when true
-              { bool: true }
+              true
             else
               msg = "expected a boolean value or nil, got #{boolean.class}"
               raise ArgumentError, msg

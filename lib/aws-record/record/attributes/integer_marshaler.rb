@@ -23,9 +23,9 @@ module Aws
           def serialize(raw_value, options = {})
             integer = type_cast(raw_value, options = {})
             if integer.nil?
-              { null: true }
+              nil
             elsif integer.is_a?(Integer)
-              { n: integer }
+              integer
             else
               msg = "expected an Integer value or nil, got #{value.class}"
               raise ArgumentError, msg

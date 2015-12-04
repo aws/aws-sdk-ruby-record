@@ -22,11 +22,11 @@ module Aws
 
         describe 'serialization for storage' do
           it 'serializes nil as null' do
-            expect(IntegerMarshaler.serialize(nil)).to eq({null: true})
+            expect(IntegerMarshaler.serialize(nil)).to eq(nil)
           end
 
           it 'serializes integers with the numeric type' do
-            expect(IntegerMarshaler.serialize(3)).to eq({n: 3})
+            expect(IntegerMarshaler.serialize(3)).to eq(3)
           end
         end
 

@@ -4,7 +4,11 @@ module Aws
   module Record
     describe Attribute do
 
-      it 'can have a custom DB name'
+      it 'can have a custom DB name' do
+        a = Attribute.new("foo", database_attribute_name: "bar")
+        expect(a.name).to eq("foo")
+        expect(a.database_name).to eq("bar")
+      end
 
       describe 'validation' do
 

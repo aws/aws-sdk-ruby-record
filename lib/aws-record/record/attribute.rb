@@ -34,7 +34,7 @@ module Aws
       end
 
       def self.serialize(raw_value, options = {})
-        { s: raw_value }
+        raw_value
       end
     end
   end

@@ -28,12 +28,12 @@ module Aws
              value = type_cast(raw_value)
             if value.is_a?(String)
               if value.empty?
-                { null: true }
+                nil
               else
-                { s: value }
+                value
               end
             elsif value.nil?
-              { null: true }
+              nil
             else
               msg = "expected a String value or nil, got #{value.class}"
               raise ArgumentError, msg
