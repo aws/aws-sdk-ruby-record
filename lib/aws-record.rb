@@ -1,8 +1,9 @@
 require 'aws-sdk-resources'
 
 module Aws
+  autoload :Record, 'aws-record/record'
+
   module Record
-    autoload :Base,       'aws-record/record/base'
     autoload :Attribute,  'aws-record/record/attribute'
     autoload :Attributes, 'aws-record/record/attributes'
 
