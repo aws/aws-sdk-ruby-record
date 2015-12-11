@@ -2,11 +2,12 @@ module Aws
   module Record
     class Attribute
 
-      attr_reader :name, :database_name
+      attr_reader :name, :database_name, :dynamodb_type
 
       def initialize(name, options = {})
         @name = name
         @database_name = options[:database_attribute_name] || name
+        @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
         @validators = options[:validators] || []
       end

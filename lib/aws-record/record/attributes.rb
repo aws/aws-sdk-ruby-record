@@ -32,6 +32,9 @@ module Aws
         # @param [Hash] options
         # @option options [Array] :validators An array of validator classes that
         #   will be run when an attribute is checked for validity.
+        # @option options [String] :dynamodb_type Generally used for keys and
+        #   index attributes, one of "S", "N", "B", "BOOL", "SS", "NS", "BS",
+        #   "M", "L".
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
@@ -70,6 +73,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def string_attr(id, opts = {})
+          opts[:dynamodb_type] = "S"
           attr(id, Attributes::StringMarshaler, opts)
         end
 
@@ -83,6 +87,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def boolean_attr(id, opts = {})
+          opts[:dynamodb_type] = "B"
           attr(id, Attributes::BooleanMarshaler, opts)
         end
 
@@ -96,6 +101,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def integer_attr(id, opts = {})
+          opts[:dynamodb_type] = "N"
           attr(id, Attributes::IntegerMarshaler, opts)
         end
 
@@ -109,6 +115,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def float_attr(id, opts = {})
+          opts[:dynamodb_type] = "N"
           attr(id, Attributes::FloatMarshaler, opts)
         end
 
@@ -122,6 +129,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def date_attr(id, opts = {})
+          opts[:dynamodb_type] = "S"
           attr(id, Attributes::DateMarshaler, opts)
         end
 
@@ -135,6 +143,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def datetime_attr(id, opts = {})
+          opts[:dynamodb_type] = "S"
           attr(id, Attributes::DateTimeMarshaler, opts)
         end
 
