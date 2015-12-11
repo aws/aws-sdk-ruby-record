@@ -87,7 +87,7 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def boolean_attr(id, opts = {})
-          opts[:dynamodb_type] = "B"
+          opts[:dynamodb_type] = "BOOL"
           attr(id, Attributes::BooleanMarshaler, opts)
         end
 
