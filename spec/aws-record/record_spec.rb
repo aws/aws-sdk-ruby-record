@@ -27,6 +27,24 @@ module Aws
       it 'raises an error on creation if no hash key exists'
     end
 
+    describe 'Table' do
+      it 'should have an implied table name from the class name' do
+        ::UnitTestModel = Class.new do
+          include(Aws::Record)
+        end
+        expect(UnitTestModel.table_name).to eq("UnitTestModel")
+      end
+
+      it 'should allow a custom table name to be specified' do
+        expected = "ExpectedTableName"
+        ::UnitTestModelTwo = Class.new do
+          include(Aws::Record)
+          set_table_name(expected)
+        end
+        expect(::UnitTestModelTwo.table_name).to eq(expected)
+      end
+    end
+
     describe 'Attributes' do
       it 'should create dynamic methods around attributes' do
         klass.string_attr(:text)
@@ -48,7 +66,7 @@ module Aws
         x = klass.new
         x.a = "5"
         x.b = 5
-        expect(x.to_h).to eq({"a" => "5", "b" => 5})
+        expect(x.to_h).to eq({a: "5", b: 5})
       end
 
       it 'should allow specification of a separate storage attribute name' do

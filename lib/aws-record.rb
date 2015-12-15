@@ -4,8 +4,9 @@ module Aws
   autoload :Record, 'aws-record/record'
 
   module Record
-    autoload :Attribute,  'aws-record/record/attribute'
-    autoload :Attributes, 'aws-record/record/attributes'
+    autoload :Attribute,      'aws-record/record/attribute'
+    autoload :Attributes,     'aws-record/record/attributes'
+    autoload :ItemOperations, 'aws-record/record/item_operations'
 
     module Attributes
       autoload :StringMarshaler,   'aws-record/record/attributes/string_marshaler'

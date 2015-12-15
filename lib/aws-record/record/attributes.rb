@@ -52,12 +52,12 @@ module Aws
           @attributes[name] = attribute
 
           define_method(attr_name) do
-            raw = @data[attr_name]
+            raw = @data[name]
             attribute.type_cast(raw)
           end
 
           define_method("#{attr_name}=") do |value|
-            @data[attr_name] = value
+            @data[name] = value
           end
 
           key_attributes(name, opts)
