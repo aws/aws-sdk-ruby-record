@@ -76,6 +76,19 @@ module Aws
             klass.string_attr(:b, database_attribute_name: 'unique')
           }.to raise_error(Errors::NameCollision)
         end
+
+        it 'should not allow collisions with reserved names' do
+          expect {
+            klass.string_attr(:to_h)
+          }.to raise_error(Errors::ReservedName)
+        end
+
+        it 'should allow reserved names to be used as custom storage names' do
+          klass.string_attr(:clever, database_attribute_name: 'to_h')
+          item = klass.new
+          item.clever = "No problem."
+          expect(item.to_h).to eq({ clever: "No problem." })
+        end
       end
 
     end

@@ -80,6 +80,13 @@ module Aws
             )
           end
 
+          if instance_methods.include?(name)
+            raise Errors::ReservedName.new(
+              "Cannot name an attribute #{name}, that would collide with an"\
+                " existing instance method."
+            )
+          end
+
           @attributes[name] = attribute
           @storage_attributes[storage_name] = name
 

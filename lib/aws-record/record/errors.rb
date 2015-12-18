@@ -4,6 +4,7 @@ module Aws
 
       class KeyMissing < RuntimeError; end
       class NameCollision < RuntimeError; end
+      class ReservedName < RuntimeError; end
 
     end
   end
