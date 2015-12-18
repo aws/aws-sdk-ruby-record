@@ -6,7 +6,9 @@ module Aws
   module Record
     autoload :Attribute,      'aws-record/record/attribute'
     autoload :Attributes,     'aws-record/record/attributes'
+    autoload :Errors,         'aws-record/record/errors'
     autoload :ItemOperations, 'aws-record/record/item_operations'
+    autoload :VERSION,        'aws-record/record/version'
 
     module Attributes
       autoload :StringMarshaler,   'aws-record/record/attributes/string_marshaler'

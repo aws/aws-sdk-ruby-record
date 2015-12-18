@@ -40,7 +40,10 @@ Given(/^a DynamoDB table named '([^"]*)' with data:$/) do |table, string|
       write_capacity_units: 1
     }
   )
-  @client.wait_until(:table_exists, table_name: @table_name)
+  @client.wait_until(:table_exists, table_name: @table_name) do |w|
+    w.delay = 5
+    w.max_attempts = 25
+  end
 end
 
 Given(/^an aws\-record model for this table with data:$/) do |string|
@@ -51,7 +54,7 @@ Given(/^an aws\-record model for this table with data:$/) do |string|
   @model.set_table_name(@table_name)
   data.each do |row|
     opts = {}
-    opts[:database_name] = row['database_name']
+    opts[:database_attribute_name] = row['database_name']
     opts[:hash_key] = row['hash_key']
     opts[:range_key] = row['range_key']
     @model.send(:"#{row['method']}", row['name'].to_sym, opts)
@@ -82,5 +85,43 @@ Then(/^the DynamoDB table should have an object with key values:$/) do |string|
     table_name: @table_name,
     key: key
   )
-  expect(resp.item).not_to eq(nil)  
+  expect(resp.item).not_to eq(nil)
+end
+
+Given(/^an item exists in the DynamoDB table with item data:$/) do |string|
+  data = JSON.parse(string)
+  @client.put_item(
+    table_name: @table_name,
+    item: data
+  )
+end
+
+When(/^we call the 'find' class method with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  @instance = @model.find(data)
+end
+
+Then(/^we should receive an aws\-record item with attribute data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  data.each do |key, value|
+    expect(@instance.send(key)).to eq(value)
+  end
+end
+
+When(/^we call 'delete!' on the aws\-record item instance$/) do
+  @instance.delete!
+end
+
+Then(/^the DynamoDB table should not have an object with key values:$/) do |string|
+  data = JSON.parse(string)
+  key = {}
+  data.each do |row|
+    attribute, value = row
+    key[attribute] = value
+  end
+  resp = @client.get_item(
+    table_name: @table_name,
+    key: key
+  )
+  expect(resp.item).to eq(nil)
 end

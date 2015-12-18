@@ -43,3 +43,53 @@ Feature: DynamoDB Items
         ["count", 1]
       ]
       """
+
+  Scenario: Read an Item from Amazon DynamoDB with aws-record
+    Given an item exists in the DynamoDB table with item data:
+      """
+      {
+        "id": "2",
+        "count": 10,
+        "content": "Aliased column names!"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "2",
+        "count": 10
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": "2",
+        "count": 10,
+        "body": "Aliased column names!"
+      }
+      """
+
+  Scenario: Delete an Item from Amazon DynamoDB with aws-record
+    Given an item exists in the DynamoDB table with item data:
+      """
+      {
+        "id": "3",
+        "count": 5,
+        "content": "Body content."
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "3",
+        "count": 5
+      }
+      """
+    And we call 'delete!' on the aws-record item instance
+    Then the DynamoDB table should not have an object with key values:
+      """
+      [
+        ["id", "3"],
+        ["count", 5]
+      ]
+      """

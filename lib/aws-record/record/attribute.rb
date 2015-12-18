@@ -6,7 +6,7 @@ module Aws
 
       def initialize(name, options = {})
         @name = name
-        @database_name = options[:database_attribute_name] || name
+        @database_name = options[:database_attribute_name] || name.to_s
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
         @validators = options[:validators] || []
