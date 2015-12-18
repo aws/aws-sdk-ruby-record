@@ -47,45 +47,15 @@ module Aws
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def attr(name, marshaler, opts = {})
-          unless name.is_a?(Symbol)
-            raise ArgumentError.new("Must use symbolized :name attribute.")
-          end
-          attr_name = name.to_s
-
-          if @attributes[name]
-            raise Errors::NameCollision.new(
-              "Cannot overwrite existing attribute #{name}"
-            )
-          end
+          validate_attr_name(name)
 
           opts = opts.merge(marshaler: marshaler)
           attribute = Attribute.new(name, opts)
 
-          # Check for collisions when storage and attr names vary.
           storage_name = attribute.database_name
-          if @attributes[storage_name]
-            raise Errors::NameCollision.new(
-              "Custom storage name #{storage_name} already exists as an"\
-                " attribute name in #{@attributes}"
-            )
-          elsif @storage_attributes[attr_name]
-            raise Errors::NameCollision.new(
-              "Attribute name #{name} already exists as a custom storage"\
-                " name in #{@storage_attributes}"
-            )
-          elsif @storage_attributes[storage_name]
-            raise Errors::NameCollision.new(
-              "Custom storage name #{storage_name} already in use in"\
-                " #{@storage_attributes}"
-            )
-          end
 
-          if instance_methods.include?(name)
-            raise Errors::ReservedName.new(
-              "Cannot name an attribute #{name}, that would collide with an"\
-                " existing instance method."
-            )
-          end
+          check_for_naming_collisions(name, storage_name)
+          check_if_reserved(name)
 
           @attributes[name] = attribute
           @storage_attributes[storage_name] = name
@@ -232,6 +202,45 @@ module Aws
 
         def define_key(id, type)
           @keys[type] = id
+        end
+
+        def validate_attr_name(name)
+          unless name.is_a?(Symbol)
+            raise ArgumentError.new("Must use symbolized :name attribute.")
+          end
+          if @attributes[name]
+            raise Errors::NameCollision.new(
+              "Cannot overwrite existing attribute #{name}"
+            )
+          end
+        end
+
+        def check_if_reserved(name)
+          if instance_methods.include?(name)
+            raise Errors::ReservedName.new(
+              "Cannot name an attribute #{name}, that would collide with an"\
+                " existing instance method."
+            )
+          end
+        end
+
+        def check_for_naming_collisions(name, storage_name)
+          if @attributes[storage_name]
+            raise Errors::NameCollision.new(
+              "Custom storage name #{storage_name} already exists as an"\
+                " attribute name in #{@attributes}"
+            )
+          elsif @storage_attributes[name]
+            raise Errors::NameCollision.new(
+              "Attribute name #{name} already exists as a custom storage"\
+                " name in #{@storage_attributes}"
+            )
+          elsif @storage_attributes[storage_name]
+            raise Errors::NameCollision.new(
+              "Custom storage name #{storage_name} already in use in"\
+                " #{@storage_attributes}"
+            )
+          end
         end
       end
 
