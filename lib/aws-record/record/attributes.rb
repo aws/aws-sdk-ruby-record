@@ -6,6 +6,7 @@ module Aws
         sub_class.extend(ClassMethods)
         sub_class.instance_variable_set("@keys", {})
         sub_class.instance_variable_set("@attributes", {})
+        sub_class.instance_variable_set("@storage_attributes", {})
       end
 
       def initialize
@@ -32,34 +33,34 @@ module Aws
         # @param [Hash] options
         # @option options [Array] :validators An array of validator classes that
         #   will be run when an attribute is checked for validity.
+        # @option options [String] :database_attribute_name Optional attribute
+        #   used to specify a different name for database persistence than the
+        #   `name` parameter. Must be unique (you can't have overlap between
+        #   database attribute names and the names of other attributes).
         # @option options [String] :dynamodb_type Generally used for keys and
         #   index attributes, one of "S", "N", "B", "BOOL", "SS", "NS", "BS",
-        #   "M", "L".
+        #   "M", "L". Optional if this attribute will never be used for a key or
+        #   secondary index, but most convenience methods for setting attributes
+        #   will provide this.
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def attr(name, marshaler, opts = {})
-          raise "Must use symbolized :name attribute." unless name.is_a?(Symbol)
-          attr_name = name.to_s # Can also pass as option?
-
-          if @attributes[name]
-            raise "Cannot overwrite existing attribute #{name}"
-          end
+          validate_attr_name(name)
 
           opts = opts.merge(marshaler: marshaler)
-          attribute = Attribute.new(attr_name, opts)
+          attribute = Attribute.new(name, opts)
+
+          storage_name = attribute.database_name
+
+          check_for_naming_collisions(name, storage_name)
+          check_if_reserved(name)
+
           @attributes[name] = attribute
+          @storage_attributes[storage_name] = name
 
-          define_method(attr_name) do
-            raw = @data[attr_name]
-            attribute.type_cast(raw)
-          end
-
-          define_method("#{attr_name}=") do |value|
-            @data[attr_name] = value
-          end
-
+          define_attr_methods(name, attribute)
           key_attributes(name, opts)
         end
 
@@ -162,10 +163,29 @@ module Aws
           @attributes[@keys[:range]]
         end
 
-        protected
+        # @return [Hash] A mapping of the :hash and :range keys to the attribute
+        #   name symbols associated with them.
+        def keys
+          @keys
+        end
+
+        private
+        def define_attr_methods(name, attribute)
+          define_method(name) do
+            raw = @data[name]
+            attribute.type_cast(raw)
+          end
+
+          define_method("#{name}=") do |value|
+            @data[name] = value
+          end
+        end
+
         def key_attributes(id, opts)
           if opts[:hash_key] == true && opts[:range_key] == true
-            raise "Cannot have the same attribute be a hash and range key."
+            raise ArgumentError.new(
+              "Cannot have the same attribute be a hash and range key."
+            )
           elsif opts[:hash_key] == true
             define_key(id, :hash)
           elsif opts[:range_key] == true
@@ -175,6 +195,45 @@ module Aws
 
         def define_key(id, type)
           @keys[type] = id
+        end
+
+        def validate_attr_name(name)
+          unless name.is_a?(Symbol)
+            raise ArgumentError.new("Must use symbolized :name attribute.")
+          end
+          if @attributes[name]
+            raise Errors::NameCollision.new(
+              "Cannot overwrite existing attribute #{name}"
+            )
+          end
+        end
+
+        def check_if_reserved(name)
+          if instance_methods.include?(name)
+            raise Errors::ReservedName.new(
+              "Cannot name an attribute #{name}, that would collide with an"\
+                " existing instance method."
+            )
+          end
+        end
+
+        def check_for_naming_collisions(name, storage_name)
+          if @attributes[storage_name]
+            raise Errors::NameCollision.new(
+              "Custom storage name #{storage_name} already exists as an"\
+                " attribute name in #{@attributes}"
+            )
+          elsif @storage_attributes[name]
+            raise Errors::NameCollision.new(
+              "Attribute name #{name} already exists as a custom storage"\
+                " name in #{@storage_attributes}"
+            )
+          elsif @storage_attributes[storage_name]
+            raise Errors::NameCollision.new(
+              "Custom storage name #{storage_name} already in use in"\
+                " #{@storage_attributes}"
+            )
+          end
         end
       end
 
