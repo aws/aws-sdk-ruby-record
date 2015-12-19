@@ -29,11 +29,11 @@ module Aws
 
       describe "#save" do
         it 'can save an item to Amazon DynamoDB' do
+          klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
-          item.configure_client(client: stub_client)
           item.save
           expect(api_requests).to eq([{
             table_name: "TestTable",
@@ -97,8 +97,8 @@ module Aws
 
       describe "#delete!" do
         it 'can delete an item from Amazon DynamoDB' do
+          klass.configure_client(client: stub_client)
           item = klass.new
-          item.configure_client(client: stub_client)
           item.id = 3
           item.date = "2015-12-17"
           expect(item.delete!).to be(true)

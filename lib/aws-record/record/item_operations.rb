@@ -6,10 +6,6 @@ module Aws
         sub_class.extend(ItemOperationsClassMethods)
       end
 
-      def configure_client(opts = {})
-        self.class.configure_client(opts)
-      end
-
       def save
         dynamodb_client.put_item(
           table_name: self.class.table_name,
@@ -44,11 +40,9 @@ module Aws
       def key_values
         validate_key_values
         attributes = self.class.attributes
-        self.class.keys.inject({}) do |acc, key|
-          attr_name = key.last
+        self.class.keys.inject({}) do |acc, (_, attr_name)|
           db_name = attributes[attr_name].database_name
-          raw_value = @data[attr_name]
-          acc[db_name] = attributes[attr_name].serialize(raw_value)
+          acc[db_name] = attributes[attr_name].serialize(@data[attr_name])
           acc
         end
       end
@@ -106,13 +100,12 @@ module Aws
 
         private
         def build_item_from_resp(resp)
-          ret = self.new
-          resp.item.each do |storage_name, value|
-            attr_name = attribute_name(storage_name)
-            method = "#{attr_name}=".to_sym
-            ret.send(method, value)
+          record = new
+          data = record.instance_variable_get("@data")
+          attributes.each do |name, attr|
+            data[name] = attr.extract(resp.item)
           end
-          ret
+          record
         end
 
         def user_agent(custom)

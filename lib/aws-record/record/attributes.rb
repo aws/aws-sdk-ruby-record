@@ -153,13 +153,6 @@ module Aws
           @attributes
         end
 
-        # @param [String] storage_name The attribute name as used for storage in
-        #   Amazon DynamoDB.
-        # @return [Symbol] The attribute name as used in the attributes hash.
-        def attribute_name(storage_name)
-          @storage_attributes[storage_name]
-        end
-
         # @return [Aws::Record::Attribute,nil]
         def hash_key
           @attributes[@keys[:hash]]
@@ -176,7 +169,7 @@ module Aws
           @keys
         end
 
-        protected
+        private
         def define_attr_methods(name, attribute)
           define_method(name) do
             raw = @data[name]

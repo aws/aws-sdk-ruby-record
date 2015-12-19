@@ -27,6 +27,10 @@ module Aws
         end
       end
 
+      def extract(dynamodb_item)
+        dynamodb_item[database_name]
+      end
+
     end
 
     module DefaultMarshaler

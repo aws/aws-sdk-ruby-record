@@ -57,11 +57,6 @@ module Aws
           expect(klass.attributes[:b].database_name).to eq('b')
         end
 
-        it 'should be able to look up an attribute by its storage name' do
-          klass.string_attr(:a, database_attribute_name: 'column_a')
-          expect(klass.attribute_name('column_a')).to eq(:a)
-        end
-
         it 'should reject storage name collisions' do
           klass.string_attr(:a, database_attribute_name: 'column_a')
           expect {
