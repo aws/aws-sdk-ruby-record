@@ -1,6 +1,6 @@
 # language: en
 @item
-Feature: DynamoDB Items
+Feature: Amazon DynamoDB Items
   This feature tests the integration of model classes that include the
   Aws::Record module with a DynamoDB backend. To run these tests, you will need
   to have valid AWS credentials that are accessible with the AWS SDK for Ruby's
@@ -17,7 +17,7 @@ Feature: DynamoDB Items
         { "attribute_name": "count", "attribute_type": "N", "key_type": "RANGE" }
       ]
       """
-    And an aws-record model for this table with data:
+    And an aws-record model with data:
       """
       [
         { "method": "string_attr", "name": "id", "hash_key": true },

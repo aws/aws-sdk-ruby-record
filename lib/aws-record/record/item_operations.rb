@@ -22,10 +22,6 @@ module Aws
       end
 
       private
-      def dynamodb_client
-        self.class.dynamodb_client
-      end
-
       def build_item_for_save
         validate_key_values
         attributes = self.class.attributes
@@ -64,17 +60,6 @@ module Aws
       end
 
       module ItemOperationsClassMethods
-        def configure_client(opts = {})
-          provided_client = opts.delete(:client)
-          opts[:user_agent_suffix] = user_agent(opts.delete(:user_agent_suffix))
-          client = provided_client || Aws::DynamoDB::Client.new(opts)
-          @dynamodb_client = client
-        end
-
-        def dynamodb_client
-          @dynamodb_client ||= configure_client
-        end
-
         def find(opts)
           key = {}
           @keys.each_value do |attr_sym|

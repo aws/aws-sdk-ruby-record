@@ -169,6 +169,19 @@ module Aws
           @keys
         end
 
+        def table_exists?
+          begin
+            resp = dynamodb_client.describe_table(table_name: @table_name)
+            if resp.table.table_status == "ACTIVE"
+              true
+            else
+              false
+            end
+          rescue DynamoDB::Errors::ResourceNotFoundException
+            false
+          end
+        end
+
         private
         def define_attr_methods(name, attribute)
           define_method(name) do
