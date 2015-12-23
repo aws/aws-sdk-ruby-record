@@ -61,22 +61,20 @@ module Aws
       end
 
       def attribute_definitions
-        keys.inject([]) do |acc, (type, attr)|
-          acc << {
+        keys.map do |type, attr|
+          {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
           }
-          acc
         end
       end
 
       def key_schema
-        keys.inject([]) do |acc, (type, attr)|
-          acc << {
+        keys.map do |type, attr|
+          {
             attribute_name: attr.database_name,
             key_type: type == :hash ? "HASH" : "RANGE"
           }
-          acc
         end
       end
 
