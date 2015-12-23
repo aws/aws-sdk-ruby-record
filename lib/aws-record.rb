@@ -8,6 +8,7 @@ module Aws
     autoload :Attributes,     'aws-record/record/attributes'
     autoload :Errors,         'aws-record/record/errors'
     autoload :ItemOperations, 'aws-record/record/item_operations'
+    autoload :TableMigration, 'aws-record/record/table_migration'
     autoload :VERSION,        'aws-record/record/version'
 
     module Attributes

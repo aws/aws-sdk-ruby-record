@@ -5,8 +5,8 @@ Gem::Specification.new do |spec|
   spec.version       = version
   spec.authors       = ["Amazon Web Services"]
   spec.email         = ["alexwood@amazon.com"]
-  spec.summary       = "AWS Record library for Amazon DynamoDB."
-  spec.description   = "Provides an object mapping abstration for Amazon DynamoDB."
+  spec.summary       = "AWS Record library for Amazon DynamoDB"
+  spec.description   = "Provides an object mapping abstraction for Amazon DynamoDB."
   spec.homepage      = "http://github.com/aws/aws-sdk-ruby-record"
   spec.license       = "Apache 2.0"
 

@@ -1,29 +1,67 @@
 # Aws::Record
 
-TODO: Write a gem description
+A data mapping abstraction over the AWS SDK for Ruby's client for Amazon
+DynamoDB.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+`Aws::Record` is available as the `aws-record` gem from RubyGems. Please use a
+major version when expressing a dependency on `aws-record`.
 
-    gem 'aws-record'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install aws-record
+```ruby
+gem 'aws-record', '~> 1'
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+To create a model that uses `aws-record` features, simply include the provided
+module:
 
-## Contributing
+```ruby
+class MyModel
+  include Aws::Record
+end
+```
 
-1. Fork it ( https://github.com/aws/aws-sdk-ruby-record/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+You can then specify attributes using the `aws-record` DSL:
+
+```ruby
+class MyModel
+  include Aws::Record
+  integer_attr :id, hash_key: true
+  string_attr  :name, range_key: true
+  boolean_attr :active, database_attribute_name: "is_active_flag"
+end
+```
+
+If a matching table does not exist in DynamoDB, you can use table migrations to
+create your table.
+
+```ruby
+migration = Aws::Record::TableMigration.new(MyModel)
+migration.create!(
+  provisioned_throughput: {
+    read_capacity_units: 5,
+    write_capacity_units: 2
+  }
+)
+migration.wait_until_available
+```
+
+With a table in place, you can then use your model class to manipulate items in
+your table:
+
+```ruby
+item = MyModel.find(id: 1, name: "Hello Record")
+item.active = true
+item.save
+item.delete!
+
+MyModel.find(id: 1, name: "Hello Record") # => nil
+
+item = MyModel.new
+item.id = 2
+item.name = "Item"
+item.active = false
+item.save
+```
