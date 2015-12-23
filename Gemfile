@@ -15,3 +15,7 @@ end
 group :docs do
   gem 'yard'
 end
+
+group :release do
+  gem 'octokit'
+end
