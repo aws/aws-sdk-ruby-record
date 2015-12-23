@@ -33,7 +33,7 @@ module Aws
             write_capacity_units: throughput.write_capacity_units
           }
         rescue DynamoDB::Errors::ResourceNotFoundException
-          raise Errors::TableDoesNotExist
+          raise Record::Errors::TableDoesNotExist
         end
       end
 
