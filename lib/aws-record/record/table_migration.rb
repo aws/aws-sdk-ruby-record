@@ -20,14 +20,22 @@ module Aws
       end
 
       def update!(opts)
-        update_opts = opts.merge({
-          table_name: @model.table_name
-        })
-        @client.update_table(update_opts)
+        begin
+          update_opts = opts.merge({
+            table_name: @model.table_name
+          })
+          @client.update_table(update_opts)
+        rescue DynamoDB::Errors::ResourceNotFoundException => e
+          raise Errors::TableDoesNotExist.new(e)
+        end
       end
 
       def delete!
-        @client.delete_table(table_name: @model.table_name)
+        begin
+          @client.delete_table(table_name: @model.table_name)
+        rescue DynamoDB::Errors::ResourceNotFoundException => e
+          raise Errors::TableDoesNotExist.new(e)
+        end
       end
 
       def wait_until_available

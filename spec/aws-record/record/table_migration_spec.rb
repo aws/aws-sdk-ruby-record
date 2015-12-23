@@ -94,6 +94,15 @@ module Aws
               table_name: "TestTable"
             }])
           end
+
+          it 'throws TableDoesNotExist when table did not exist at call time' do
+            stub_client.stub_responses(:delete_table,
+              'ResourceNotFoundException')
+            migration.client = stub_client
+            expect { migration.delete! }.to raise_error(
+              Errors::TableDoesNotExist
+            )
+          end
         end
 
         context "#update!" do
@@ -113,6 +122,15 @@ module Aws
                 write_capacity_units: 3
               }
             }])
+          end
+
+          it 'throws TableDoesNotExist when table did not exist at call time' do
+            stub_client.stub_responses(:update_table,
+              'ResourceNotFoundException')
+            migration.client = stub_client
+            expect { migration.update!({}) }.to raise_error(
+              Errors::TableDoesNotExist
+            )
           end
         end
 

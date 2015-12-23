@@ -37,6 +37,19 @@ module Aws
         end
       end
 
+      def table_exists?
+        begin
+          resp = dynamodb_client.describe_table(table_name: @table_name)
+          if resp.table.table_status == "ACTIVE"
+            true
+          else
+            false
+          end
+        rescue DynamoDB::Errors::ResourceNotFoundException
+          false
+        end
+      end
+
       def configure_client(opts = {})
         provided_client = opts.delete(:client)
         opts[:user_agent_suffix] = user_agent(opts.delete(:user_agent_suffix))
