@@ -8,6 +8,11 @@ end
 # bumps the VERSION file
 task 'release:bump-version' do
   sh("echo '#{$VERSION}' > VERSION")
+  path = 'lib/aws-record/record/version.rb'
+  file = File.read(path)
+  file = file.gsub(/VERSION = '.+?'/, "VERSION = '#{$VERSION}'")
+  File.open(path, 'w') { |f| f.write(file) }
+  sh("git add #{path}")
   sh("git add VERSION")
 end
 
