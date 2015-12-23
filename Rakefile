@@ -3,6 +3,7 @@ require "rspec/core/rake_task"
 
 $REPO_ROOT = File.dirname(__FILE__)
 $LOAD_PATH.unshift(File.join($REPO_ROOT, 'lib'))
+$VERSION = ENV['VERSION'] || File.read(File.join($REPO_ROOT, 'VERSION')).strip
 
 task 'test:coverage:clear' do
   sh("rm -rf #{File.join($REPO_ROOT, 'coverage')}")
