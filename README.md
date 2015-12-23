@@ -5,12 +5,20 @@ DynamoDB.
 
 ## Installation
 
-`Aws::Record` is available as the `aws-record` gem from RubyGems. Please use a
-major version when expressing a dependency on `aws-record`.
+`Aws::Record` is available as the `aws-record` gem from RubyGems.
+
+```
+gem install 'aws-record' --pre
+```
+
+Please use a major version when expressing a dependency on `aws-record`.
 
 ```ruby
-gem 'aws-record', '~> 1'
+gem 'aws-record', '~> 1.0'
 ```
+
+Until the final release becomes available on Rubygems, leave off the version
+dependency in your Gemfile so Bundler can find it.
 
 ## Usage
 
