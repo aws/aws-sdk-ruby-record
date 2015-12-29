@@ -30,7 +30,7 @@ module Aws
         #   as you provide a marshaler which implements `#type_cast` and
         #   `#serialize` that consume raw values as expected, you can bring your
         #   own marshaler type. Convenience methods will provide this for you.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Array] :validators An array of validator classes that
         #   will be run when an attribute is checked for validity.
         # @option options [String] :database_attribute_name Optional attribute
@@ -68,84 +68,84 @@ module Aws
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def string_attr(id, opts = {})
+        def string_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(id, Attributes::StringMarshaler, opts)
+          attr(name, Attributes::StringMarshaler, opts)
         end
 
         # Define a boolean-type attribute for your model.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def boolean_attr(id, opts = {})
+        def boolean_attr(name, opts = {})
           opts[:dynamodb_type] = "BOOL"
-          attr(id, Attributes::BooleanMarshaler, opts)
+          attr(name, Attributes::BooleanMarshaler, opts)
         end
 
         # Define a integer-type attribute for your model.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def integer_attr(id, opts = {})
+        def integer_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
-          attr(id, Attributes::IntegerMarshaler, opts)
+          attr(name, Attributes::IntegerMarshaler, opts)
         end
 
         # Define a float-type attribute for your model.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def float_attr(id, opts = {})
+        def float_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
-          attr(id, Attributes::FloatMarshaler, opts)
+          attr(name, Attributes::FloatMarshaler, opts)
         end
 
         # Define a date-type attribute for your model.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def date_attr(id, opts = {})
+        def date_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(id, Attributes::DateMarshaler, opts)
+          attr(name, Attributes::DateMarshaler, opts)
         end
 
         # Define a datetime-type attribute for your model.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
-        # @param [Hash] options
+        # @param [Hash] opts
         # @option options [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option options [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def datetime_attr(id, opts = {})
+        def datetime_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(id, Attributes::DateTimeMarshaler, opts)
+          attr(name, Attributes::DateTimeMarshaler, opts)
         end
 
         # @return [Hash] hash of symbolized attribute names to attribute objects
