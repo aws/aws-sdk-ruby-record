@@ -30,14 +30,31 @@ module Aws
         @validators = options[:validators] || []
       end
 
+      # Attempts to type cast a raw value into the attribute's type. This call
+      # will forward the raw value to this attribute's marshaler class.
+      #
+      # @return [Object] the type cast object. Return type is dependent on the
+      #  marshaler used. See your attribute's marshaler class for details.
       def type_cast(raw_value)
         @marshaler.type_cast(raw_value)
       end
 
+      # Attempts to serialize a raw value into the attribute's serialized
+      # storage type. This call will forward the raw value to this attribute's
+      # marshaler class.
+      #
+      # @return [Object] the serialized object. Return type is dependent on the
+      #  marshaler used. See your attribute's marshaler class for details.
       def serialize(raw_value)
         @marshaler.serialize(raw_value)
       end
 
+      # Checks if the raw value is valid for this attribute. This is done by
+      # type casting the raw value, then running that value through each
+      # validator present for this attribute.
+      #
+      # @return [Boolean] true if the raw value is valid for this attribute,
+      #  false if it is not.
       def valid?(raw_value)
         value = type_cast(raw_value)
         @validators.all? do |validator|
@@ -45,8 +62,9 @@ module Aws
         end
       end
 
+      # @api private
       def extract(dynamodb_item)
-        dynamodb_item[database_name]
+        dynamodb_item[@database_name]
       end
 
     end
