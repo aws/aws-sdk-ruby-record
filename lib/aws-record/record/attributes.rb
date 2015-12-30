@@ -31,20 +31,20 @@ module Aws
         #   `#serialize` that consume raw values as expected, you can bring your
         #   own marshaler type. Convenience methods will provide this for you.
         # @param [Hash] opts
-        # @option options [Array] :validators An array of validator classes that
+        # @option opts [Array] :validators An array of validator classes that
         #   will be run when an attribute is checked for validity.
-        # @option options [String] :database_attribute_name Optional attribute
+        # @option opts [String] :database_attribute_name Optional attribute
         #   used to specify a different name for database persistence than the
         #   `name` parameter. Must be unique (you can't have overlap between
         #   database attribute names and the names of other attributes).
-        # @option options [String] :dynamodb_type Generally used for keys and
+        # @option opts [String] :dynamodb_type Generally used for keys and
         #   index attributes, one of "S", "N", "B", "BOOL", "SS", "NS", "BS",
         #   "M", "L". Optional if this attribute will never be used for a key or
         #   secondary index, but most convenience methods for setting attributes
         #   will provide this.
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def attr(name, marshaler, opts = {})
           validate_attr_name(name)
@@ -69,9 +69,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def string_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
@@ -83,9 +83,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def boolean_attr(name, opts = {})
           opts[:dynamodb_type] = "BOOL"
@@ -97,9 +97,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def integer_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
@@ -111,9 +111,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def float_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
@@ -125,9 +125,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def date_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
@@ -139,9 +139,9 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option options [Boolean] :hash_key Set to true if this attribute is
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
-        # @option options [Boolean] :range_key Set to true if this attribute is
+        # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def datetime_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
