@@ -2,10 +2,18 @@ module Aws
   module Record
     module ItemOperations
 
+      # @api private
       def self.included(sub_class)
         sub_class.extend(ItemOperationsClassMethods)
       end
 
+      # Saves this instance of an item to Amazon DynamoDB using the
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      # API. Uses this item instance's attributes in order to build the request
+      # on your behalf.
+      #
+      # @raise [Aws::Record::Errors::KeyMissing] if a required key attribute
+      #  does not have a value within this item instance.
       def save
         dynamodb_client.put_item(
           table_name: self.class.table_name,
@@ -13,6 +21,10 @@ module Aws
         )
       end
 
+      # Deletes the item instance that matches the key values of this item
+      # instance in Amazon DynamoDB. Uses the
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
+      # API.
       def delete!
         dynamodb_client.delete_item(
           table_name: self.class.table_name,
@@ -60,6 +72,21 @@ module Aws
       end
 
       module ItemOperationsClassMethods
+
+        # @example Usage Example
+        #   class MyModel
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #   
+        #   MyModel.find(id: 1, name: "First")
+        #
+        # @param [Hash] opts attribute-value pairs for the key you wish to
+        #  search for.
+        # @return [Aws::Record] builds and returns an instance of your model.
+        # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
+        #  not include all table keys.
         def find(opts)
           key = {}
           @keys.each_value do |attr_sym|
