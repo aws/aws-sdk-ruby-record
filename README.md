@@ -15,7 +15,7 @@ how you would like to use this gem. Feature requests are welcome.
 
 `Aws::Record` is available as the `aws-record` gem from RubyGems.
 
-```
+```ruby
 gem install 'aws-record' --pre
 ```
 
