@@ -33,11 +33,7 @@ Before do
   @client = Aws::DynamoDB::Client.new(region: "us-east-1")
 end
 
-After("@item") do
-  cleanup_table
-end
-
-After("@table") do
+After("@dynamodb") do
   cleanup_table
 end
 
@@ -202,4 +198,29 @@ end
 Then(/^calling "([^"]*)" on the model should return:$/) do |method, retval|
   expected = JSON.parse(retval, symbolize_names: true)
   expect(@model.send(method)).to eq(expected)
+end
+
+When(/^we call the 'query' class method with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  @collection = @model.query(data)
+end
+
+Then(/^we should receive an aws\-record collection with members:$/) do |string|
+  expected = JSON.parse(string, symbolize_names: true)
+  # Ensure that we have the same number of items, and no pagination.
+  expect(expected.size).to eq(@collection.to_a.size)
+  # Results do not have guaranteed order, check each expected value individually
+  @collection.each do |item|
+    h = {
+      id: item.id,
+      count: item.count,
+      content: item.body # Because of database special name.
+    }
+    puts "Built h: #{h}"
+    expect(expected.any? { |expect| h == expect }).to eq(true)
+  end
+end
+
+When(/^we call the 'scan' class method$/) do
+  @collection = @model.scan
 end

@@ -26,6 +26,7 @@ module Aws
       sub_class.extend(RecordClassMethods)
       sub_class.include(Attributes)
       sub_class.include(ItemOperations)
+      sub_class.include(Query)
     end
 
     private

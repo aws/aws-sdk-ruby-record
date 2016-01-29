@@ -12,7 +12,7 @@
 # and limitations under the License.
 
 # language: en
-@table
+@dynamodb @table
 Feature: Amazon DynamoDB Tables
   This feature tests the integration of model classes that include the
   Aws::Record module with the Aws::Record::TableMigration class, which helps to
