@@ -72,6 +72,7 @@ Given(/^an aws\-record model with data:$/) do |string|
   @model = Class.new do
     include(Aws::Record)
   end
+  @model.configure_client(client: @client)
   @table_name ||= "test_table_#{SecureRandom.uuid}"
   @model.set_table_name(@table_name)
   data.each do |row|
@@ -149,7 +150,7 @@ Then(/^the DynamoDB table should not have an object with key values:$/) do |stri
 end
 
 When(/^we create a table migration for the model$/) do
-  @migration = Aws::Record::TableMigration.new(@model)
+  @migration = Aws::Record::TableMigration.new(@model, client: @client)
 end
 
 When(/^we call 'create!' with parameters:$/) do |string|
