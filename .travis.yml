@@ -10,15 +10,6 @@ rvm:
 
 sudo: false
 
-env:
-  - PURE_RUBY=1
-  - KITCHEN_SINK=1
-
 script: bundle exec rake
 
 bundler_args: --without docs release repl
-
-matrix:
-  exclude:
-    - rvm: jruby
-      env: KITCHEN_SINK=1
