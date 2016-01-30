@@ -166,6 +166,11 @@ module Aws
           @attributes
         end
 
+        # @return [Hash] hash of database names to attribute names
+        def storage_attributes
+          @storage_attributes
+        end
+
         # @return [Aws::Record::Attribute,nil]
         def hash_key
           @attributes[@keys[:hash]]
@@ -180,6 +185,10 @@ module Aws
         #   name symbols associated with them.
         def keys
           @keys
+        end
+
+        def storage_attributes
+          @storage_attributes
         end
 
         private

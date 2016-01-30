@@ -1,0 +1,24 @@
+language: ruby
+
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - 2.1
+  - 2.2
+  - 2.3.0
+  - jruby
+
+sudo: false
+
+env:
+  - PURE_RUBY=1
+  - KITCHEN_SINK=1
+
+script: bundle exec rake
+
+bundler_args: --without docs release repl
+
+matrix:
+  exclude:
+    - rvm: jruby
+      env: KITCHEN_SINK=1

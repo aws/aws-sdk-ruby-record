@@ -216,11 +216,33 @@ Then(/^we should receive an aws\-record collection with members:$/) do |string|
       count: item.count,
       content: item.body # Because of database special name.
     }
-    puts "Built h: #{h}"
     expect(expected.any? { |expect| h == expect }).to eq(true)
   end
 end
 
 When(/^we call the 'scan' class method$/) do
   @collection = @model.scan
+end
+
+Given(/^an aws\-record model with definition:$/) do |string|
+  @model = Class.new do
+    include(Aws::Record)
+  end
+  @table_name ||= "test_table_#{SecureRandom.uuid}"
+  @model.set_table_name(@table_name)
+  @model.class_eval(string)
+end
+
+When(/^we add a local secondary index to the model with parameters:$/) do |string|
+  name, hash = JSON.parse(string, symbolize_names: true)
+  name = name.to_sym
+  hash[:range_key] = hash[:range_key].to_sym
+  @model.local_secondary_index(name, hash)
+end
+
+Then(/^the table should have a local secondary index named "([^"]*)"$/) do |expected|
+  resp = @client.describe_table(table_name: @table_name)
+  lsis = resp.table.local_secondary_indexes
+  exists = lsis && lsis.any? { |index| index.index_name == expected }
+  expect(exists).to eq(true)
 end

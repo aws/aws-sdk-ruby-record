@@ -27,6 +27,7 @@ module Aws
       sub_class.include(Attributes)
       sub_class.include(ItemOperations)
       sub_class.include(Query)
+      sub_class.include(SecondaryIndexes)
     end
 
     private

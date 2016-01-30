@@ -51,6 +51,10 @@ module Aws
           attribute_definitions: attribute_definitions,
           key_schema: key_schema
         })
+        if lsis = @model.local_secondary_indexes_for_migration
+          create_opts[:local_secondary_indexes] = lsis
+          _append_to_attribute_definitions(lsis, create_opts)
+        end
         @client.create_table(create_opts)
       end
 
@@ -121,6 +125,27 @@ module Aws
             attribute_type: attr.dynamodb_type
           }
         end
+      end
+
+      def _append_to_attribute_definitions(secondary_indexes, create_opts)
+        attr_def = create_opts[:attribute_definitions]
+        secondary_indexes.each do |si|
+          si[:key_schema].each do |key_schema|
+            exists = attr_def.find { |a|
+              a[:attribute_name] == key_schema[:attribute_name]
+            }
+            unless exists
+              attr = @model.attributes[
+                @model.storage_attributes[key_schema[:attribute_name]]
+              ]
+              attr_def << {
+                attribute_name: attr.database_name,
+                attribute_type: attr.dynamodb_type
+              }
+            end
+          end
+        end
+        create_opts[:attribute_definitions] = attr_def
       end
 
       def key_schema

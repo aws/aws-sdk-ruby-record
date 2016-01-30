@@ -52,6 +52,7 @@ module Aws
             set_table_name("TestTable")
             integer_attr(:id, hash_key: true)
             date_attr(:date, range_key: true)
+            string_attr(:lsi)
           end
         end
 
@@ -91,6 +92,71 @@ module Aws
                   key_type: "RANGE"
                 }
               ],
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }])
+          end
+
+          it 'accepts models with a local secondary index' do
+            create_opts = {
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            klass.local_secondary_index(
+              :test_lsi,
+              range_key: :lsi,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration.client = stub_client
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "date",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "lsi",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "date",
+                  key_type: "RANGE"
+                }
+              ],
+              local_secondary_indexes: [{
+                index_name: "test_lsi",
+                key_schema: [
+                  {
+                    attribute_name: "id",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "lsi",
+                    key_type: "RANGE"
+                  }
+                ],
+                projection: {
+                  projection_type: "ALL"
+                }
+              }],
               provisioned_throughput: {
                 read_capacity_units: 5,
                 write_capacity_units: 2
