@@ -57,7 +57,7 @@ module Aws
         end
 
         let(:migration) do
-          TableMigration.new(klass)
+          TableMigration.new(klass, client: stub_client)
         end
 
         context "#create!" do
