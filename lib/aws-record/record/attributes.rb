@@ -187,10 +187,6 @@ module Aws
           @keys
         end
 
-        def storage_attributes
-          @storage_attributes
-        end
-
         private
         def define_attr_methods(name, attribute)
           define_method(name) do
