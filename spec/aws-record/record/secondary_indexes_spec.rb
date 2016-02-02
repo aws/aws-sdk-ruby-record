@@ -26,7 +26,7 @@ module Aws
           string_attr(:forum_name)
           string_attr(:post_title)
           integer_attr(:author_id, database_attribute_name: 'a_id')
-          string_attr(:author_name)
+          string_attr(:author_name, database_attribute_name: 'a_name')
           string_attr(:post_body)
         end
       end
@@ -93,6 +93,77 @@ module Aws
               key_schema: [
                 { key_type: "HASH", attribute_name: "forum_id" },
                 { key_type: "RANGE", attribute_name: "a_id" }
+              ],
+              projection: { projection_type: "ALL" }
+            })
+          end
+        end
+
+      end
+
+      context "Global Secondary Indexes" do
+
+        describe "#global_secondary_index" do
+          it 'allows you to define a global secondary index on the model' do
+            klass.global_secondary_index(
+              :author,
+              hash_key: :forum_name,
+              range_key: :author_name,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            expect(klass.global_secondary_indexes[:author]).not_to eq(nil)
+          end
+
+          it 'requires that a hash key is provided' do
+            expect {
+              klass.global_secondary_index(
+                :fail,
+                projection: { projection_type: "ALL" }
+              )
+            }.to raise_error(ArgumentError)
+          end
+
+          it 'requires that the hash key exists in the model' do
+            expect {
+              klass.global_secondary_index(
+                :fail,
+                hash_key: :missingno,
+                projection: { projection_type: "ALL" }
+              )
+            }.to raise_error(ArgumentError)
+          end
+
+          it 'requires that the range key exists in the model' do
+            expect {
+              klass.global_secondary_index(
+                :fail,
+                hash_key: :forum_name,
+                range_key: :missingno,
+                projection: { projection_type: "ALL" }
+              )
+            }.to raise_error(ArgumentError)
+          end
+        end
+
+        describe "#global_secondary_indexes_for_migration" do
+          it 'correctly translates database names for migration' do
+            klass.global_secondary_index(
+              :author,
+              hash_key: :forum_name,
+              range_key: :author_name,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration = klass.global_secondary_indexes_for_migration
+            expect(migration.size).to eq(1)
+            expect(migration.first).to eq({
+              index_name: :author,
+              key_schema: [
+                { key_type: "HASH", attribute_name: "forum_name" },
+                { key_type: "RANGE", attribute_name: "a_name" }
               ],
               projection: { projection_type: "ALL" }
             })

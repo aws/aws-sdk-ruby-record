@@ -64,3 +64,36 @@ Feature: Amazon DynamoDB Secondary Indexes
       """
     Then eventually the table should exist in DynamoDB
     And the table should have a local secondary index named "title"
+
+  Scenario: Create a DynamoDB Table with a Global Secondary Index
+    When we add a global secondary index to the model with parameters:
+      """
+      [
+        "author",
+        {
+          "hash_key": "forum_name",
+          "range_key": "author_name",
+          "projection": {
+            "projection_type": "ALL"
+          }
+        }
+      ]
+      """
+    And we create a table migration for the model
+    And we call 'create!' with parameters:
+      """
+      {
+        "provisioned_throughput": {
+          "read_capacity_units": 1,
+          "write_capacity_units": 1
+        },
+        "global_secondary_index_throughput": {
+          "author": {
+            "read_capacity_units": 1,
+            "write_capacity_units": 1
+          }
+        }
+      }
+      """
+    Then eventually the table should exist in DynamoDB
+    And the table should have a global secondary index named "author"

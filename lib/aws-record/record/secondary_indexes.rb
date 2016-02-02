@@ -18,6 +18,7 @@ module Aws
       # @api private
       def self.included(sub_class)
         sub_class.instance_variable_set("@local_secondary_indexes", {})
+        sub_class.instance_variable_set("@global_secondary_indexes", {})
         sub_class.extend(SecondaryIndexesClassMethods)
       end
 
@@ -33,12 +34,30 @@ module Aws
         #   secondary index. Note that the hash key MUST be the table's hash
         #   key, and so that value will be filled in for you.
         # @option opts [Hash] :projection a hash which defines which attributes
-        #   are copies from the table to the index. See shape details in the
+        #   are copied from the table to the index. See shape details in the
         #   {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
         def local_secondary_index(name, opts)
           opts[:hash_key] = hash_key.name
           _validate_required_lsi_keys(opts)
-          _lsis[name] = opts
+          local_secondary_indexes[name] = opts
+        end
+
+        # Creates a global secondary index for the model. Learn more about
+        # Global Secondary Indexes in the
+        # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html Amazon DynamoDB Developer Guide}.
+        #
+        # @param [Symbol] name index name for this global secondary index
+        # @param [Hash] opts
+        # @option opts [Symbol] :hash_key the hash key used by this global
+        #   secondary index.
+        # @option opts [Symbol] :range_key the range key used by this global
+        #   secondary index.
+        # @option opts [Hash] :projection a hash which defines which attributes
+        #   are copied from the table to the index. See shape details in the
+        #   {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
+        def global_secondary_index(name, opts)
+          _validate_required_gsi_keys(opts)
+          global_secondary_indexes[name] = opts
         end
 
         # @return [Hash] hash of local secondary index names to the index's
@@ -47,12 +66,33 @@ module Aws
           @local_secondary_indexes
         end
 
-        # @return [Hash] hash of the local secondary index in a form suitable
+        # @return [Hash] hash of global secondary index names to the index's
+        #   attributes.
+        def global_secondary_indexes
+          @global_secondary_indexes
+        end
+
+        # @return [Hash] hash of the local secondary indexes in a form suitable
         #   for use in a table migration. For example, any attributes which
         #   have a unique database storage name will use that name instead.
         def local_secondary_indexes_for_migration
-          return nil if _lsis.empty?
-          _lsis.collect do |name, opts|
+          return nil if local_secondary_indexes.empty?
+          local_secondary_indexes.collect do |name, opts|
+            h = { index_name: name }
+            h[:key_schema] = _si_key_schema(opts)
+            opts.delete(:hash_key)
+            opts.delete(:range_key)
+            h = h.merge(opts)
+            h
+          end
+        end
+
+        # @return [Hash] hash of the global secondary indexes in a form suitable
+        #   for use in a table migration. For example, any attributes which
+        #   have a unique database storage name will use that name instead.
+        def global_secondary_indexes_for_migration
+          return nil if global_secondary_indexes.empty?
+          global_secondary_indexes.collect do |name, opts|
             h = { index_name: name }
             h[:key_schema] = _si_key_schema(opts)
             opts.delete(:hash_key)
@@ -63,10 +103,6 @@ module Aws
         end
 
         private
-        def _lsis
-          @local_secondary_indexes
-        end
-
         def _si_key_schema(opts)
           key_schema = [{
             key_type: "HASH",
@@ -87,6 +123,20 @@ module Aws
           else
             raise ArgumentError.new(
               "Local Secondary Indexes require a hash and range key!"
+            )
+          end
+        end
+
+        def _validate_required_gsi_keys(params)
+          if params[:hash_key]
+            if params[:range_key]
+              _validate_attributes_exist(params[:hash_key], params[:range_key])
+            else
+              _validate_attributes_exist(params[:hash_key])
+            end
+          else
+            raise ArgumentError.new(
+              "Global Secondary Indexes require at least a hash key!"
             )
           end
         end
