@@ -76,23 +76,20 @@ module Aws
         #   for use in a table migration. For example, any attributes which
         #   have a unique database storage name will use that name instead.
         def local_secondary_indexes_for_migration
-          return nil if local_secondary_indexes.empty?
-          local_secondary_indexes.collect do |name, opts|
-            h = { index_name: name }
-            h[:key_schema] = _si_key_schema(opts)
-            opts.delete(:hash_key)
-            opts.delete(:range_key)
-            h = h.merge(opts)
-            h
-          end
+          _migration_format_indexes(local_secondary_indexes)
         end
 
         # @return [Hash] hash of the global secondary indexes in a form suitable
         #   for use in a table migration. For example, any attributes which
         #   have a unique database storage name will use that name instead.
         def global_secondary_indexes_for_migration
-          return nil if global_secondary_indexes.empty?
-          global_secondary_indexes.collect do |name, opts|
+          _migration_format_indexes(global_secondary_indexes)
+        end
+
+        private
+        def _migration_format_indexes(indexes)
+          return nil if indexes.empty?
+          indexes.collect do |name, opts|
             h = { index_name: name }
             h[:key_schema] = _si_key_schema(opts)
             opts.delete(:hash_key)
@@ -102,7 +99,6 @@ module Aws
           end
         end
 
-        private
         def _si_key_schema(opts)
           key_schema = [{
             key_type: "HASH",
