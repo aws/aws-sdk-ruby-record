@@ -166,6 +166,11 @@ module Aws
           @attributes
         end
 
+        # @return [Hash] hash of database names to attribute names
+        def storage_attributes
+          @storage_attributes
+        end
+
         # @return [Aws::Record::Attribute,nil]
         def hash_key
           @attributes[@keys[:hash]]

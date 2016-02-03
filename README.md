@@ -1,5 +1,7 @@
 # Aws::Record
 
+[![Build Status](https://travis-ci.org/awslabs/aws-sdk-ruby-record.png?branch=master)](https://travis-ci.org/awslabs/aws-sdk-ruby-record) [![Code Climate](https://codeclimate.com/github/awslabs/aws-sdk-ruby-record.png)](https://codeclimate.com/github/awslabs/aws-sdk-ruby-record)
+
 A data mapping abstraction over the AWS SDK for Ruby's client for Amazon
 DynamoDB.
 

@@ -33,11 +33,7 @@ Before do
   @client = Aws::DynamoDB::Client.new(region: "us-east-1")
 end
 
-After("@item") do
-  cleanup_table
-end
-
-After("@table") do
+After("@dynamodb") do
   cleanup_table
 end
 
@@ -76,6 +72,7 @@ Given(/^an aws\-record model with data:$/) do |string|
   @model = Class.new do
     include(Aws::Record)
   end
+  @model.configure_client(client: @client)
   @table_name ||= "test_table_#{SecureRandom.uuid}"
   @model.set_table_name(@table_name)
   data.each do |row|
@@ -153,7 +150,7 @@ Then(/^the DynamoDB table should not have an object with key values:$/) do |stri
 end
 
 When(/^we create a table migration for the model$/) do
-  @migration = Aws::Record::TableMigration.new(@model)
+  @migration = Aws::Record::TableMigration.new(@model, client: @client)
 end
 
 When(/^we call 'create!' with parameters:$/) do |string|
@@ -202,4 +199,66 @@ end
 Then(/^calling "([^"]*)" on the model should return:$/) do |method, retval|
   expected = JSON.parse(retval, symbolize_names: true)
   expect(@model.send(method)).to eq(expected)
+end
+
+When(/^we call the 'query' class method with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  @collection = @model.query(data)
+end
+
+Then(/^we should receive an aws\-record collection with members:$/) do |string|
+  expected = JSON.parse(string, symbolize_names: true)
+  # Ensure that we have the same number of items, and no pagination.
+  expect(expected.size).to eq(@collection.to_a.size)
+  # Results do not have guaranteed order, check each expected value individually
+  @collection.each do |item|
+    h = {
+      id: item.id,
+      count: item.count,
+      content: item.body # Because of database special name.
+    }
+    expect(expected.any? { |expect| h == expect }).to eq(true)
+  end
+end
+
+When(/^we call the 'scan' class method$/) do
+  @collection = @model.scan
+end
+
+Given(/^an aws\-record model with definition:$/) do |string|
+  @model = Class.new do
+    include(Aws::Record)
+  end
+  @table_name ||= "test_table_#{SecureRandom.uuid}"
+  @model.set_table_name(@table_name)
+  @model.class_eval(string)
+end
+
+When(/^we add a local secondary index to the model with parameters:$/) do |string|
+  name, hash = JSON.parse(string, symbolize_names: true)
+  name = name.to_sym
+  hash[:range_key] = hash[:range_key].to_sym
+  @model.local_secondary_index(name, hash)
+end
+
+Then(/^the table should have a local secondary index named "([^"]*)"$/) do |expected|
+  resp = @client.describe_table(table_name: @table_name)
+  lsis = resp.table.local_secondary_indexes
+  exists = lsis && lsis.any? { |index| index.index_name == expected }
+  expect(exists).to eq(true)
+end
+
+When(/^we add a global secondary index to the model with parameters:$/) do |string|
+  name, hash = JSON.parse(string, symbolize_names: true)
+  name = name.to_sym
+  hash[:hash_key] = hash[:hash_key].to_sym
+  hash[:range_key] = hash[:range_key].to_sym
+  @model.global_secondary_index(name, hash)
+end
+
+Then(/^the table should have a global secondary index named "([^"]*)"$/) do |expected|
+  resp = @client.describe_table(table_name: @table_name)
+  gsis = resp.table.global_secondary_indexes
+  exists = gsis && gsis.any? { |index| index.index_name == expected }
+  expect(exists).to eq(true)
 end

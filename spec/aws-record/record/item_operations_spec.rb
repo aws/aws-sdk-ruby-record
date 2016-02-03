@@ -59,6 +59,7 @@ module Aws
         end
 
         it 'raises an error when you try to save without setting keys' do
+          klass.configure_client(client: stub_client)
           no_keys = klass.new
           expect { no_keys.save }.to raise_error(
             Errors::KeyMissing,
@@ -72,7 +73,7 @@ module Aws
           )
           no_range = klass.new
           no_range.id = 5
-          expect { no_range.save}.to raise_error(
+          expect { no_range.save }.to raise_error(
             Errors::KeyMissing,
             "Missing required keys: date"
           )

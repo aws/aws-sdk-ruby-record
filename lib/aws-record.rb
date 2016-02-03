@@ -17,12 +17,15 @@ module Aws
   autoload :Record, 'aws-record/record'
 
   module Record
-    autoload :Attribute,      'aws-record/record/attribute'
-    autoload :Attributes,     'aws-record/record/attributes'
-    autoload :Errors,         'aws-record/record/errors'
-    autoload :ItemOperations, 'aws-record/record/item_operations'
-    autoload :TableMigration, 'aws-record/record/table_migration'
-    autoload :VERSION,        'aws-record/record/version'
+    autoload :Attribute,        'aws-record/record/attribute'
+    autoload :Attributes,       'aws-record/record/attributes'
+    autoload :Errors,           'aws-record/record/errors'
+    autoload :ItemCollection,   'aws-record/record/item_collection'
+    autoload :ItemOperations,   'aws-record/record/item_operations'
+    autoload :Query,            'aws-record/record/query'
+    autoload :SecondaryIndexes, 'aws-record/record/secondary_indexes'
+    autoload :TableMigration,   'aws-record/record/table_migration'
+    autoload :VERSION,          'aws-record/record/version'
 
     module Attributes
       autoload :StringMarshaler,   'aws-record/record/attributes/string_marshaler'

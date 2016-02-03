@@ -52,11 +52,14 @@ module Aws
             set_table_name("TestTable")
             integer_attr(:id, hash_key: true)
             date_attr(:date, range_key: true)
+            string_attr(:lsi)
+            string_attr(:gsi_partition)
+            string_attr(:gsi_sort)
           end
         end
 
         let(:migration) do
-          TableMigration.new(klass)
+          TableMigration.new(klass, client: stub_client)
         end
 
         context "#create!" do
@@ -96,6 +99,209 @@ module Aws
                 write_capacity_units: 2
               }
             }])
+          end
+
+          it 'accepts models with a local secondary index' do
+            create_opts = {
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            klass.local_secondary_index(
+              :test_lsi,
+              range_key: :lsi,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration.client = stub_client
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "date",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "lsi",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "date",
+                  key_type: "RANGE"
+                }
+              ],
+              local_secondary_indexes: [{
+                index_name: "test_lsi",
+                key_schema: [
+                  {
+                    attribute_name: "id",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "lsi",
+                    key_type: "RANGE"
+                  }
+                ],
+                projection: {
+                  projection_type: "ALL"
+                }
+              }],
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }])
+          end
+
+          it 'accepts models with a global secondary index' do
+            create_opts = {
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              },
+              global_secondary_index_throughput: {
+                test_gsi: {
+                  read_capacity_units: 3,
+                  write_capacity_units: 1
+                }
+              }
+            }
+            klass.global_secondary_index(
+              :test_gsi,
+              hash_key: :gsi_partition,
+              range_key: :gsi_sort,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration.client = stub_client
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "date",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_partition",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sort",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "date",
+                  key_type: "RANGE"
+                }
+              ],
+              global_secondary_indexes: [{
+                index_name: "test_gsi",
+                key_schema: [
+                  {
+                    attribute_name: "gsi_partition",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "gsi_sort",
+                    key_type: "RANGE"
+                  }
+                ],
+                projection: {
+                  projection_type: "ALL"
+                },
+                provisioned_throughput: {
+                  read_capacity_units: 3,
+                  write_capacity_units: 1
+                }
+              }],
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }])
+          end
+
+          it 'required global secondary index throughput to be provided' do
+            create_opts = {
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            klass.global_secondary_index(
+              :test_gsi,
+              hash_key: :gsi_partition,
+              range_key: :gsi_sort,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration.client = stub_client
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError
+            )
+            expect(api_requests).to eq([])
+          end
+
+          it 'requires global secondary index throughput to be defined for each index' do
+            create_opts = {
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              },
+              global_secondary_index_throughput: {
+                test_gsi: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+            klass.global_secondary_index(
+              :test_gsi,
+              hash_key: :gsi_partition,
+              range_key: :gsi_sort,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            klass.global_secondary_index(
+              :fail_on,
+              hash_key: :gsi_partition,
+              range_key: :gsi_sort,
+              projection: {
+                projection_type: "ALL"
+              }
+            )
+            migration.client = stub_client
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError
+            )
+            expect(api_requests).to eq([])
           end
         end
 

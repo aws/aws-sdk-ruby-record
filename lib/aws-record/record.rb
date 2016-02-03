@@ -23,9 +23,11 @@ module Aws
     #     # Attribute definitions go here...
     #   end
     def self.included(sub_class)
-      sub_class.extend(RecordClassMethods)
-      sub_class.include(Attributes)
-      sub_class.include(ItemOperations)
+      sub_class.send(:extend, RecordClassMethods)
+      sub_class.send(:include, Attributes)
+      sub_class.send(:include, ItemOperations)
+      sub_class.send(:include, Query)
+      sub_class.send(:include, SecondaryIndexes)
     end
 
     private

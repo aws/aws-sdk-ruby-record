@@ -45,12 +45,32 @@ module Aws
       # @option opts [Hash] :provisioned_throughput This is a required argument,
       #  in which you must specify the +:read_capacity_units+ and
       #  +:write_capacity_units+ of your new table.
+      # @option opts [Hash] :global_secondary_index_throughput This argument is
+      #  required if you define any global secondary indexes. It should map your
+      #  global secondary index names to their provisioned throughput, similar
+      #  to how you define the provisioned throughput for the table in general.
       def create!(opts)
+        gsit = opts.delete(:global_secondary_index_throughput)
         create_opts = opts.merge({
           table_name: @model.table_name,
           attribute_definitions: attribute_definitions,
           key_schema: key_schema
         })
+        if lsis = @model.local_secondary_indexes_for_migration
+          create_opts[:local_secondary_indexes] = lsis
+          _append_to_attribute_definitions(lsis, create_opts)
+        end
+        if gsis = @model.global_secondary_indexes_for_migration
+          unless gsit
+            raise ArgumentError.new(
+              "If you define global secondary indexes, you must also define"\
+                " :global_secondary_index_throughput on table creation."
+            )
+          end
+          gsis_with_throughput = _add_throughout_to_gsis(gsis, gsit)
+          create_opts[:global_secondary_indexes] = gsis_with_throughput
+          _append_to_attribute_definitions(gsis, create_opts)
+        end
         @client.create_table(create_opts)
       end
 
@@ -121,6 +141,46 @@ module Aws
             attribute_type: attr.dynamodb_type
           }
         end
+      end
+
+      def _append_to_attribute_definitions(secondary_indexes, create_opts)
+        attr_def = create_opts[:attribute_definitions]
+        secondary_indexes.each do |si|
+          si[:key_schema].each do |key_schema|
+            exists = attr_def.find { |a|
+              a[:attribute_name] == key_schema[:attribute_name]
+            }
+            unless exists
+              attr = @model.attributes[
+                @model.storage_attributes[key_schema[:attribute_name]]
+              ]
+              attr_def << {
+                attribute_name: attr.database_name,
+                attribute_type: attr.dynamodb_type
+              }
+            end
+          end
+        end
+        create_opts[:attribute_definitions] = attr_def
+      end
+
+      def _add_throughout_to_gsis(global_secondary_indexes, gsi_throughput)
+        missing_throughput = []
+        ret = global_secondary_indexes.map do |params|
+          name = params[:index_name]
+          throughput = gsi_throughput[name]
+          missing_throughput << name unless throughput
+          params.merge(provisioned_throughput: throughput)
+        end
+        unless missing_throughput.empty?
+          raise ArgumentError.new(
+            "Missing provisioned throughput for the following global secondary"\
+              " indexes: #{missing_throughput.join(", ")}. GSIs:"\
+              " #{global_secondary_indexes} and defined throughput:"\
+              " #{gsi_throughput}"
+          )
+        end
+        ret
       end
 
       def key_schema

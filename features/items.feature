@@ -12,7 +12,7 @@
 # and limitations under the License.
 
 # language: en
-@item
+@dynamodb @item
 Feature: Amazon DynamoDB Items
   This feature tests the integration of model classes that include the
   Aws::Record module with a DynamoDB backend. To run these tests, you will need
