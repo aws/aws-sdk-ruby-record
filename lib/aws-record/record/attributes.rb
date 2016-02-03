@@ -236,12 +236,12 @@ module Aws
         end
 
         def check_for_naming_collisions(name, storage_name)
-          if @attributes[storage_name]
+          if @attributes[storage_name.to_sym]
             raise Errors::NameCollision.new(
               "Custom storage name #{storage_name} already exists as an"\
                 " attribute name in #{@attributes}"
             )
-          elsif @storage_attributes[name]
+          elsif @storage_attributes[name.to_s]
             raise Errors::NameCollision.new(
               "Attribute name #{name} already exists as a custom storage"\
                 " name in #{@storage_attributes}"

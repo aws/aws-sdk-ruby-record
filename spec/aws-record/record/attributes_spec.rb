@@ -37,6 +37,12 @@ module Aws
           expect(klass.hash_key.name).to eq(:mykey)
           expect(klass.range_key.name).to eq(:ranged)
         end
+
+        it 'should reject assigning the same attribute as hash and range key' do
+          expect {
+            klass.string_attr(:oops, hash_key: true, range_key: true)
+          }.to raise_error(ArgumentError)
+        end
       end
 
       describe 'Attributes' do
@@ -45,6 +51,31 @@ module Aws
           x = klass.new
           x.text = "Hello world!"
           expect(x.text).to eq("Hello world!")
+        end
+
+        it 'should reject non-symbolized attribute names' do
+          expect { klass.float_attr("floating") }.to raise_error(ArgumentError)
+        end
+
+        it 'rejects collisions of db storage names with existing attr names' do
+          klass.string_attr(:dup_name, database_attribute_name: 'dup_storage')
+          expect {
+            klass.string_attr(:fail, database_attribute_name: 'dup_name')
+          }.to raise_error(Aws::Record::Errors::NameCollision)
+        end
+
+        it 'rejects collisions of attr names with existing db storage names' do
+          klass.string_attr(:dup_name, database_attribute_name: 'dup_storage')
+          expect {
+            klass.string_attr(:dup_storage, database_attribute_name: 'fail')
+          }.to raise_error(Aws::Record::Errors::NameCollision)
+        end
+
+        it 'should not allow duplicate assignment of the same attr name' do
+          klass.string_attr(:duplication)
+          expect { klass.datetime_attr(:duplication) }.to raise_error(
+            Aws::Record::Errors::NameCollision
+          )
         end
 
         it 'should typecast an integer attribute' do

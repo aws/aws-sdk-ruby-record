@@ -139,7 +139,7 @@ module Aws
       #  own pre-configured client.
       def configure_client(opts = {})
         provided_client = opts.delete(:client)
-        opts[:user_agent_suffix] = user_agent(opts.delete(:user_agent_suffix))
+        opts[:user_agent_suffix] = _user_agent(opts.delete(:user_agent_suffix))
         client = provided_client || Aws::DynamoDB::Client.new(opts)
         @dynamodb_client = client
       end
@@ -153,6 +153,15 @@ module Aws
       # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
       def dynamodb_client
         @dynamodb_client ||= configure_client
+      end
+
+      private
+      def _user_agent(custom)
+        if custom
+          custom
+        else
+          " aws-record/#{VERSION}"
+        end
       end
     end
   end

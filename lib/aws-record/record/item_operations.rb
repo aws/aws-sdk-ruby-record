@@ -132,14 +132,6 @@ module Aws
           end
           record
         end
-
-        def user_agent(custom)
-          if custom
-            custom
-          else
-            " aws-record/#{VERSION}"
-          end
-        end
       end
 
     end

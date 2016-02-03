@@ -84,6 +84,38 @@ module Aws
       end
     end
 
+    describe '#table_exists' do
+      let(:model) {
+        Class.new do
+          include(Aws::Record)
+          set_table_name("TestTable")
+        end
+      }
 
+      it 'can check if the table exists' do
+        stub_client.stub_responses(:describe_table,
+          {
+            table: { table_status: "ACTIVE" }
+          })
+        model.configure_client(client: stub_client)
+        expect(model.table_exists?).to eq(true)
+      end
+
+      it 'will not recognize a table as existing if it is not active' do
+        stub_client.stub_responses(:describe_table,
+          {
+            table: { table_status: "CREATING" }
+          })
+        model.configure_client(client: stub_client)
+        expect(model.table_exists?).to eq(false)
+      end
+
+      it 'will answer false to #table_exists? if the table does not exist in DynamoDB' do
+        stub_client.stub_responses(:describe_table, 'ResourceNotFoundException')
+        model.configure_client(client: stub_client)
+        expect(model.table_exists?).to eq(false)
+      end
+
+    end
   end
 end

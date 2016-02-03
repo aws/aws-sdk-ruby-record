@@ -107,6 +107,14 @@ module Aws
           expect(ret.date).to eq(Date.parse('2015-12-15'))
           expect(ret.bool).to be(true)
         end
+
+        it 'enforces that the required keys are present' do
+          klass.configure_client(client: stub_client)
+          find_opts = { id: 5 }
+          expect { klass.find(find_opts) }.to raise_error(
+            Aws::Record::Errors::KeyMissing
+          )
+        end
       end
 
       describe "#delete!" do

@@ -353,6 +353,17 @@ module Aws
           end
         end
 
+        context '#wait_until_available' do
+          it "can check on the table's availability status" do
+            stub_client.stub_responses(:describe_table,
+              {
+                table: { table_status: "ACTIVE" }
+              })
+            migration.client = stub_client
+            expect(migration.wait_until_available).not_to eq(nil)
+          end
+        end
+
       end
     end
   end
