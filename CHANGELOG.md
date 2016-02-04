@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.2 (2016-02-04)
 ------------------
 
 * Feature - Aws::Record - Provides a low-level interface for the client `#query`
