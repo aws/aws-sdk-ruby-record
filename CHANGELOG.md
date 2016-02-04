@@ -1,6 +1,14 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record - Provides a low-level interface for the client `#query`
+  and `#scan` methods. Query and Scan results are surfaces as an enumerable
+  collection of `Aws::Record` items.
+
+* Feature - Aws::Record - Support for adding global secondary indexes and local
+  secondary indexes to your model classes. Built-in support for creating these
+  indexes at table creation time.
+
 1.0.0.pre.1 (2015-12-23)
 ------------------
 
