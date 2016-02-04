@@ -18,6 +18,14 @@ module Aws
     module Attributes
       describe MapMarshaler do
 
+        let(:mappable) do
+          Class.new do
+            def to_h
+              { a: 1, b: "Two", c: 3.0 }
+            end
+          end
+        end
+
         describe 'type casting' do
           it 'type casts nil as nil' do
             expect(MapMarshaler.type_cast(nil)).to eq(nil)
@@ -46,7 +54,7 @@ module Aws
           end
 
           it 'type casts classes which respond to :to_h as a Hash' do
-            input = [[:a, 1], [:b, "Two"], [:c, 3.0]]
+            input = mappable.new
             expected = { a: 1, b: "Two", c: 3.0 }
             expect(MapMarshaler.type_cast(input)).to eq(expected)
           end
