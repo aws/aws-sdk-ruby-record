@@ -161,6 +161,41 @@ module Aws
           attr(name, Attributes::DateTimeMarshaler, opts)
         end
 
+        # Define a list-type attribute for your model.
+        #
+        # Lists do not have to be homogeneous, but they do have to be types that
+        # the AWS SDK for Ruby V2's DynamoDB client knows how to marshal and
+        # unmarshal. Those types are:
+        #
+        # * Hash
+        # * Array
+        # * String
+        # * Numeric
+        # * Boolean
+        # * IO
+        # * Set
+        # * nil
+        #
+        # Also note that, since lists are homogeneous, you may lose some
+        # precision when marshaling and unmarshaling. For example, symbols will
+        # be stringified, but there is no way to return those strings to symbols
+        # when the object is read back from DynamoDB.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :nil_as_empty_list Set to true if this
+        #   attribute should interpret nil values as an empty list. If false,
+        #   nil values will remain nil.
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def list_attr(name, opts = {})
+          opts[:dynamodb_type] = "L"
+          attr(name, Attributes::ListMarshaler, opts)
+        end
+
         # @return [Hash] hash of symbolized attribute names to attribute objects
         def attributes
           @attributes
