@@ -35,6 +35,7 @@ module Aws
       autoload :DateMarshaler,     'aws-record/record/attributes/date_marshaler'
       autoload :DateTimeMarshaler, 'aws-record/record/attributes/date_time_marshaler'
       autoload :ListMarshaler,     'aws-record/record/attributes/list_marshaler'
+      autoload :MapMarshaler,      'aws-record/record/attributes/map_marshaler'
     end
 
   end
