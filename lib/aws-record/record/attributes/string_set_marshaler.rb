@@ -14,47 +14,47 @@
 module Aws
   module Record
     module Attributes
-      module MapMarshaler
+      module StringSetMarshaler
 
         class << self
 
           def type_cast(raw_value, options = {})
             case raw_value
             when nil
-              _cast_nil(raw_value, options)
+              Set.new
             when ''
-              _cast_nil(raw_value, options)
-            when Hash
-              raw_value
+              Set.new
+            when Set
+              _as_strings(raw_value)
             else
-              if raw_value.respond_to?(:to_h)
-                raw_value.to_h
-              else
-                msg = "Don't know how to make #{raw_value} of type"\
-                  " #{raw_value.class} into a hash!"
-                raise ArgumentError, msg
-              end
+              msg = "Don't know how to make #{raw_value} of type"\
+                " #{raw_value.class} into a String Set!"
+              raise ArgumentError, msg
             end
           end
 
           def serialize(raw_value, options = {})
-            map = type_cast(raw_value, options)
-            if map.is_a?(Hash)
-              map
-            elsif map.nil?
-              nil
+            set = type_cast(raw_value, options)
+            if set.is_a?(Set)
+              if set.empty?
+                nil
+              else
+                set
+              end
             else
-              msg = "expected a Hash value or nil, got #{map.class}"
+              msg = "expected a Set value or nil, got #{set.class}"
               raise ArgumentError, msg
             end
           end
 
           private
-          def _cast_nil(raw_value, options)
-            if options[:nil_as_empty_map]
-              {}
-            else
-              nil
+          def _as_strings(set)
+            set.collect! do |item|
+              if item.is_a?(String)
+                item
+              else
+                item.to_s
+              end
             end
           end
 

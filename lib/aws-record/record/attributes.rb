@@ -231,6 +231,28 @@ module Aws
           attr(name, Attributes::MapMarshaler, opts)
         end
 
+        # Define a string set attribute for your model.
+        #
+        # String sets are heterogeneous sets, containing only strings. Note that
+        # empty sets cannot be persisted to DynamoDB. Empty sets are valid for
+        # aws-record items, but they will not be persisted as sets. nil values
+        # from your table, or a lack of value from your table, will be treated
+        # as an empty set for item instances. At persistence time, the marshaler
+        # will attempt to marshal any non-strings within the set to be String
+        # objects.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def string_set_attr(name, opts = {})
+          opts[:dynamodb_type] = "SS"
+          attr(name, Attributes::StringSetMarshaler, opts)
+        end
+
         # @return [Hash] hash of symbolized attribute names to attribute objects
         def attributes
           @attributes
