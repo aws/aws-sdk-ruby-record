@@ -37,6 +37,7 @@ module Aws
       autoload :ListMarshaler,      'aws-record/record/attributes/list_marshaler'
       autoload :MapMarshaler,       'aws-record/record/attributes/map_marshaler'
       autoload :StringSetMarshaler, 'aws-record/record/attributes/string_set_marshaler'
+      autoload :NumericSetMarshaler, 'aws-record/record/attributes/numeric_set_marshaler'
     end
 
   end
