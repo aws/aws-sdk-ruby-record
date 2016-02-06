@@ -161,6 +161,120 @@ module Aws
           attr(name, Attributes::DateTimeMarshaler, opts)
         end
 
+        # Define a list-type attribute for your model.
+        #
+        # Lists do not have to be homogeneous, but they do have to be types that
+        # the AWS SDK for Ruby V2's DynamoDB client knows how to marshal and
+        # unmarshal. Those types are:
+        #
+        # * Hash
+        # * Array
+        # * String
+        # * Numeric
+        # * Boolean
+        # * IO
+        # * Set
+        # * nil
+        #
+        # Also note that, since lists are heterogeneous, you may lose some
+        # precision when marshaling and unmarshaling. For example, symbols will
+        # be stringified, but there is no way to return those strings to symbols
+        # when the object is read back from DynamoDB.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :nil_as_empty_list Set to true if this
+        #   attribute should interpret nil values as an empty list. If false,
+        #   nil values will remain nil.
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def list_attr(name, opts = {})
+          opts[:dynamodb_type] = "L"
+          attr(name, Attributes::ListMarshaler, opts)
+        end
+
+        # Define a map-type attribute for your model.
+        #
+        # Maps do not have to be homogeneous, but they do have to use types that
+        # the AWS SDK for Ruby V2's DynamoDB client knows how to marshal and
+        # unmarshal. Those types are:
+        #
+        # * Hash
+        # * Array
+        # * String
+        # * Numeric
+        # * Boolean
+        # * IO
+        # * Set
+        # * nil
+        #
+        # Also note that, since maps are heterogeneous, you may lose some
+        # precision when marshaling and unmarshaling. For example, symbols will
+        # be stringified, but there is no way to return those strings to symbols
+        # when the object is read back from DynamoDB.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :nil_as_empty_map Set to true if this
+        #   attribute should interpret nil values as an empty hash. If false,
+        #   nil values will remain nil.
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def map_attr(name, opts = {})
+          opts[:dynamodb_type] = "M"
+          attr(name, Attributes::MapMarshaler, opts)
+        end
+
+        # Define a string set attribute for your model.
+        #
+        # String sets are homogeneous sets, containing only strings. Note that
+        # empty sets cannot be persisted to DynamoDB. Empty sets are valid for
+        # aws-record items, but they will not be persisted as sets. nil values
+        # from your table, or a lack of value from your table, will be treated
+        # as an empty set for item instances. At persistence time, the marshaler
+        # will attempt to marshal any non-strings within the set to be String
+        # objects.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def string_set_attr(name, opts = {})
+          opts[:dynamodb_type] = "SS"
+          attr(name, Attributes::StringSetMarshaler, opts)
+        end
+
+        # Define a numeric set attribute for your model.
+        #
+        # Numeric sets are homogeneous sets, containing only strings. Note that
+        # empty sets cannot be persisted to DynamoDB. Empty sets are valid for
+        # aws-record items, but they will not be persisted as sets. nil values
+        # from your table, or a lack of value from your table, will be treated
+        # as an empty set for item instances. At persistence time, the marshaler
+        # will attempt to marshal any non-numerics within the set to be Numeric
+        # objects.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        def string_set_attr(name, opts = {})
+          opts[:dynamodb_type] = "NS"
+          attr(name, Attributes::NumericSetMarshaler, opts)
+        end
+
         # @return [Hash] hash of symbolized attribute names to attribute objects
         def attributes
           @attributes
