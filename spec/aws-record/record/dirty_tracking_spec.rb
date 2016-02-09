@@ -126,6 +126,7 @@ describe Aws::Record::DirtyTracking do
   end
 
   describe "#reload!" do 
+
     before(:each) do 
       klass.configure_client(client: stub_client)
     end
@@ -163,6 +164,7 @@ describe Aws::Record::DirtyTracking do
 
       instance.reload!
     end    
+
   end
 
   describe '#rollback_[attribute]!' do 
@@ -204,6 +206,7 @@ describe Aws::Record::DirtyTracking do
   end
 
   describe "#save" do 
+    
     before(:each) do 
       klass.configure_client(client: stub_client)
     end
@@ -214,6 +217,24 @@ describe Aws::Record::DirtyTracking do
 
       instance.save
     end    
+
+  end
+
+  describe "#find" do 
+
+    before(:each) do 
+      klass.configure_client(client: stub_client)
+    end
+
+    it "should mark the item as clean" do 
+      found_item = klass.new
+
+      expect(klass).to receive(:new).and_return(found_item)
+      expect(found_item).to receive(:clean!)
+
+      klass.find(mykey: 1)
+    end
+
   end
 
 end
