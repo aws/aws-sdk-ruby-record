@@ -26,6 +26,15 @@ module Aws
         @data = {}
       end
 
+      def read_attribute(name, attribute)
+        raw = @data[name]
+        attribute.type_cast(raw)
+      end
+
+      def write_attribute(name, attribute, value)
+        @data[name] = value
+      end
+        
       # Returns a hash representation of the attribute data.
       #
       # @return [Hash] Map of attribute names to raw values.
@@ -304,12 +313,11 @@ module Aws
         private
         def define_attr_methods(name, attribute)
           define_method(name) do
-            raw = @data[name]
-            attribute.type_cast(raw)
+            read_attribute(name, attribute)
           end
 
           define_method("#{name}=") do |value|
-            @data[name] = value
+            write_attribute(name, attribute, value)
           end
         end
 
