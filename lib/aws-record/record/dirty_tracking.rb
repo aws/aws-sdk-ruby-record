@@ -250,6 +250,7 @@ module Aws
 
         super
       end
+      private :write_attribute
 
 
       module DirtyTrackingClassMethods

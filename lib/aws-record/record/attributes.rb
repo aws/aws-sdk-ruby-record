@@ -26,14 +26,18 @@ module Aws
         @data = {}
       end
 
+      # @private
       def read_attribute(name, attribute)
         raw = @data[name]
         attribute.type_cast(raw)
       end
+      private :read_attribute
 
+      # @private
       def write_attribute(name, attribute, value)
         @data[name] = value
       end
+      private :write_attribute
         
       # Returns a hash representation of the attribute data.
       #
