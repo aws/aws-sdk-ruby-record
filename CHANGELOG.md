@@ -1,6 +1,10 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::DirtyTracking - `Aws::Record` items will now keep track
+  of "dirty" changes from database state. The DirtyTracking module provides a
+  set of helper methods to handle dirty attributes.
+
 1.0.0.pre.3 (2016-02-10)
 ------------------
 
