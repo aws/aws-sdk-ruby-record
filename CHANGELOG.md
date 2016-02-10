@@ -4,6 +4,9 @@ Unreleased Changes
 1.0.0.pre.3 (2016-02-10)
 ------------------
 
+* Feature - Aws::Record - Support for additional marshaled types, such as lists,
+  maps, and string/numeric sets.
+
 1.0.0.pre.2 (2016-02-04)
 ------------------
 
