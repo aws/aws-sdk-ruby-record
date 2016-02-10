@@ -61,16 +61,30 @@ describe Aws::Record::DirtyTracking do
 
     it "should mark the attribute as dirty" do 
       instance.mykey << 'i'
-      expect(instance.dirty?).to be false
+      expect(instance.mykey_dirty?).to be false
 
       instance.mykey_dirty!
-      expect(instance.dirty?).to be true 
-      expect(instance.mykey_was).to eq 'Alexi'
-      expect(instance.mykey).to eq 'Alexi'
+      expect(instance.mykey_dirty?).to be true 
 
       instance.mykey << 's'
-      expect(instance.mykey_was).to eq 'Alexi'
-      expect(instance.mykey).to eq 'Alexis'
+      expect(instance.mykey_dirty?).to be true
+    end
+
+    it "should take a snapshot of the attribute" do
+      expect(instance.mykey_was).to eq "Alex"
+      expect(instance.mykey).to eq "Alex"
+
+      instance.mykey << 'i'
+      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey).to eq "Alexi"
+
+      instance.mykey_dirty!
+      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey).to eq "Alexi"
+
+      instance.mykey << 's'
+      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey).to eq "Alexis"
     end
 
   end
@@ -140,7 +154,8 @@ describe Aws::Record::DirtyTracking do
     }
 
     it 'can reload an item using find' do 
-      expect(klass).to receive(:find).with({ mykey: reloaded_instance.mykey }).and_return(reloaded_instance)
+      expect(klass).to receive(:find).with({ mykey: reloaded_instance.mykey }).
+        and_return(reloaded_instance)
 
       instance.mykey = reloaded_instance.mykey
       instance.body = SecureRandom.uuid
@@ -153,16 +168,18 @@ describe Aws::Record::DirtyTracking do
     it 'raises an error when find returns nil' do 
       instance.mykey = SecureRandom.uuid
 
-      expect(klass).to receive(:find).with({ mykey: instance.mykey }).and_return(nil)
+      expect(klass).to receive(:find).with({ mykey: instance.mykey }).
+        and_return(nil)
 
       expect { instance.reload! }.to raise_error Aws::Record::Errors::NotFound
     end
 
     it "should mark the item as clean" do 
       instance.mykey = SecureRandom.uuid
-      expect(instance).to receive(:clean!)
+      expect(instance.dirty?).to be true
 
       instance.reload!
+      expect(instance.dirty?).to be false
     end    
 
   end
@@ -170,35 +187,45 @@ describe Aws::Record::DirtyTracking do
   describe '#rollback_[attribute]!' do 
 
     it "should restore the attribute to its last known clean value" do 
+      original_mykey = instance.mykey
+
       instance.mykey = SecureRandom.uuid
 
       instance.rollback_mykey!
-      expect(instance.mykey).to be instance.mykey_was
+      expect(instance.mykey).to be original_mykey
     end 
 
   end
 
   describe "#rollback!" do
 
-    before(:each) do 
-      instance.mykey = SecureRandom.uuid
-      instance.body = SecureRandom.uuid
-    end 
+    it "should restore the provided attributes" do
+      original_mykey = instance.mykey
 
-    it "should restore the provided attributes" do 
+      instance.mykey = SecureRandom.uuid 
+      instance.body = updated_body = SecureRandom.uuid
+
       instance.rollback!(:mykey)
-      expect(instance.mykey).to eq instance.mykey_was
+
+      expect(instance.mykey).to eq original_mykey
+      expect(instance.body).to eq updated_body
     end
 
     context "when no attributes are provided" do 
 
       it "should restore all attributes" do 
+        original_mykey = instance.mykey
+        original_body = instance.body
+
+        instance.mykey = SecureRandom.uuid 
+        instance.body = SecureRandom.uuid
+
         instance.rollback!
 
         expect(instance.dirty?).to be false
 
-        expect(instance.mykey).to eq instance.mykey_was
-        expect(instance.body).to eq instance.body_was
+        expect(instance.mykey).to eq original_mykey
+        expect(instance.body).to eq original_body
       end
 
     end
@@ -213,9 +240,10 @@ describe Aws::Record::DirtyTracking do
 
     it "should mark the item as clean" do 
       instance.mykey = SecureRandom.uuid
-      expect(instance).to receive(:clean!)
+      expect(instance.dirty?).to be true
 
       instance.save
+      expect(instance.dirty?).to be false
     end    
 
   end
@@ -227,12 +255,9 @@ describe Aws::Record::DirtyTracking do
     end
 
     it "should mark the item as clean" do 
-      found_item = klass.new
+      found_item = klass.find(mykey: 1)
 
-      expect(klass).to receive(:new).and_return(found_item)
-      expect(found_item).to receive(:clean!)
-
-      klass.find(mykey: 1)
+      expect(found_item.dirty?).to be false
     end
 
   end

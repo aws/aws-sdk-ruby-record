@@ -82,8 +82,9 @@ module Aws
       #  model.name << 'i'
       #  model.name        # => 'Alexi'
       # 
-      #  # The change was made in place. Since the String instance representing the vaue of name is the 
-      #  # same as it was originally, the change is not detected.
+      #  # The change was made in place. Since the String instance representing 
+      #  # the value of name is the same as it was originally, the change is not 
+      #  # detected.
       #  model.name_dirty? # => false
       #  model.name_was    # => 'Alexi'
       #
@@ -96,7 +97,8 @@ module Aws
       #  model.name_dirty? # => true
       #  model.name_was    # => 'Alexi'
       #
-      # @param [String, Symbol] name The name of the attribute to mark as changing.
+      # @param [String, Symbol] name The name of the attribute to mark as 
+      #  changing.
       def attribute_dirty!(name)
         return if attribute_dirty?(name)
 
@@ -110,8 +112,8 @@ module Aws
           end
       end
 
-      # Marks the changes as applied by clearing the current changes and making them accessible through
-      # +previous_changes+.
+      # Marks the changes as applied by clearing the current changes and making 
+      # them accessible through +previous_changes+.
       #
       # # @example
       #  class Model
@@ -164,20 +166,25 @@ module Aws
       #  model.name = 'Nick'
       #  model.dirty? # => true
       #
-      # @return [Boolean] +true+ if any attributes have dirty changes, +false+ otherwise.
+      # @return [Boolean] +true+ if any attributes have dirty changes, +false+ 
+      #  otherwise.
       def dirty?
         @dirty_data.size > 0
       end
 
-      # Fetches attributes for this instance of an item from Amazon DynamoDB using its primary key and
-      # the +find(*)+ class method.
+      # Fetches attributes for this instance of an item from Amazon DynamoDB 
+      # using its primary key and the +find(*)+ class method.
       #
-      # @raise [Aws::Record::Errors::NotFound] if no record exists in the database matching the primary 
-      #  key of the item instance.
+      # @raise [Aws::Record::Errors::NotFound] if no record exists in the 
+      #  database matching the primary key of the item instance.
       # 
       # @return [self] Returns the item instance.
       def reload!
-        primary_key = self.class.keys.values.inject({}) { |memo, key| memo[key] = send(key); memo }
+        primary_key = self.class.keys.values.inject({}) do |memo, key| 
+          memo[key] = send(key)
+          memo 
+        end
+
         record = self.class.find(primary_key)
 
         unless record.nil? 
@@ -238,6 +245,8 @@ module Aws
         super.tap { clean! }
       end
 
+      private 
+      
       # @private
       #
       # @override write_attribute(*)
@@ -250,7 +259,6 @@ module Aws
 
         super
       end
-      private :write_attribute
 
 
       module DirtyTrackingClassMethods
