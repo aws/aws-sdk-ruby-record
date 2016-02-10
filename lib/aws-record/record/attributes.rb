@@ -33,6 +33,20 @@ module Aws
         @data.dup
       end
 
+      private
+
+      # @private
+      def read_attribute(name, attribute)
+        raw = @data[name]
+        attribute.type_cast(raw)
+      end
+
+      # @private
+      def write_attribute(name, attribute, value)
+        @data[name] = value
+      end
+        
+
       module ClassMethods
 
         # Define an attribute for your model, providing your own attribute type.
@@ -304,12 +318,11 @@ module Aws
         private
         def define_attr_methods(name, attribute)
           define_method(name) do
-            raw = @data[name]
-            attribute.type_cast(raw)
+            read_attribute(name, attribute)
           end
 
           define_method("#{name}=") do |value|
-            @data[name] = value
+            write_attribute(name, attribute, value)
           end
         end
 

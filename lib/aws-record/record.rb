@@ -26,6 +26,7 @@ module Aws
       sub_class.send(:extend, RecordClassMethods)
       sub_class.send(:include, Attributes)
       sub_class.send(:include, ItemOperations)
+      sub_class.send(:include, DirtyTracking)
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
     end
