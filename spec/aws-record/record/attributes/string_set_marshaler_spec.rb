@@ -24,7 +24,7 @@ module Aws
           end
 
           it 'type casts an empty string as an empty set' do
-            expect(StringSetMarshaler.type_cast(nil)).to eq(Set.new)
+            expect(StringSetMarshaler.type_cast('')).to eq(Set.new)
           end
 
           it 'type casts string sets as themselves' do
@@ -37,6 +37,12 @@ module Aws
             input = Set.new([1,'2',3])
             expected = Set.new(['1','2','3'])
             expect(StringSetMarshaler.type_cast(input)).to eq(expected)
+          end
+
+          it 'raises when it does not know how to typecast to a set' do
+            expect {
+              StringSetMarshaler.type_cast("fail")
+            }.to raise_error(ArgumentError)
           end
         end
 

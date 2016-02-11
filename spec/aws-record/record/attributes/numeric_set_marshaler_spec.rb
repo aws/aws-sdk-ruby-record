@@ -24,7 +24,7 @@ module Aws
           end
 
           it 'type casts an empty string as an empty set' do
-            expect(NumericSetMarshaler.type_cast(nil)).to eq(Set.new)
+            expect(NumericSetMarshaler.type_cast('')).to eq(Set.new)
           end
 
           it 'type casts numeric sets as themselves' do
@@ -33,10 +33,16 @@ module Aws
             expect(NumericSetMarshaler.type_cast(input)).to eq(expected)
           end
 
-          it 'attempts to stringify all contents of a set' do
+          it 'attempts to cast as numeric all contents of a set' do
             input = Set.new([1,'2.0', '3'])
             expected = Set.new([1, BigDecimal.new('2.0'), BigDecimal.new('3')])
             expect(NumericSetMarshaler.type_cast(input)).to eq(expected)
+          end
+
+          it 'raises when unable to type cast as a set' do
+            expect {
+              NumericSetMarshaler.type_cast('fail')
+            }.to raise_error(ArgumentError)
           end
         end
 

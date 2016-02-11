@@ -31,6 +31,11 @@ module Aws
           it 'passes through float values' do
             expect(FloatMarshaler.type_cast(1.2)).to eq(1.2)
           end
+
+          it 'handles classes which do not directly serialize to floats' do
+            indirect = Class.new { def to_s; "5"; end }.new
+            expect(FloatMarshaler.type_cast(indirect)).to eq(5.0)
+          end
         end
 
         describe 'serialization for storage' do
@@ -40,6 +45,13 @@ module Aws
 
           it 'serializes floats with the numeric type' do
             expect(FloatMarshaler.serialize(3.0)).to eq(3.0)
+          end
+
+          it 'raises when type_cast does not do what it is expected to do' do
+            impossible = Class.new { def to_f; "wrong"; end }.new
+            expect {
+              FloatMarshaler.serialize(impossible)
+            }.to raise_error(ArgumentError)
           end
         end
 

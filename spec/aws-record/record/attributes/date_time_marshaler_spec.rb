@@ -42,6 +42,12 @@ module Aws
             input = "2009-02-13 23:31:30 UTC"
             expect(DateTimeMarshaler.type_cast(input)).to eq(expected)
           end
+
+          it 'raises when unable to parse as a DateTime' do
+            expect {
+              DateTimeMarshaler.type_cast("that time when")
+            }.to raise_error(ArgumentError)
+          end
         end
 
         describe 'serialization for storage' do

@@ -40,7 +40,7 @@ module Aws
             elsif float.is_a?(Float)
               float
             else
-              msg = "expected a Float value or nil, got #{value.class}"
+              msg = "expected a Float value or nil, got #{float.class}"
               raise ArgumentError, msg
             end
           end

@@ -40,7 +40,7 @@ module Aws
             elsif integer.is_a?(Integer)
               integer
             else
-              msg = "expected an Integer value or nil, got #{value.class}"
+              msg = "expected an Integer value or nil, got #{integer.class}"
               raise ArgumentError, msg
             end
           end

@@ -29,17 +29,9 @@ module Aws
             when DateTime
               raw_value
             when Integer
-              begin
-                DateTime.parse(Time.at(raw_value).to_s) # timestamp
-              rescue
-                nil
-              end
+              DateTime.parse(Time.at(raw_value).to_s) # timestamp
             else
-              begin
-                DateTime.parse(raw_value.to_s) # Time, Date or String
-              rescue
-                nil
-              end
+              DateTime.parse(raw_value.to_s) # Time, Date or String
             end
           end
 

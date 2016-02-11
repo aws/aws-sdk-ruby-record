@@ -57,6 +57,13 @@ module Aws
           it 'always serializes empty strings as NULL' do
             expect(StringMarshaler.serialize('')).to eq(nil)
           end
+
+          it 'raises if #type_cast failed to create a string' do
+            impossible = Class.new { def to_s; 5; end }.new
+            expect {
+              StringMarshaler.serialize(impossible)
+            }.to raise_error(ArgumentError)
+          end
         end
 
       end
