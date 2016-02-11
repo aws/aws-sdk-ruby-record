@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.4 (2016-02-11)
 ------------------
 
 * Feature - Aws::Record::DirtyTracking - `Aws::Record` items will now keep track
