@@ -14,7 +14,13 @@
 desc 'Delete the locally generated docs.' if ENV['ALL']
 task 'docs:clobber' do
   rm_rf '.yardoc'
-  rm_rf 'docs'
+  rm_rf 'doc'
+  rm_rf 'docs.zip'
+end
+
+desc 'Generates docs.zip'
+task 'docs:zip' => 'docs' do
+  sh('zip -9 -r -q docs.zip doc/')
 end
 
 desc 'Generate doc files.'
