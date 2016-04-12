@@ -15,12 +15,14 @@ module Aws
   module Record
     module Errors
 
-      class KeyMissing < RuntimeError; end
-      class NameCollision < RuntimeError; end
-      class ReservedName < RuntimeError; end
-      class NotFound < RuntimeError; end
-      class InvalidModel < RuntimeError; end
-      class TableDoesNotExist < RuntimeError; end
+      class RecordError < RuntimeError; end
+
+      class KeyMissing < RecordError; end
+      class NameCollision < RecordError; end
+      class ReservedName < RecordError; end
+      class NotFound < RecordError; end
+      class InvalidModel < RecordError; end
+      class TableDoesNotExist < RecordError; end
 
     end
   end
