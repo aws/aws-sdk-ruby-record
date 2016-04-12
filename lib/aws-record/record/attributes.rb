@@ -269,7 +269,7 @@ module Aws
 
         # Define a numeric set attribute for your model.
         #
-        # Numeric sets are homogeneous sets, containing only strings. Note that
+        # Numeric sets are homogeneous sets, containing only numbers. Note that
         # empty sets cannot be persisted to DynamoDB. Empty sets are valid for
         # aws-record items, but they will not be persisted as sets. nil values
         # from your table, or a lack of value from your table, will be treated
