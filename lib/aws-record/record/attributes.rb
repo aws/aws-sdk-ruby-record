@@ -284,7 +284,7 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        def string_set_attr(name, opts = {})
+        def numeric_set_attr(name, opts = {})
           opts[:dynamodb_type] = "NS"
           attr(name, Attributes::NumericSetMarshaler, opts)
         end
