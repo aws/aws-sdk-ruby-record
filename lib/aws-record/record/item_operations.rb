@@ -39,9 +39,12 @@ module Aws
       # invalid. Matches style of ActiveRecord save and save! methods.
       #
       def save
-        save!
+        result = save!
+        errors.clear
+        result
       rescue Errors::KeyMissing => e
         errors << e.message
+        false
       end
 
       # Is the record a valid record. True if #save was successful, false if

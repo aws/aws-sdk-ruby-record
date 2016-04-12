@@ -148,6 +148,22 @@ module Aws
           # None of this should have reached the API
           expect(api_requests).to eq([])
         end
+
+        it 'is valid after fixing invalid save state' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.save
+          expect(item.valid?).to be_falsy
+
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.save
+          expect(item.valid?).to be_truthy
+
+          # None of this should have reached the API
+          expect(api_requests).not_to be_empty
+        end
       end
 
       describe "#find" do
