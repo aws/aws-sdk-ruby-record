@@ -42,7 +42,7 @@ module Aws
         result = save!
         errors.clear
         result
-      rescue Errors::KeyMissing => e
+      rescue Errors::RecordError => e
         errors << e.message
         false
       end
