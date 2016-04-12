@@ -40,6 +40,48 @@ module Aws
         client
       end
 
+      describe "#save!" do
+        it 'can save an item to Amazon DynamoDB' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.save!
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "date" => { s: "2015-12-14" },
+              "body" => { s: "Hello!" }
+            }
+          }])
+        end
+
+        it 'raises an error when you try to save! without setting keys' do
+          klass.configure_client(client: stub_client)
+          no_keys = klass.new
+          expect { no_keys.save! }.to raise_error(
+            Errors::KeyMissing,
+            "Missing required keys: id, date"
+          )
+          no_hash = klass.new
+          no_hash.date = "2015-12-15"
+          expect { no_hash.save! }.to raise_error(
+            Errors::KeyMissing,
+            "Missing required keys: id"
+          )
+          no_range = klass.new
+          no_range.id = 5
+          expect { no_range.save! }.to raise_error(
+            Errors::KeyMissing,
+            "Missing required keys: date"
+          )
+          # None of this should have reached the API
+          expect(api_requests).to eq([])
+        end
+      end
+
       describe "#save" do
         it 'can save an item to Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
@@ -58,25 +100,51 @@ module Aws
           }])
         end
 
-        it 'raises an error when you try to save without setting keys' do
+        it 'does not raise an error when you try to save without setting keys' do
           klass.configure_client(client: stub_client)
           no_keys = klass.new
-          expect { no_keys.save }.to raise_error(
-            Errors::KeyMissing,
-            "Missing required keys: id, date"
-          )
+          expect { no_keys.save }.not_to raise_error
+
           no_hash = klass.new
           no_hash.date = "2015-12-15"
-          expect { no_hash.save }.to raise_error(
-            Errors::KeyMissing,
-            "Missing required keys: id"
-          )
+          expect { no_hash.save }.not_to raise_error
+
           no_range = klass.new
           no_range.id = 5
-          expect { no_range.save }.to raise_error(
-            Errors::KeyMissing,
-            "Missing required keys: date"
-          )
+          expect { no_range.save }.not_to raise_error
+
+          # None of this should have reached the API
+          expect(api_requests).to eq([])
+        end
+      end
+
+      describe "#valid?" do
+        it 'is valid with successful save to Amazon DynamoDB' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.save
+          expect(item.valid?).to be_truthy
+        end
+
+        it 'is invalid when you try to save without setting keys' do
+          klass.configure_client(client: stub_client)
+          no_keys = klass.new
+          no_keys.save
+          expect(no_keys.valid?).to be_falsy
+
+          no_hash = klass.new
+          no_hash.date = "2015-12-15"
+          no_hash.save
+          expect(no_hash.valid?).to be_falsy
+
+          no_range = klass.new
+          no_range.id = 5
+          no_range.save
+          expect(no_range.valid?).to be_falsy
+
           # None of this should have reached the API
           expect(api_requests).to eq([])
         end

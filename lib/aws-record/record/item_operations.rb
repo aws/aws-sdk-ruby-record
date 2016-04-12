@@ -18,6 +18,7 @@ module Aws
       # @api private
       def self.included(sub_class)
         sub_class.extend(ItemOperationsClassMethods)
+        sub_class.instance_variable_set("@errors", [])
       end
 
       # Saves this instance of an item to Amazon DynamoDB using the
@@ -27,11 +28,27 @@ module Aws
       #
       # @raise [Aws::Record::Errors::KeyMissing] if a required key attribute
       #  does not have a value within this item instance.
-      def save
+      def save!
         dynamodb_client.put_item(
           table_name: self.class.table_name,
           item: build_item_for_save
         )
+      end
+
+      # Attempts to save this record like #save!, but instead sets record as
+      # invalid. Matches style of ActiveRecord save and save! methods.
+      #
+      def save
+        save!
+      rescue Errors::KeyMissing => e
+        errors << e.message
+      end
+
+      # Is the record a valid record. True if #save was successful, false if
+      # Aws::Record::Errors::KeyMissing when using #save.
+      #
+      def valid?
+        errors.empty?
       end
 
       # Deletes the item instance that matches the key values of this item
@@ -84,6 +101,10 @@ module Aws
         end
       end
 
+      def errors
+        self.class.instance_variable_get("@errors")
+      end
+
       module ItemOperationsClassMethods
 
         # @example Usage Example
@@ -92,7 +113,7 @@ module Aws
         #     integer_attr :id,   hash_key: true
         #     string_attr  :name, range_key: true
         #   end
-        #   
+        #
         #   MyModel.find(id: 1, name: "First")
         #
         # @param [Hash] opts attribute-value pairs for the key you wish to
