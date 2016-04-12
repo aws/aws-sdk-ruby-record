@@ -60,7 +60,7 @@ module Aws
         if @table_name
           @table_name
         else
-          @table_name = self.name
+          @table_name = self.name.split("::").join("_")
         end
       end
 
