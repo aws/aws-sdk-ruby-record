@@ -5,7 +5,12 @@ Unreleased Changes
   `#save!`. `#save!` will raise any errors that occur during persistence, while
   `#save` will populate an errors array and cause `#valid?` calls on the item to
   return `false`.
-  
+
+* Issue - Aws::Record - Changed how default table names are generated. In the
+  past, the default table name could not handle class names that included
+  modules. Now, module namespaces are appended to the default table name. This
+  should not affect any existing model classes, as previously any affected
+  models would have failed to create a table in DynamoDB.
 
 1.0.0.pre.4 (2016-02-11)
 ------------------
