@@ -35,9 +35,14 @@ module Aws
         )
       end
 
-      # Attempts to save this record like #save!, but instead sets record as
-      # invalid. Matches style of ActiveRecord save and save! methods.
+      # Saves this instance of an item to Amazon DynamoDB using the
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      #  API. Uses this item instance's attributes in order to build the request
+      #  on your behalf.
       #
+      # In the case where persistence fails, will populate the +errors+ array
+      #  with any generated error messages, and will cause +#valid?+ to return
+      #  false until there is a successful save.
       def save
         result = save!
         errors.clear
@@ -47,11 +52,10 @@ module Aws
         false
       end
 
-      # Is the record a valid record. True if #save was successful, false if
-      # Aws::Record::Errors::KeyMissing when using #save.
-      #
+      # Checks if the record is a valid record. +false+ if most recent +#save+
+      # call raised errors, or if there are missing keys. +true+ otherwise.
       def valid?
-        errors.empty?
+        errors.empty? && missing_key_values.empty?
       end
 
       # Deletes the item instance that matches the key values of this item

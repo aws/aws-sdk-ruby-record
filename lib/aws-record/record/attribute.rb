@@ -21,8 +21,8 @@ module Aws
       #  safe to use as a method.
       # @param [Hash] options
       # @option options [Marshaler] :marshaler The marshaler for this attribute.
-      #   So long as you provide a marshaler which implements `#type_cast` and
-      #   `#serialize` that consume raw values as expected, you can bring your
+      #   So long as you provide a marshaler which implements +#type_cast+ and
+      #   +#serialize+ that consume raw values as expected, you can bring your
       #   own marshaler type.
       # @option options [Array] :validators An array of validator classes that
       #   will be run when an attribute is checked for validity.

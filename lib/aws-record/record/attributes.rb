@@ -54,8 +54,8 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Marshaler] marshaler The marshaler for this attribute. So long
-        #   as you provide a marshaler which implements `#type_cast` and
-        #   `#serialize` that consume raw values as expected, you can bring your
+        #   as you provide a marshaler which implements +#type_cast+ and
+        #   +#serialize+ that consume raw values as expected, you can bring your
         #   own marshaler type. Convenience methods will provide this for you.
         # @param [Hash] opts
         # @option opts [Array] :validators An array of validator classes that

@@ -1,6 +1,12 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record - Separates the `#save` method into `#save` and
+  `#save!`. `#save!` will raise any errors that occur during persistence, while
+  `#save` will populate an errors array and cause `#valid?` calls on the item to
+  return `false`.
+  
+
 1.0.0.pre.4 (2016-02-11)
 ------------------
 
