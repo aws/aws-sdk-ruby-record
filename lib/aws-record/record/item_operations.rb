@@ -123,7 +123,7 @@ module Aws
       end
 
       def errors
-        self.class.instance_variable_get("@errors").dup
+        self.class.instance_variable_get("@errors")
       end
 
       private
