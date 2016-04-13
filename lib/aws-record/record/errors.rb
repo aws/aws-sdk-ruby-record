@@ -25,6 +25,7 @@ module Aws
       class ReservedName < RuntimeError; end
       class InvalidModel < RuntimeError; end
       class TableDoesNotExist < RuntimeError; end
+      class ValidationError < RecordError; end
 
     end
   end
