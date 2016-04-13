@@ -44,6 +44,16 @@ module Aws
         end
         expect(::UnitTestModelTwo.table_name).to eq(expected)
       end
+
+      it 'should transform outer modules for default table name' do
+        expected = "OuterOne_OuterTwo_ClassTableName"
+        ::OuterOne = Module.new
+        ::OuterOne::OuterTwo = Module.new
+        ::OuterOne::OuterTwo::ClassTableName = Class.new do
+          include(Aws::Record)
+        end
+        expect(::OuterOne::OuterTwo::ClassTableName.table_name).to eq(expected)
+      end
     end
 
     describe '#provisioned_throughput' do
