@@ -21,30 +21,82 @@ module Aws
         sub_class.instance_variable_set("@errors", [])
       end
 
-      # Saves this instance of an item to Amazon DynamoDB using the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      # API. Uses this item instance's attributes in order to build the request
-      # on your behalf.
+      # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
+      #  as defined by having new or altered key attributes, will attempt a
+      #  conditional
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      #  call, which will not overwrite an existing item. If the item only has
+      #  altered non-key attributes, will perform an
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+      #  call. Uses this item instance's attributes in order to build the
+      #  request on your behalf.
       #
+      # You can use the +:force+ option to perform a simple put/overwrite
+      #  without conditional validation or update logic.
+      #
+      # @param [Hash] opts
+      # @option opts [Boolean] :force if true, will save as a put operation and
+      #  overwrite any existing item on the remote end. Otherwise, and by
+      #  default, will either perform a conditional put or an update call.
       # @raise [Aws::Record::Errors::KeyMissing] if a required key attribute
       #  does not have a value within this item instance.
-      def save!
-        dynamodb_client.put_item(
-          table_name: self.class.table_name,
-          item: build_item_for_save
-        )
+      # @raise [Aws::Record::Errors::ItemAlreadyExists] if a conditional put
+      #  fails because the item exists on the remote end.
+      def save!(opts = {})
+        force = opts[:force]
+        expect_new = expect_new_item?
+        if force
+          dynamodb_client.put_item(
+            table_name: self.class.table_name,
+            item: build_item_for_save
+          )
+        elsif expect_new
+          put_opts = {
+            table_name: self.class.table_name,
+            item: build_item_for_save
+          }.merge(prevent_overwrite_expression)
+          begin
+            dynamodb_client.put_item(put_opts)
+          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
+            raise Errors::ItemAlreadyExists.new(
+              "Conditional #put_item call failed, an item with the same key"\
+                " already exists in the table. Either load and update this"\
+                " item, or include the :force option to clobber the remote"\
+                " item."
+            )
+          end
+        else
+          dynamodb_client.update_item(
+            table_name: self.class.table_name,
+            key: key_values,
+            attribute_updates: dirty_changes_for_update
+          )
+        end
       end
 
-      # Saves this instance of an item to Amazon DynamoDB using the
+      # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
+      #  as defined by having new or altered key attributes, will attempt a
+      #  conditional
       #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      #  API. Uses this item instance's attributes in order to build the request
-      #  on your behalf.
+      #  call, which will not overwrite an existing item. If the item only has
+      #  altered non-key attributes, will perform an
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+      #  call. Uses this item instance's attributes in order to build the
+      #  request on your behalf.
+      #
+      # You can use the +:force+ option to perform a simple put/overwrite
+      #  without conditional validation or update logic.
       #
       # In the case where persistence fails, will populate the +errors+ array
       #  with any generated error messages, and will cause +#valid?+ to return
       #  false until there is a successful save.
-      def save
-        result = save!
+      #
+      # @param [Hash] opts
+      # @option opts [Boolean] :force if true, will save as a put operation and
+      #  overwrite any existing item on the remote end. Otherwise, and by
+      #  default, will either perform a conditional put or an update call.
+      def save(opts = {})
+        result = save!(opts)
         errors.clear
         result
       rescue Errors::RecordError => e
@@ -68,6 +120,10 @@ module Aws
           key: key_values
         )
         true
+      end
+
+      def errors
+        self.class.instance_variable_get("@errors").dup
       end
 
       private
@@ -108,8 +164,42 @@ module Aws
         end
       end
 
-      def errors
-        self.class.instance_variable_get("@errors")
+      def expect_new_item?
+        # Algorithm: Are keys dirty? If so, we treat as new.
+        self.class.keys.any? do |_, attr_name|
+          attribute_dirty?(attr_name)
+        end
+      end
+
+      def prevent_overwrite_expression
+        conditions = []
+        expression_attribute_names = {}
+        # Hash Key
+        conditions << "attribute_not_exists(#H)"
+        expression_attribute_names["#H"] = self.class.hash_key.database_name
+        # Range Key
+        if self.class.range_key
+          conditions << "attribute_not_exists(#R)"
+          expression_attribute_names["#R"] = self.class.range_key.database_name
+        end
+        {
+          condition_expression: conditions.join(" and "),
+          expression_attribute_names: expression_attribute_names
+        }
+      end
+
+      def dirty_changes_for_update
+        attributes = self.class.attributes
+        ret = dirty.inject({}) do |acc, attr_name|
+          key = attributes[attr_name].database_name
+          value = {
+            value: attributes[attr_name].serialize(@data[attr_name]),
+            action: "PUT"
+          }
+          acc[key] = value
+          acc
+        end
+        ret
       end
 
       module ItemOperationsClassMethods
