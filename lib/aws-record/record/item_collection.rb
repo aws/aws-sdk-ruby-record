@@ -23,6 +23,13 @@ module Aws
         end
       end
 
+      def empty?
+        unless @result
+          @result = @client.send(@search_method, @search_params)
+        end
+        @result.empty?
+      end
+
       private
       def _build_items_from_response(items, model)
         ret = []

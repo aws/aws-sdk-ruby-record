@@ -75,6 +75,49 @@ module Aws
         end
       end
 
+      describe "#valid?" do
+        let(:resp_full) do
+          {
+            items: [
+              { "id" => 1 },
+              { "id" => 2 },
+              { "id" => 3 }
+            ],
+            count: 3
+          }
+        end
+
+        let(:resp_empty) do
+          {
+            items: [],
+            count: 0
+          }
+        end
+
+
+        it "is not empty" do
+          stub_client.stub_responses(:scan, resp_full)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          expect(c.empty?).to be_falsy
+        end
+
+        it "is empty" do
+          stub_client.stub_responses(:scan, resp_empty)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          expect(c.empty?).to be_falsy
+        end
+      end
+
     end
   end
 end
