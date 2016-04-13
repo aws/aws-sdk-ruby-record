@@ -65,6 +65,7 @@ module Aws
       #   +#batch_item_write+. See the documentation above in the AWS SDK for
       #   Ruby V2.
       # @opts retry_count the number of retries to attempt on failed write
+      # @return true if successful
       # @raise RuntimeError if unsuccessful in submitting all items
       def save!(opts = {})
         raise "can't submit if writer in #{@state} state." unless pending?
@@ -100,6 +101,15 @@ module Aws
             unprocesssed_items: err.unprocessed_items
           }
         end
+        retry_and_return_or_raise(retry_items, opts)
+      end
+
+      def pending?
+        @state == PENDING_STATE
+      end
+
+      def unprocesssed_items
+        @errors.map(&:unprocessed_items)
       end
 
       def pending?
@@ -201,6 +211,37 @@ module Aws
         @items.each do |item|
           raise ValidationError unless item.valid?
         end
+      end
+
+      def retry_and_return_or_raise(item_requests_array, opts)
+        responses = []
+        item_requests_array.each_slice(ITEM_REQUEST_LIMIT) do |items|
+          responses << retry_chunk(items, opts)
+        end
+        if failures?(responses)
+          @errors += responses.reject(&:successful?)
+          @state = ERROR_SEND_STATE
+          raise 'Failed to submit all items'
+        end
+        @state = SUCCESSFUL_SEND_STATE
+        true
+      end
+
+      def failures?(responses)
+        responses.any? do |response|
+          !response.successful? || response.unprocessed_items.empty?
+        end
+      end
+
+      def retry_chunk(item_requests_array, opts)
+        response = nil
+        (0..4).each do |i|
+          sleep i**2
+          response = batch_write(item_requests_array, opts)
+          break if response.successful? && response.unprocessed_items.empty?
+          response.unprocessed_items = item_requests_array
+        end
+        response
       end
 
     end
