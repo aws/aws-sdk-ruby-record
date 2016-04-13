@@ -218,6 +218,21 @@ module Aws
         end
       end
 
+      describe "#delete" do
+        before do
+          klass.configure_client(client: stub_client)
+        end
+
+        it 'does not raise an error when deleting is unsuccessful' do
+          item      = klass.new
+          item.id   = 3
+          item.date = "2011-04-09"
+
+          allow(item).to receive(:delete!).and_raise(Errors::RecordError)
+
+          expect(item.delete).to be(false)
+        end
+      end
     end
   end
 end

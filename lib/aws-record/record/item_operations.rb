@@ -70,6 +70,13 @@ module Aws
         true
       end
 
+      def delete
+        delete!
+      rescue Errors::RecordError => e
+        errors << e.message
+        false
+      end
+
       private
       def build_item_for_save
         validate_key_values
