@@ -75,7 +75,7 @@ module Aws
         end
       end
 
-      describe "#valid?" do
+      describe "#empty?" do
         let(:resp_full) do
           {
             items: [
