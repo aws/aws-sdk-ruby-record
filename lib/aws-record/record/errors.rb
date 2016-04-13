@@ -23,6 +23,7 @@ module Aws
       class NotFound < RecordError; end
       class InvalidModel < RecordError; end
       class TableDoesNotExist < RecordError; end
+      class ValidationError < RecordError; end
 
     end
   end
