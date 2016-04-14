@@ -13,8 +13,8 @@ module Aws
       def each(&block)
         return enum_for(:each) unless block_given?
         items.each_page do |page|
-          items = _build_items_from_response(page.items, @model)
-          items.each do |item|
+          items_array = _build_items_from_response(page.items, @model)
+          items_array.each do |item|
             yield item
           end
         end
