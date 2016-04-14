@@ -12,15 +12,16 @@ module Aws
 
       def each(&block)
         return enum_for(:each) unless block_given?
-        unless @result
-          @result = @client.send(@search_method, @search_params)
-        end
-        @result.each_page do |page|
-          items = _build_items_from_response(page.items, @model)
-          items.each do |item|
+        items.each_page do |page|
+          items_array = _build_items_from_response(page.items, @model)
+          items_array.each do |item|
             yield item
           end
         end
+      end
+
+      def empty?
+        items.empty?
       end
 
       private
@@ -35,6 +36,10 @@ module Aws
           ret << record
         end
         ret
+      end
+
+      def items
+        @_items ||= @client.send(@search_method, @search_params)
       end
 
     end
