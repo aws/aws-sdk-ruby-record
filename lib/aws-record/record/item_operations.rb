@@ -138,6 +138,7 @@ module Aws
         end
       end
 
+      private
       def key_values
         validate_key_values
         attributes = self.class.attributes

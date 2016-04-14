@@ -11,22 +11,29 @@
 # or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
+require 'spec_helper'
+
 module Aws
   module Record
-    module Errors
+    describe "BatchOperations" do
 
-      class RecordError < RuntimeError; end
+      let(:klass) do
+        Class.new do
+          include(Aws::Record)
+          set_table_name("TestTable")
+          integer_attr(:id, hash_key: true)
+        end
+      end
 
-      class KeyMissing < RecordError; end
-      class NotFound < RecordError; end
-      class ItemAlreadyExists < RecordError; end
+      let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
 
-      class NameCollision < RuntimeError; end
-      class ReservedName < RuntimeError; end
-      class InvalidModel < RuntimeError; end
-      class TableDoesNotExist < RuntimeError; end
-      class ValidationError < RecordError; end
-      class SubmissionError < RecordError; end
+      describe ".batch_writer" do
+        it 'returns a batch_writer object with no items passed in' do
+          klass.configure_client(client: stub_client)
+          batch_writer = klass.batch_writer
+          expect(batch_writer).to be_a(BatchWriter)
+        end
+      end
 
     end
   end
