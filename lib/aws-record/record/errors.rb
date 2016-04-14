@@ -26,6 +26,7 @@ module Aws
       class InvalidModel < RecordError; end
       class TableDoesNotExist < RecordError; end
       class ValidationError < RecordError; end
+      class SubmissionError < RecordError; end
 
 
     end

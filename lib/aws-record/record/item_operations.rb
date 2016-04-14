@@ -126,7 +126,6 @@ module Aws
         self.class.instance_variable_get("@errors")
       end
 
-      private
       def build_item_for_save
         validate_key_values
         attributes = self.class.attributes
