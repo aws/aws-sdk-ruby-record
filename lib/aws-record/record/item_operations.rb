@@ -70,7 +70,6 @@ module Aws
         true
       end
 
-      private
       def build_item_for_save
         validate_key_values
         attributes = self.class.attributes
@@ -82,6 +81,7 @@ module Aws
         end
       end
 
+      private
       def key_values
         validate_key_values
         attributes = self.class.attributes

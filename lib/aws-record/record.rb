@@ -29,6 +29,7 @@ module Aws
       sub_class.send(:include, DirtyTracking)
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
+      sub_class.send(:include, BatchOperations)
     end
 
     private
@@ -48,12 +49,12 @@ module Aws
       #   class MyTable
       #     include Aws::Record
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
@@ -72,12 +73,12 @@ module Aws
       #     include Aws::Record
       #     set_table_name "prod_MyTable"
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def set_table_name(name)
