@@ -19,6 +19,9 @@ module Aws
   module Record
     autoload :Attribute,        'aws-record/record/attribute'
     autoload :Attributes,       'aws-record/record/attributes'
+    autoload :Batch,            'aws-record/record/batch'
+    autoload :BatchOperations,  'aws-record/record/batch_operations'
+    autoload :BatchWriter,      'aws-record/record/batch_writer'
     autoload :DirtyTracking,    'aws-record/record/dirty_tracking'
     autoload :Errors,           'aws-record/record/errors'
     autoload :ItemCollection,   'aws-record/record/item_collection'

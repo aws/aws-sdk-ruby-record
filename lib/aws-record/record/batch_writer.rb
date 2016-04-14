@@ -1,3 +1,16 @@
+# Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may not
+# use this file except in compliance with the License. A copy of the License is
+# located at
+#
+#     http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+# or implied. See the License for the specific language governing permissions
+# and limitations under the License.
+
 module Aws
   module Record
     class BatchWriter < Batch
@@ -14,8 +27,8 @@ module Aws
       # Read the state of the BatchWriter
       attr_reader :state
 
-      def intialize
-        super
+      def initialize(model, client, items = [])
+        super(model, client, items)
         @state = PENDING_STATE
         @errors = []
       end
@@ -52,48 +65,98 @@ module Aws
       #   +#batch_item_write+. See the documentation above in the AWS SDK for
       #   Ruby V2.
       # @opts retry_count the number of retries to attempt on failed write
-      # @return true if successful
       # @raise RuntimeError if unsuccessful in submitting all items
       def save!(opts = {})
         raise "can't submit if writer in #{@state} state." unless pending?
         validate_items
-        retry_items = []
+        retry_items = send_chunks(opts)
+        responses = retry_failed_requests(retry_items, opts)
+        analyze_result(responses)
+      rescue RuntimeError => e
+        capture_validation_error(e)
+        raise e
+      end
 
-        @items.each_slice(ITEM_REQUEST_LIMIT) do |items|
-          item_requests_array = items.map { |item| request_item(item) }
-          @retry_items += batch_write_items(item_requests_array, opts)
+      # Perform the save! function but capture the error that is raised on
+      # unsuccessful save.
+      def save(opts = {})
+        save!(opts)
+        true
+      rescue RuntimeError
+        false
+      end
+
+      def error?
+        @state == ERROR_SEND_STATE
+      end
+
+      # Get a hash of the responses that didn't work along with their
+      # unprocessed items. Mimics ActiveRecord design.
+      def errors
+        @errors.map do |err|
+          {
+            error: err.error,
+            data: err.data,
+            unprocesssed_items: err.unprocessed_items
+          }
         end
-        retry_and_return_or_raise(retry_items, opts)
       end
 
       def pending?
         @state == PENDING_STATE
       end
 
-      def errors
-        @errors
-      end
-
-      def unprocesssed_items
+      def unprocessed_items
         @errors.map(&:unprocessed_items)
       end
 
+      def valid?
+        @state == SUCCESSFUL_SEND_STATE
+      end
+
       private
-      def batch_write_items(item_requests_array, opts)
-        response = batch_write(item_requests_array, opts)
-        response.successful? ? response.unprocessed_items : item_requests_array
+      def alert_errors(responses)
+        @errors += responses.reject(&:successful?)
+        @state = ERROR_SEND_STATE
+        raise Errors::SubmissionError
+      end
+
+      def analyze_result(responses)
+        alert_errors(responses) if failures?(responses)
+        @state = SUCCESSFUL_SEND_STATE
       end
 
       def batch_write(item_requests_array, opts)
-        dynamodb_client.batch_write_item(
+        @client.batch_write_item(
           formatted_request(item_requests_array, opts)
         )
+      end
+
+      def batch_write_items(item_requests_array, opts)
+        response = batch_write(item_requests_array, opts)
+        if response.successful?
+          response.unprocessed_items[@model.table_name] || []
+        else
+          item_requests_array
+        end
+      end
+
+      def capture_validation_error(e)
+        @state = ERROR_SEND_STATE
+        error = Struct.new(:error, :data, :unprocessed_items)
+        @errors << error.new(e.class, e, @items)
+      end
+
+      def failures?(responses)
+        responses.any? do |response|
+          !response.successful? || response.unprocessed_items.empty?
+        end
       end
 
       def formatted_request(item_requests_array, opts)
         {
           request_items: {
-            @model.class.table_name => item_requests_array
+            @model.table_name => item_requests_array
           }
         }.merge(opts)
       end
@@ -101,35 +164,17 @@ module Aws
       def request_item(item)
         {
           put_request: {
-            item: item.to_h
+            item: item.build_item_for_save
           }
         }
       end
 
-      def validate_items
-        @items.each do |item|
-          raise ValidationError unless item.valid?
-        end
-      end
-
-      def retry_and_return_or_raise(item_requests_array, opts)
+      def retry_failed_requests(item_requests_array, opts)
         responses = []
         item_requests_array.each_slice(ITEM_REQUEST_LIMIT) do |items|
           responses << retry_chunk(items, opts)
         end
-        if failures?(responses)
-          @errors += responses.reject(&:successful?)
-          @state = ERROR_SEND_STATE
-          raise 'Failed to submit all items'
-        end
-        @state = SUCCESSFUL_SEND_STATE
-        true
-      end
-
-      def failures?(responses)
-        responses.any? do |response|
-          !response.successful? || response.unprocessed_items.empty?
-        end
+        responses
       end
 
       def retry_chunk(item_requests_array, opts)
@@ -141,6 +186,21 @@ module Aws
           response.unprocessed_items = item_requests_array
         end
         response
+      end
+
+      def send_chunks(opts)
+        retry_items = []
+        @items.each_slice(ITEM_REQUEST_LIMIT) do |items|
+          item_requests_array = items.map { |item| request_item(item) }
+          retry_items += batch_write_items(item_requests_array, opts)
+        end
+        retry_items
+      end
+
+      def validate_items
+        @items.each do |item|
+          raise ValidationError unless item.valid?
+        end
       end
 
     end
