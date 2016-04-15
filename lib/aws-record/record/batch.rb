@@ -34,7 +34,7 @@ module Aws
       end
 
       def add(item)
-        @items << check_item_class(item) unless @items.include?(item)
+        @items.include?(item) ? @items : @items << check_item_class(item)
       end
 
       def size

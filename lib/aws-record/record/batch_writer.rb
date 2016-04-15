@@ -24,13 +24,15 @@ module Aws
       # DynamoDb item request limit
       ITEM_REQUEST_LIMIT = 25
 
-      # Read the state of the BatchWriter
-      attr_reader :state
-
       def initialize(model, client, items = [])
         super(model, client, items)
         @state = PENDING_STATE
         @errors = []
+        @error_struct = Struct.new(:error, :data, :unprocessed_items) do
+          def successful?
+            false
+          end
+        end
       end
 
       # This method calls
@@ -69,10 +71,13 @@ module Aws
       def save!(opts = {})
         raise "can't submit if writer in #{@state} state." unless pending?
         validate_items
+        # the -1 is to make it equal the number of retries requested
+        @retry_times = (opts.delete(:retry_count) { |_| 4 } - 1)
         retry_items = send_chunks(opts)
         responses = retry_failed_requests(retry_items, opts)
         analyze_result(responses)
       rescue RuntimeError => e
+        puts e
         capture_validation_error(e)
         raise e
       end
@@ -107,6 +112,7 @@ module Aws
       end
 
       def unprocessed_items
+        # Should be more than one error if failed_items.size > 25
         @errors.map(&:unprocessed_items)
       end
 
@@ -130,6 +136,9 @@ module Aws
         @client.batch_write_item(
           formatted_request(item_requests_array, opts)
         )
+      # Retry in instance where client raise_response_error is true
+      rescue Aws::DynamoDB::Errors::ProvisionedThroughputExceededException => e
+        @error_struct.new(e.class, e, item_requests_array)
       end
 
       def batch_write_items(item_requests_array, opts)
@@ -143,8 +152,11 @@ module Aws
 
       def capture_validation_error(e)
         @state = ERROR_SEND_STATE
-        error = Struct.new(:error, :data, :unprocessed_items)
-        @errors << error.new(e.class, e, @items)
+        @errors << @error_struct.new(e.class, e, @items)
+
+        puts @errors
+
+        @errors
       end
 
       def failures?(responses)
@@ -171,6 +183,16 @@ module Aws
 
       def retry_failed_requests(item_requests_array, opts)
         responses = []
+        (0..@retry_times).each do |i|
+          sleep(i * 1.5)
+          responses = retry_by_chunks(item_requests_array, opts)
+          break unless failures?(responses)
+        end
+        responses
+      end
+
+      def retry_by_chunks(item_requests_array, opts)
+        responses = []
         item_requests_array.each_slice(ITEM_REQUEST_LIMIT) do |items|
           responses << retry_chunk(items, opts)
         end
@@ -178,13 +200,8 @@ module Aws
       end
 
       def retry_chunk(item_requests_array, opts)
-        response = nil
-        (0..4).each do |i|
-          sleep i**2
-          response = batch_write(item_requests_array, opts)
-          break if response.successful? && response.unprocessed_items.empty?
-          response.unprocessed_items = item_requests_array
-        end
+        response = batch_write(item_requests_array, opts)
+        response.unprocessed_items ||= item_requests_array unless response.successful?
         response
       end
 
@@ -199,7 +216,7 @@ module Aws
 
       def validate_items
         @items.each do |item|
-          raise ValidationError unless item.valid?
+          raise Errors::ValidationError unless item.valid?
         end
       end
 
