@@ -76,10 +76,6 @@ module Aws
         retry_items = send_chunks(opts)
         responses = retry_failed_requests(retry_items, opts)
         analyze_result(responses)
-      rescue RuntimeError => e
-        puts e
-        capture_validation_error(e)
-        raise e
       end
 
       # Perform the save! function but capture the error that is raised on
@@ -112,6 +108,8 @@ module Aws
       end
 
       def unprocessed_items
+        # Will only have one error if error is RecordError
+        return [] if @errors.empty? || @errors.first.data.is_a?(Errors::RecordError)
         # Should be more than one error if failed_items.size > 25
         @errors.map(&:unprocessed_items)
       end
@@ -153,10 +151,6 @@ module Aws
       def capture_validation_error(e)
         @state = ERROR_SEND_STATE
         @errors << @error_struct.new(e.class, e, @items)
-
-        puts @errors
-
-        @errors
       end
 
       def failures?(responses)
@@ -218,6 +212,9 @@ module Aws
         @items.each do |item|
           raise Errors::ValidationError unless item.valid?
         end
+      rescue Errors::ValidationError => e
+        capture_validation_error(e)
+        raise e
       end
 
     end

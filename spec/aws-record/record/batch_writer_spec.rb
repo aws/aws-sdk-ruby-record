@@ -37,18 +37,13 @@ module Aws
       end
 
       let(:batch_writer_server_err) do
-        requests = api_requests
-        err_client = Aws::DynamoDB::Client.new(stub_responses: true)
-        err_client.stub_responses(
-          :batch_write_item,
-          error
-        )
-        err_client.handle do |context|
-          requests << context.params
-          @handler.call(context)
-        end
         klass.configure_client(client: err_client)
         klass.batch_writer(valid_items)
+      end
+
+      let(:big_list_batch_writer) do
+        klass.configure_client(client: err_client)
+        klass.batch_writer(big_list_items)
       end
 
       let(:error) { 'ProvisionedThroughputExceededException' }
@@ -58,6 +53,20 @@ module Aws
       let(:stub_client) do
         requests = api_requests
         client = Aws::DynamoDB::Client.new(stub_responses: true)
+        client.handle do |context|
+          requests << context.params
+          @handler.call(context)
+        end
+        client
+      end
+
+      let(:err_client) do
+        requests = api_requests
+        client = Aws::DynamoDB::Client.new(stub_responses: true)
+        client.stub_responses(
+          :batch_write_item,
+          error
+        )
         client.handle do |context|
           requests << context.params
           @handler.call(context)
@@ -75,6 +84,16 @@ module Aws
         [k1, k2, k3]
       end
 
+      let(:invalid_items) { [klass.new, klass.new, klass.new] }
+
+      let(:big_list_items) do
+        big_list_items = (1..100).map do |i|
+          item = klass.new
+          item.id = i
+          item
+        end
+      end
+
       let(:expected_api_requests) do
         [
           {
@@ -88,8 +107,6 @@ module Aws
           }
         ]
       end
-
-      let(:invalid_items) { [klass.new, klass.new, klass.new] }
 
       describe '#pending' do
         it 'returns true before save is called' do
@@ -120,6 +137,13 @@ module Aws
         it 'is populated on provisioned throughput error' do
           batch_writer_server_err.save(retry_count: 1)
           expect(batch_writer_server_err.unprocessed_items).not_to be_empty
+        end
+
+        it 'returns several unprocessed_items when batch size > 25' do
+          big_list_batch_writer.save(retry_count: 1)
+          expect(big_list_batch_writer.unprocessed_items.size).to eq 4
+          expect(big_list_batch_writer.unprocessed_items.flatten.size).to eq 100
+          expect(api_requests.size).to eq 8
         end
       end
 
@@ -178,6 +202,12 @@ module Aws
         it 'is populated on provisioned throughput error' do
           batch_writer_server_err.save(retry_count: 1)
           expect(batch_writer_server_err.errors).not_to be_empty
+        end
+
+        it 'returns several errors when batch size > 25' do
+          big_list_batch_writer.save(retry_count: 1)
+          expect(big_list_batch_writer.errors.size).to eq 4
+          expect(api_requests.size).to eq 8
         end
       end
 
