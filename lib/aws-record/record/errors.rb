@@ -28,7 +28,6 @@ module Aws
       class ValidationError < RecordError; end
       class SubmissionError < RecordError; end
 
-
     end
   end
 end

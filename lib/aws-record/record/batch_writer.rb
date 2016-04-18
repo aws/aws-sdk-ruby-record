@@ -217,14 +217,6 @@ module Aws
         raise e
       end
 
-      def retry_and_return_or_raise(item_requests_array, opts)
-        responses = []
-        item_requests_array.each_slice(ITEM_REQUEST_LIMIT) do |items|
-          responses << retry_chunk(items, opts)
-        end
-        responses
-      end
-
     end
   end
 end
