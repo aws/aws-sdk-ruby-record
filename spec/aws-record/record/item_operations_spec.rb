@@ -41,7 +41,7 @@ module Aws
       end
 
       describe "#save!" do
-        it 'can save an item to Amazon DynamoDB' do
+        it 'can save an item that does not yet exist to Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
@@ -54,6 +54,12 @@ module Aws
               "id" => { n: "1" },
               "date" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "date"
             }
           }])
         end
@@ -83,7 +89,7 @@ module Aws
       end
 
       describe "#save" do
-        it 'can save an item to Amazon DynamoDB' do
+        it 'can save an item that does not yet exist to Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
@@ -96,6 +102,80 @@ module Aws
               "id" => { n: "1" },
               "date" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "date"
+            }
+          }])
+        end
+
+        it 'will call #put_item without conditions if :force is included' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.save(force: true)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "date" => { s: "2015-12-14" },
+              "body" => { s: "Hello!" }
+            }
+          }])
+        end
+
+        it 'will call #update_item for changes to existing items' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.clean! # I'm claiming that it is this way in the DB now.
+          item.body = 'Goodbye!'
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "date" => { s: "2015-12-14" }
+            },
+            attribute_updates: {
+              "body" => {
+                value: { s: "Goodbye!" },
+                action: "PUT"
+              }
+            }
+          }])
+        end
+
+        it 'populates the error array with an error message if check fails' do
+          stub_client.stub_responses(:put_item,
+            'ConditionalCheckFailedException'
+          )
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          expect(item.save).to be_falsy
+          expect(item.errors.size).to eq(1)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "date" => { s: "2015-12-14" },
+              "body" => { s: "Hello!" }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "date"
             }
           }])
         end

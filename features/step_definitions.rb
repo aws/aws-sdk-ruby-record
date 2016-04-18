@@ -94,7 +94,7 @@ When(/^we create a new instance of the model with attribute value pairs:$/) do |
 end
 
 When(/^we save the model instance$/) do
-  @instance.save
+  @save_output = @instance.save
 end
 
 Then(/^the DynamoDB table should have an object with key values:$/) do |string|
@@ -212,12 +212,8 @@ Then(/^we should receive an aws\-record collection with members:$/) do |string|
   expect(expected.size).to eq(@collection.to_a.size)
   # Results do not have guaranteed order, check each expected value individually
   @collection.each do |item|
-    h = {
-      id: item.id,
-      count: item.count,
-      content: item.body # Because of database special name.
-    }
-    expect(expected.any? { |expect| h == expect }).to eq(true)
+    h = item.to_h
+    expect(expected.any? { |e| h == e }).to eq(true)
   end
 end
 
@@ -261,4 +257,16 @@ Then(/^the table should have a global secondary index named "([^"]*)"$/) do |exp
   gsis = resp.table.global_secondary_indexes
   exists = gsis && gsis.any? { |index| index.index_name == expected }
   expect(exists).to eq(true)
+end
+
+Then(/^the return value of save should be false$/) do
+  expect(@save_output).to eq(false)
+end
+
+When(/^we set the item attribute "([^"]*)" to be "([^"]*)"$/) do |attr, value|
+  @instance.send(:"#{attr}=", value)
+end
+
+When(/^we take the first member of the result collection$/) do
+  @instance = @collection.first
 end

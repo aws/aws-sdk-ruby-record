@@ -93,12 +93,12 @@ Feature: Amazon DynamoDB Querying and Scanning
         {
           "id": "1",
           "count": 10,
-          "content": "Second item."
+          "body": "Second item."
         },
         {
           "id": "1",
           "count": 15,
-          "content": "Third item."
+          "body": "Third item."
         }
       ]
       """
@@ -111,22 +111,22 @@ Feature: Amazon DynamoDB Querying and Scanning
         {
           "id": "1",
           "count": 5,
-          "content": "First item."
+          "body": "First item."
         },
         {
           "id": "1",
           "count": 10,
-          "content": "Second item."
+          "body": "Second item."
         },
         {
           "id": "1",
           "count": 15,
-          "content": "Third item."
+          "body": "Third item."
         },
         {
           "id": "2",
           "count": 10,
-          "content": "Fourth item."
+          "body": "Fourth item."
         }
       ]
       """
