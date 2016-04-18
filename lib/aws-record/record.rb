@@ -13,6 +13,17 @@
 
 module Aws
   module Record
+    # @!parse extend RecordClassMethods
+    # @!parse include Attributes
+    # @!parse extend Attributes::ClassMethods
+    # @!parse include ItemOperations
+    # @!parse extend ItemOperations::ItemOperationsClassMethods
+    # @!parse include Query
+    # @!parse extend Query::QueryClassMethods
+    # @!parse include SecondaryIndexes
+    # @!parse extend SecondaryIndexes::SecondaryIndexesClassMethods
+    # @!parse include DirtyTracking
+    # @!parse extend DirtyTracking::DirtyTrackingClassMethods
 
     # Usage of {Aws::Record} requires only that you include this module. This
     # method will then pull in the other default modules.
