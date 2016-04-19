@@ -33,6 +33,12 @@ module Aws
             expect(StringSetMarshaler.type_cast(input)).to eq(expected)
           end
 
+          it 'type casts arrays to sets for you' do
+            input = ["1", "2", "3", "2"]
+            expected = Set.new(["1", "2", "3"])
+            expect(StringSetMarshaler.type_cast(input)).to eq(expected)
+          end
+
           it 'attempts to stringify all contents of a set' do
             input = Set.new([1,'2',3])
             expected = Set.new(['1','2','3'])

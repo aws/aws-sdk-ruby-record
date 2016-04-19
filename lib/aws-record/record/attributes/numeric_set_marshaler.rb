@@ -29,9 +29,13 @@ module Aws
             when Set
               _as_numeric(raw_value)
             else
-              msg = "Don't know how to make #{raw_value} of type"\
-                " #{raw_value.class} into a Numeric Set!"
-              raise ArgumentError, msg
+              if raw_value.respond_to?(:to_set)
+                _as_numeric(raw_value.to_set)
+              else
+                msg = "Don't know how to make #{raw_value} of type"\
+                  " #{raw_value.class} into a Numeric Set!"
+                raise ArgumentError, msg
+              end
             end
           end
 

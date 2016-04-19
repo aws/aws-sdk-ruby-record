@@ -33,6 +33,12 @@ module Aws
             expect(NumericSetMarshaler.type_cast(input)).to eq(expected)
           end
 
+          it 'type casts a list to a set on your behalf' do
+            input = [1, 2.0, 3]
+            expected = Set.new([1, 2.0, 3])
+            expect(NumericSetMarshaler.type_cast(input)).to eq(expected)
+          end
+
           it 'attempts to cast as numeric all contents of a set' do
             input = Set.new([1,'2.0', '3'])
             expected = Set.new([1, BigDecimal.new('2.0'), BigDecimal.new('3')])
