@@ -1,6 +1,10 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::Attributes - Improves default marshaling behavior for
+  set types. Now, if your object responds to `:to_set`, such as an Array, it
+  will automatically be marshaled to a set type when persisted.
+
 1.0.0.pre.5 (2016-04-19)
 ------------------
 
