@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.6 (2016-04-19)
 ------------------
 
 * Feature - Aws::Record::Attributes - Improves default marshaling behavior for
