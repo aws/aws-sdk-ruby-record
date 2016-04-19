@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.5 (2016-04-19)
 ------------------
 
 * Upgrading - Aws::Record - The conditional put/update logic added to `#save`
