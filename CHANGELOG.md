@@ -1,6 +1,45 @@
 Unreleased Changes
 ------------------
 
+* Upgrading - Aws::Record - The conditional put/update logic added to `#save`
+  and `#save!` is not backwards compatible in some cases. For example, the
+  following code would work in previous versions, but not in this version:
+  
+  ```ruby
+  item = Model.new # Assume :id is the hash key, there is no range key.
+  item.id = 1
+  item.content = "First write."
+  item.save
+  
+  smash = Model.new
+  smash.id = 1
+  smash.content = "Second write."
+  smash.save # false, and populates the errors array.
+  smash.save(force: true) # This will skip the conditional check and work.
+  
+  updatable = Model.find(id: 1)
+  updatable.content = "Update write."
+  updatable.save # This works and uses an update client call.
+  ```
+  
+  If you want to maintain previous behavior of unconditional puts, add the
+  `force: true` option to your `#save` calls. However, this risks overwriting
+  unmodeled attributes, or attributes excluded from your projection. But, the
+  option is available for you to use.
+  
+* Upgrading - Aws::Record - The split of the `#save` method into `#save` and
+  `#save!` breaks when your code is expecting `#save` to raise exceptions.
+  `#save` will return false on a failed write and populate an `errors` array.
+  If you wish to raise exceptions on failed save attempts, use the `#save!`
+  method.
+
+* Feature - Aws::Record - Adds logic to determine if `#save` and `#save!` calls
+  should use `Aws::DynamoDB::Client#put_item` or
+  `Aws::DynamoDB::Client#update_item`, depending on which item attributes are
+  marked as dirty. `#put_item` calls are also made conditional on the key not
+  existing, so accidental overwrites can be prevented. Old behavior of
+  unconditional `#put_item` calls can be done using the `force: true` parameter.
+
 * Feature - Aws::Record - Separates the `#save` method into `#save` and
   `#save!`. `#save!` will raise any errors that occur during persistence, while
   `#save` will populate an errors array and cause `#valid?` calls on the item to
