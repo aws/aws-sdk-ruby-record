@@ -244,6 +244,23 @@ module Aws
           # None of this should have reached the API
           expect(api_requests).not_to be_empty
         end
+
+        it 'handles validity at the item level' do
+          klass.configure_client(client: stub_client)
+          # An invalid item.
+          a = klass.new
+          a.save
+          expect(a.valid?).to be_falsy
+
+          # A valid item.
+          b = klass.new
+          b.id = 1
+          b.date = '2016-04-20'
+          b.body = 'This one works.'
+          b.save
+          expect(b.valid?).to be_truthy
+          expect(a.valid?).to be_falsy
+        end
       end
 
       describe "#find" do

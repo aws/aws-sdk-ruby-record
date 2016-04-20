@@ -18,7 +18,6 @@ module Aws
       # @api private
       def self.included(sub_class)
         sub_class.extend(ItemOperationsClassMethods)
-        sub_class.instance_variable_set("@errors", [])
       end
 
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
@@ -104,6 +103,8 @@ module Aws
         false
       end
 
+      # @deprecated Will be removing this, and adding guides to using other
+      #  validation libraries.
       # Checks if the record is a valid record. +false+ if most recent +#save+
       # call raised errors, or if there are missing keys. +true+ otherwise.
       def valid?
@@ -122,8 +123,10 @@ module Aws
         true
       end
 
+      # @deprecated Will be removing this, and adding guides to using other
+      #  validation libraries.
       def errors
-        self.class.instance_variable_get("@errors")
+        @errors
       end
 
       private

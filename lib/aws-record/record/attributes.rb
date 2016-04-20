@@ -24,6 +24,7 @@ module Aws
 
       def initialize
         @data = {}
+        @errors = []
       end
 
       # Returns a hash representation of the attribute data.
