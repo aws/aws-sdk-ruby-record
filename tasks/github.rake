@@ -26,14 +26,14 @@ task 'github:release' do
 
   gh = Octokit::Client.new(access_token: ENV['AWS_SDK_FOR_RUBY_GH_TOKEN'])
 
-  repo = 'aws/aws-record'
+  repo = 'awslabs/aws-record'
   tag_ref_sha = `git show-ref v#{$VERSION}`.split(' ').first
   tag = gh.tag(repo, tag_ref_sha)
 
   release = gh.create_release(repo, "v#{$VERSION}", {
     name: 'Release v' + $VERSION + ' - ' + tag.tagger.date.strftime('%Y-%m-%d'),
     body: tag.message.lines.to_a[2..-1].join,
-    prerelease: $VERSION.match('rc') ? true : false,
+    prerelease: $VERSION.match('pre') ? true : false,
   })
 
   gh.upload_asset(release.url, "aws-record-#{$VERSION}.gem",
