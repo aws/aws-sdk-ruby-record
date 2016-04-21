@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.7 (2016-04-21)
 ------------------
 
 * Upgrading - Aws::Record - This release includes changes to validation and
