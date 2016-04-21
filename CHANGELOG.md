@@ -1,6 +1,22 @@
 Unreleased Changes
 ------------------
 
+* Upgrading - Aws::Record - This release includes changes to validation and
+  to the `#save` and `#save!` methods. With this release, the validation hooks
+  in `Aws::Record::Attribute` have been removed. Additionally, `#save` will
+  resume raising exceptions on client errors. However, `#save` and `#save!`
+  will attempt to call `#valid?` if defined on the model, and will return false
+  or raise as appropriate if that method is defined and returns false.
+  
+  As a part of this change, we've removed the built in `#valid?` and `#errors`
+  methods. If you were a user of those, consider bringing your own validation
+  library such as `ActiveModel::Validations`.
+
+* Issue - Aws::Record - Removes `#valid?` and `#errors` methods, which caused a
+  conflict with the ability to bring your own validation library such as
+  `ActiveModel::Validations`. Added tests as an example and to test
+  compatibility.
+
 1.0.0.pre.6 (2016-04-19)
 ------------------
 
