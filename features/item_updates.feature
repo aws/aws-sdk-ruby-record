@@ -63,8 +63,7 @@ Feature: Amazon DynamoDB Item Updates
         ["x", "foo"]
       ]
       """
-    And we save the model instance
-    Then the return value of save should be false
+    Then calling save should raise an ItemAlreadyExists exception
     And we call the 'find' class method with parameter data:
       """
       {

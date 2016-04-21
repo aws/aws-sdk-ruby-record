@@ -24,8 +24,6 @@ module Aws
       #   So long as you provide a marshaler which implements +#type_cast+ and
       #   +#serialize+ that consume raw values as expected, you can bring your
       #   own marshaler type.
-      # @option options [Array] :validators An array of validator classes that
-      #   will be run when an attribute is checked for validity.
       # @option options [String] :database_attribute_name Optional attribute
       #   used to specify a different name for database persistence than the
       #   `name` parameter. Must be unique (you can't have overlap between
@@ -40,7 +38,6 @@ module Aws
         @database_name = options[:database_attribute_name] || name.to_s
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
-        @validators = options[:validators] || []
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
@@ -60,19 +57,6 @@ module Aws
       #  marshaler used. See your attribute's marshaler class for details.
       def serialize(raw_value)
         @marshaler.serialize(raw_value)
-      end
-
-      # Checks if the raw value is valid for this attribute. This is done by
-      # type casting the raw value, then running that value through each
-      # validator present for this attribute.
-      #
-      # @return [Boolean] true if the raw value is valid for this attribute,
-      #  false if it is not.
-      def valid?(raw_value)
-        value = type_cast(raw_value)
-        @validators.all? do |validator|
-          validator.validate(value)
-        end
       end
 
       # @api private

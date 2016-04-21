@@ -24,7 +24,6 @@ module Aws
 
       def initialize
         @data = {}
-        @errors = []
       end
 
       # Returns a hash representation of the attribute data.
@@ -59,8 +58,6 @@ module Aws
         #   +#serialize+ that consume raw values as expected, you can bring your
         #   own marshaler type. Convenience methods will provide this for you.
         # @param [Hash] opts
-        # @option opts [Array] :validators An array of validator classes that
-        #   will be run when an attribute is checked for validity.
         # @option opts [String] :database_attribute_name Optional attribute
         #   used to specify a different name for database persistence than the
         #   `name` parameter. Must be unique (you can't have overlap between
