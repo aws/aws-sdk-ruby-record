@@ -153,7 +153,7 @@ module Aws
           }])
         end
 
-        it 'populates the error array with an error message if check fails' do
+        it 'raises an exception when the conditional check fails' do
           stub_client.stub_responses(:put_item,
             'ConditionalCheckFailedException'
           )
@@ -162,8 +162,7 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
-          expect(item.save).to be_falsy
-          expect(item.errors.size).to eq(1)
+          expect { item.save }.to raise_error(Errors::ItemAlreadyExists)
           expect(api_requests).to eq([{
             table_name: "TestTable",
             item: {
@@ -180,86 +179,24 @@ module Aws
           }])
         end
 
-        it 'does not raise an error when you try to save without setting keys' do
+        it 'raises a key missing error when you try to save without setting keys' do
           klass.configure_client(client: stub_client)
           no_keys = klass.new
-          expect { no_keys.save }.not_to raise_error
+          expect { no_keys.save }.to raise_error(Errors::KeyMissing,
+            "Missing required keys: id, date")
 
           no_hash = klass.new
           no_hash.date = "2015-12-15"
-          expect { no_hash.save }.not_to raise_error
+          expect { no_hash.save }.to raise_error(Errors::KeyMissing,
+            "Missing required keys: id")
 
           no_range = klass.new
           no_range.id = 5
-          expect { no_range.save }.not_to raise_error
+          expect { no_range.save }.to raise_error(Errors::KeyMissing,
+            "Missing required keys: date")
 
           # None of this should have reached the API
           expect(api_requests).to eq([])
-        end
-      end
-
-      describe "#valid?" do
-        it 'is valid with successful save to Amazon DynamoDB' do
-          klass.configure_client(client: stub_client)
-          item = klass.new
-          item.id = 1
-          item.date = '2015-12-14'
-          item.body = 'Hello!'
-          item.save
-          expect(item.valid?).to be_truthy
-        end
-
-        it 'is invalid when you try to save without setting keys' do
-          klass.configure_client(client: stub_client)
-          no_keys = klass.new
-          no_keys.save
-          expect(no_keys.valid?).to be_falsy
-
-          no_hash = klass.new
-          no_hash.date = "2015-12-15"
-          no_hash.save
-          expect(no_hash.valid?).to be_falsy
-
-          no_range = klass.new
-          no_range.id = 5
-          no_range.save
-          expect(no_range.valid?).to be_falsy
-
-          # None of this should have reached the API
-          expect(api_requests).to eq([])
-        end
-
-        it 'is valid after fixing invalid save state' do
-          klass.configure_client(client: stub_client)
-          item = klass.new
-          item.save
-          expect(item.valid?).to be_falsy
-
-          item.id = 1
-          item.date = '2015-12-14'
-          item.body = 'Hello!'
-          item.save
-          expect(item.valid?).to be_truthy
-
-          # None of this should have reached the API
-          expect(api_requests).not_to be_empty
-        end
-
-        it 'handles validity at the item level' do
-          klass.configure_client(client: stub_client)
-          # An invalid item.
-          a = klass.new
-          a.save
-          expect(a.valid?).to be_falsy
-
-          # A valid item.
-          b = klass.new
-          b.id = 1
-          b.date = '2016-04-20'
-          b.body = 'This one works.'
-          b.save
-          expect(b.valid?).to be_truthy
-          expect(a.valid?).to be_falsy
         end
       end
 
@@ -312,6 +249,39 @@ module Aws
               "date" => { s: "2015-12-17" }
             }
           }])
+        end
+      end
+
+      describe "validations with ActiveModel::Validations" do
+        let(:klass_amv) do
+          ::TestTable = Class.new do
+            include(Aws::Record)
+            include(ActiveModel::Validations)
+            set_table_name("TestTable")
+            integer_attr(:id, hash_key: true)
+            date_attr(:date, range_key: true)
+            string_attr(:body)
+            boolean_attr(:bool, database_attribute_name: "my_boolean")
+            validates_presence_of(:id, :date)
+          end
+        end
+
+        it 'will use ActiveModel::Validations :valid? method' do
+          klass_amv.configure_client(client: stub_client)
+          item = klass_amv.new
+          item.id = 3
+          expect(item.save).to be_falsey
+
+          item.date = "2016-04-21"
+          item.body = "Hello!"
+          expect(item.save).to be_truthy
+        end
+
+        it 'will raise on an invalid model for #save!' do
+          klass_amv.configure_client(client: stub_client)
+          item = klass_amv.new
+          item.id = 3
+          expect { item.save! }.to raise_error(Errors::ValidationError)
         end
       end
 

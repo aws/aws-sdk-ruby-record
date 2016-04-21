@@ -20,6 +20,7 @@ module Aws
       class KeyMissing < RecordError; end
       class NotFound < RecordError; end
       class ItemAlreadyExists < RecordError; end
+      class ValidationError < RecordError; end
 
       class NameCollision < RuntimeError; end
       class ReservedName < RuntimeError; end

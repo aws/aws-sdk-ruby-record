@@ -10,6 +10,7 @@ group :test do
   gem 'cucumber'
   gem 'simplecov', require: false
   gem 'coveralls', require: false
+  gem 'activemodel'
 end
 
 group :docs do

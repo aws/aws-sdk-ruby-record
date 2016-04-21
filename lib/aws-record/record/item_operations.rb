@@ -41,7 +41,72 @@ module Aws
       #  does not have a value within this item instance.
       # @raise [Aws::Record::Errors::ItemAlreadyExists] if a conditional put
       #  fails because the item exists on the remote end.
+      # @raise [Aws::Record::Errors::ValidationError] if the item responds to
+      #  +:valid?+ and that call returned false. In such a case, checking root
+      #  cause is dependent on the validation library you are using.
       def save!(opts = {})
+        ret = save(opts)
+        if ret
+          ret
+        else
+          raise Errors::ValidationError.new("Validation hook returned false!")
+        end
+      end
+
+      # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
+      #  as defined by having new or altered key attributes, will attempt a
+      #  conditional
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      #  call, which will not overwrite an existing item. If the item only has
+      #  altered non-key attributes, will perform an
+      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+      #  call. Uses this item instance's attributes in order to build the
+      #  request on your behalf.
+      #
+      # You can use the +:force+ option to perform a simple put/overwrite
+      #  without conditional validation or update logic.
+      #
+      # @param [Hash] opts
+      # @option opts [Boolean] :force if true, will save as a put operation and
+      #  overwrite any existing item on the remote end. Otherwise, and by
+      #  default, will either perform a conditional put or an update call.
+      # @return false if the record is invalid as defined by an attempt to call
+      #  +valid?+ on this item, if that method exists. Otherwise, returns client
+      #  call return value.
+      def save(opts = {})
+        if _invalid_record?(opts)
+          false
+        else
+          _perform_save(opts)
+        end
+      end
+
+      # Deletes the item instance that matches the key values of this item
+      # instance in Amazon DynamoDB. Uses the
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
+      # API.
+      def delete!
+        dynamodb_client.delete_item(
+          table_name: self.class.table_name,
+          key: key_values
+        )
+        true
+      end
+
+      private
+      def _invalid_record?(opts)
+        if self.respond_to?(:valid?)
+          if !self.valid?
+            true
+          else
+            false
+          end
+        else
+          false
+        end
+      end
+
+      def _perform_save(opts)
         force = opts[:force]
         expect_new = expect_new_item?
         if force
@@ -73,63 +138,6 @@ module Aws
         end
       end
 
-      # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
-      #  as defined by having new or altered key attributes, will attempt a
-      #  conditional
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      #  call, which will not overwrite an existing item. If the item only has
-      #  altered non-key attributes, will perform an
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      #  call. Uses this item instance's attributes in order to build the
-      #  request on your behalf.
-      #
-      # You can use the +:force+ option to perform a simple put/overwrite
-      #  without conditional validation or update logic.
-      #
-      # In the case where persistence fails, will populate the +errors+ array
-      #  with any generated error messages, and will cause +#valid?+ to return
-      #  false until there is a successful save.
-      #
-      # @param [Hash] opts
-      # @option opts [Boolean] :force if true, will save as a put operation and
-      #  overwrite any existing item on the remote end. Otherwise, and by
-      #  default, will either perform a conditional put or an update call.
-      def save(opts = {})
-        result = save!(opts)
-        errors.clear
-        result
-      rescue Errors::RecordError => e
-        errors << e.message
-        false
-      end
-
-      # @deprecated Will be removing this, and adding guides to using other
-      #  validation libraries.
-      # Checks if the record is a valid record. +false+ if most recent +#save+
-      # call raised errors, or if there are missing keys. +true+ otherwise.
-      def valid?
-        errors.empty? && missing_key_values.empty?
-      end
-
-      # Deletes the item instance that matches the key values of this item
-      # instance in Amazon DynamoDB. Uses the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
-      # API.
-      def delete!
-        dynamodb_client.delete_item(
-          table_name: self.class.table_name,
-          key: key_values
-        )
-        true
-      end
-
-      # @deprecated Will be removing this, and adding guides to using other
-      #  validation libraries.
-      def errors
-        @errors
-      end
-
-      private
       def build_item_for_save
         validate_key_values
         attributes = self.class.attributes

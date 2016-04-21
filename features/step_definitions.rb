@@ -259,8 +259,8 @@ Then(/^the table should have a global secondary index named "([^"]*)"$/) do |exp
   expect(exists).to eq(true)
 end
 
-Then(/^the return value of save should be false$/) do
-  expect(@save_output).to eq(false)
+Then(/^calling save should raise an ItemAlreadyExists exception$/) do
+  expect { @instance.save }.to raise_error(Aws::Record::Errors::ItemAlreadyExists)
 end
 
 When(/^we set the item attribute "([^"]*)" to be "([^"]*)"$/) do |attr, value|

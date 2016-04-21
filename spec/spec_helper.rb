@@ -16,3 +16,4 @@ require 'rspec'
 SimpleCov.start
 
 require 'aws-record'
+require 'active_model'
