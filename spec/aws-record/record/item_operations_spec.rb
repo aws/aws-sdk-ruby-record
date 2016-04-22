@@ -162,7 +162,7 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
-          expect { item.save }.to raise_error(Errors::ItemAlreadyExists)
+          expect { item.save }.to raise_error(Errors::ConditionalWriteFailed)
           expect(api_requests).to eq([{
             table_name: "TestTable",
             item: {

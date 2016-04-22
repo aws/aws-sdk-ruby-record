@@ -39,8 +39,8 @@ module Aws
       #  default, will either perform a conditional put or an update call.
       # @raise [Aws::Record::Errors::KeyMissing] if a required key attribute
       #  does not have a value within this item instance.
-      # @raise [Aws::Record::Errors::ItemAlreadyExists] if a conditional put
-      #  fails because the item exists on the remote end.
+      # @raise [Aws::Record::Errors::ConditionalWriteFailed] if a conditional
+      #  put fails because the item exists on the remote end.
       # @raise [Aws::Record::Errors::ValidationError] if the item responds to
       #  +:valid?+ and that call returned false. In such a case, checking root
       #  cause is dependent on the validation library you are using.
@@ -122,11 +122,10 @@ module Aws
           begin
             dynamodb_client.put_item(put_opts)
           rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
-            raise Errors::ItemAlreadyExists.new(
-              "Conditional #put_item call failed, an item with the same key"\
-                " already exists in the table. Either load and update this"\
-                " item, or include the :force option to clobber the remote"\
-                " item."
+            raise Errors::ConditionalWriteFailed.new(
+              "Conditional #put_item call failed! Check that conditional write"\
+                " conditions are met, or include the :force option to clobber"\
+                " the remote item."
             )
           end
         else

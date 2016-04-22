@@ -63,7 +63,7 @@ Feature: Amazon DynamoDB Item Updates
         ["x", "foo"]
       ]
       """
-    Then calling save should raise an ItemAlreadyExists exception
+    Then calling save should raise a conditional save exception
     And we call the 'find' class method with parameter data:
       """
       {

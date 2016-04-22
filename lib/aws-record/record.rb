@@ -12,6 +12,22 @@
 # and limitations under the License.
 
 module Aws
+
+  # +Aws::Record+ is the module you include in your model classes in order to
+  # decorate them with the Amazon DynamoDB integration methods provided by this
+  # library. Methods you can use are shown below, in sub-modules organized by
+  # functionality.
+  #
+  # @example A class definition using +Aws::Record+
+  #   class MyModel
+  #     include Aws::Record
+  #     string_attr     :uuid,    hash_key: true
+  #     integer_attr    :post_id, range_key: true
+  #     boolean_attr    :is_active
+  #     datetime_attr   :created_at
+  #     string_set_attr :tags
+  #     map_attr        :metadata
+  #   end
   module Record
     # @!parse extend RecordClassMethods
     # @!parse include Attributes

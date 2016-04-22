@@ -13,6 +13,12 @@
 
 module Aws
   module Record
+
+    # This class provides helper methods for +Aws::Record+ attributes. These
+    # include marshalers for type casting of item attributes, the Amazon
+    # DynamoDB type for use in certain table and item operation calls, and the
+    # ability to define a database name that is separate from the name used
+    # within the model class and item instances.
     class Attribute
 
       attr_reader :name, :database_name, :dynamodb_type
@@ -66,6 +72,8 @@ module Aws
 
     end
 
+    # This is an identity marshaler, which performs no changes for type casting
+    # or serialization. It is generally not recommended for use.
     module DefaultMarshaler
       def self.type_cast(raw_value, options = {})
         raw_value

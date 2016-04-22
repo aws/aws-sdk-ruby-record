@@ -15,16 +15,42 @@ module Aws
   module Record
     module Errors
 
+      # RecordErrors relate to the persistence of items. They include both
+      # client errors and certain validation errors.
       class RecordError < RuntimeError; end
 
+      # Raised when a required key attribute is missing from an item when
+      # persistence is attempted.
       class KeyMissing < RecordError; end
+
+      # Raised when you attempt to load a record from the database, but it does
+      # not exist there.
       class NotFound < RecordError; end
-      class ItemAlreadyExists < RecordError; end
+
+      # Raised when a conditional write fails.
+      class ConditionalWriteFailed < RecordError; end
+
+      # Raised when a validation hook call to +:valid?+ fails.
       class ValidationError < RecordError; end
 
+      # Raised when an attribute is defined that has a name collision with an
+      # existing attribute.
       class NameCollision < RuntimeError; end
+
+      # Raised when you attempt to create an attribute which has a name that
+      # conflicts with reserved names (generally, defined method names). If you
+      # see this error, you should change the attribute name in the model. If
+      # the database uses this name, you can take advantage of the
+      # +:database_attribute_name+ option in
+      # {Aws::Record::Attributes::ClassMethods#attr #attr}
       class ReservedName < RuntimeError; end
+
+      # Raised when you attempt a table migration and your model class is
+      # invalid.
       class InvalidModel < RuntimeError; end
+
+      # Raised when you attempt update/delete operations on a table that does
+      # not exist.
       class TableDoesNotExist < RuntimeError; end
 
     end
