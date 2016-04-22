@@ -29,7 +29,7 @@ module Aws
       #  class. If this option is not included, a client will be constructed for
       #  you with default parameters.
       def initialize(model, opts = {})
-        assert_model_valid(model)
+        _assert_model_valid(model)
         @model = model
         @client = opts[:client] || Aws::DynamoDB::Client.new
       end
@@ -38,6 +38,20 @@ module Aws
       # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method Aws::DynamoDB::Client#create_table},
       # populating the attribute definitions and key schema based on your model
       # class, as well as passing through other parameters as provided by you.
+      #
+      # @example Creating a table with a global secondary index named +:gsi+
+      #   migration.create!(
+      #     provisioned_throughput: {
+      #       read_capacity_units: 5,
+      #       write_capacity_units: 2
+      #     },
+      #     global_secondary_index_throughput: {
+      #       gsi: {
+      #         read_capacity_units: 3,
+      #         write_capacity_units: 1
+      #       }
+      #     }
+      #   )
       #
       # @param [Hash] opts options to pass on to the client call to
       #  +#create_table+. See the documentation above in the AWS SDK for Ruby
@@ -53,8 +67,8 @@ module Aws
         gsit = opts.delete(:global_secondary_index_throughput)
         create_opts = opts.merge({
           table_name: @model.table_name,
-          attribute_definitions: attribute_definitions,
-          key_schema: key_schema
+          attribute_definitions: _attribute_definitions,
+          key_schema: _key_schema
         })
         if lsis = @model.local_secondary_indexes_for_migration
           create_opts[:local_secondary_indexes] = lsis
@@ -117,25 +131,25 @@ module Aws
       end
 
       private
-      def assert_model_valid(model)
-        assert_required_include(model)
-        assert_keys(model)
+      def _assert_model_valid(model)
+        _assert_required_include(model)
+        _assert_keys(model)
       end
 
-      def assert_required_include(model)
+      def _assert_required_include(model)
         unless model.include?(::Aws::Record)
           raise Errors::InvalidModel.new("Table models must include Aws::Record")
         end
       end
 
-      def assert_keys(model)
+      def _assert_keys(model)
         if model.hash_key.nil?
           raise Errors::InvalidModel.new("Table models must include a hash key")
         end
       end
 
-      def attribute_definitions
-        keys.map do |type, attr|
+      def _attribute_definitions
+        _keys.map do |type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
@@ -183,8 +197,8 @@ module Aws
         ret
       end
 
-      def key_schema
-        keys.map do |type, attr|
+      def _key_schema
+        _keys.map do |type, attr|
           {
             attribute_name: attr.database_name,
             key_type: type == :hash ? "HASH" : "RANGE"
@@ -192,7 +206,7 @@ module Aws
         end
       end
 
-      def keys
+      def _keys
         @model.keys.inject({}) do |acc, (type, name)|
           acc[type] = @model.attributes[name]
           acc
