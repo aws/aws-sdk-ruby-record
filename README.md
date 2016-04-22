@@ -13,6 +13,13 @@ We would like to invite you to be a part of the ongoing development of this gem.
 We welcome your contributions, and would also be happy to hear from you about
 how you would like to use this gem. Feature requests are welcome.
 
+## Links of Interest
+
+* [Documentation](http://docs.aws.amazon.com/awssdkrubyrecord/api/)
+* [Change Log](https://github.com/awslabs/aws-sdk-ruby-record/blob/master/CHANGELOG.md)
+* [Issues](https://github.com/awslabs/aws-sdk-ruby-record/issues)
+* [License](http://aws.amazon.com/apache2.0/)
+
 ## Installation
 
 `Aws::Record` is available as the `aws-record` gem from RubyGems.
