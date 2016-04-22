@@ -27,6 +27,35 @@ module Aws
         # populating the +:table_name+ parameter from the model class, and
         # combining this with the other parameters you provide.
         #
+        # @example A query with key and filter expressions:
+        #   # Example model class
+        #   class ExampleTable
+        #     include Aws::Record
+        #     string_attr  :uuid, hash_key: true
+        #     integer_attr :id,   range_key: true
+        #     string_attr  :body
+        #   end
+        #
+        #   query = ExampleTable.query(
+        #     key_condition_expression: "#H = :h AND #R > :r",
+        #     filter_expression: "contains(#B, :b)",
+        #     expression_attribute_names: {
+        #       "#H" => "uuid",
+        #       "#R" => "id",
+        #       "#B" => "body"
+        #     },
+        #     expression_attribute_values: {
+        #       ":h" => "123456789uuid987654321",
+        #       ":r" => 100,
+        #       ":b" => "some substring"
+        #     }
+        #   )
+        #
+        #   # You can enumerate over your results.
+        #   query.each do |r|
+        #     puts "UUID: #{r.uuid}\nID: #{r.id}\nBODY: #{r.body}\n"
+        #   end
+        #
         # @param [Hash] opts options to pass on to the client call to +#query+.
         #   See the documentation above in the AWS SDK for Ruby V2.
         # @return [Aws::Record::ItemCollection] an enumerable collection of the
@@ -40,6 +69,30 @@ module Aws
         # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#scan-instance_method Aws::DynamoDB::Client#scan},
         # populating the +:table_name+ parameter from the model class, and
         # combining this with the other parameters you provide.
+        #
+        # @example A scan with a filter expression:
+        #   # Example model class
+        #   class ExampleTable
+        #     include Aws::Record
+        #     string_attr  :uuid, hash_key: true
+        #     integer_attr :id,   range_key: true
+        #     string_attr  :body
+        #   end
+        #
+        #   scan = ExampleTable.scan(
+        #     filter_expression: "contains(#B, :b)",
+        #     expression_attribute_names: {
+        #       "#B" => "body"
+        #     },
+        #     expression_attribute_values: {
+        #       ":b" => "some substring"
+        #     }
+        #   )
+        #
+        #   # You can enumerate over your results.
+        #   scan.each do |r|
+        #     puts "UUID: #{r.uuid}\nID: #{r.id}\nBODY: #{r.body}\n"
+        #   end
         #
         # @param [Hash] opts options to pass on to the client call to +#scan+.
         #   See the documentation above in the AWS SDK for Ruby V2.
