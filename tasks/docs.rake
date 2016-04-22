@@ -25,5 +25,8 @@ end
 
 desc 'Generate doc files.'
 task 'docs' => 'docs:clobber' do
-  sh({'SOURCE' => '1'}, 'bundle exec yard')
+  env = {}
+  env['SOURCE'] = '1'
+  env['SITEMAP_BASEURL'] = 'http://docs.aws.amazon.com/awssdkrubyrecord/api/'
+  sh(env, 'bundle exec yard')
 end

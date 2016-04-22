@@ -15,6 +15,7 @@ end
 
 group :docs do
   gem 'yard'
+  gem 'yard-sitemap', '~> 1.0'
 end
 
 group :release do
