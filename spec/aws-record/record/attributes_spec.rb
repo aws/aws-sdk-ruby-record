@@ -23,6 +23,28 @@ module Aws
         end
       end
 
+      describe '#initialize' do
+        let(:model) do
+          Class.new do
+            include(Aws::Record)
+            string_attr(:id, hash_key: true)
+            string_attr(:body)
+          end
+        end
+
+        it 'should allow attribute assignment at item creation time' do
+          item = model.new(id: "MyId")
+          expect(item.id).to eq("MyId")
+          expect(item.body).to be_nil
+        end
+
+        it 'should allow assignment of multiple attributes at item creation' do
+          item = model.new(id: "MyId", body: "Hello!")
+          expect(item.id).to eq("MyId")
+          expect(item.body).to eq("Hello!")
+        end
+      end
+
       describe 'Keys' do
         it 'should be able to assign a hash key' do
           klass.string_attr(:mykey, hash_key: true)

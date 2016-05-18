@@ -182,3 +182,41 @@ Feature: Amazon DynamoDB Item Updates
         "z": "z"
       }
       """
+
+  Scenario: Updating an Object with the Update Model Method
+    Given an aws-record model with data:
+      """
+      [
+        { "method": "string_attr", "name": "hk", "hash_key": true },
+        { "method": "string_attr", "name": "rk", "range_key": true },
+        { "method": "string_attr", "name": "x" },
+        { "method": "string_attr", "name": "y" },
+        { "method": "string_attr", "name": "z" }
+      ]
+      """
+    When we call the 'update' class method with parameter data:
+      """
+      {
+        "hk": "sample",
+        "rk": "sample",
+        "y": "foo",
+        "z": "bar"
+      }
+      """
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "hk": "sample",
+        "rk": "sample"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "hk": "sample",
+        "rk": "sample",
+        "x": "x",
+        "y": "foo",
+        "z": "bar"
+      }
+      """
