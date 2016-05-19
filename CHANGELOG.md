@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.8 (2016-05-19)
 ------------------
 
 * Feature - Aws::Record - Adds the ability to set initial attribute values when
