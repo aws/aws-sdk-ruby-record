@@ -1,6 +1,10 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record - Adds the ability to set initial attribute values when
+  calling `#initialize`. Additionally, can call `update` on a model to directly
+  call `Aws::DynamoDB::Client#update_item`.
+
 1.0.0.pre.7 (2016-04-21)
 ------------------
 
