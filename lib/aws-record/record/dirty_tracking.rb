@@ -23,7 +23,8 @@ module Aws
       #
       # @override initialize(*)
       def initialize(*)
-        super.tap { @dirty_data = {} }
+        @dirty_data = {}
+        super
       end
 
       # Returns +true+ if the specified attribute has any dirty changes, +false+ otherwise.

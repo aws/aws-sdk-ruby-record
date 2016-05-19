@@ -236,7 +236,7 @@ module Aws
                 "Missing required key #{attr_sym} in #{opts}"
               )
             end
-            attr_name = attr_sym.to_s
+            attr_name = attributes[attr_sym].database_name
             key[attr_name] = attributes[attr_sym].serialize(opts[attr_sym])
           end
           request_opts = {
@@ -249,6 +249,69 @@ module Aws
           else
             build_item_from_resp(resp)
           end
+        end
+
+        # @example Usage Example
+        #   class MyModel
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #     string_attr  :body
+        #     boolean_attr :sir_not_appearing_in_this_example
+        #   end
+        #
+        #   MyModel.update(id: 1, name: "First", body: "Hello!")
+        #
+        # Performs an
+        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+        # call immediately on the table, using the attribute key/value pairs
+        # provided.
+        #
+        # @param [Hash] opts attribute-value pairs for the update operation you
+        #  wish to perform. You must include all key attributes for a valid
+        #  call, then you may optionally include any other attributes that you
+        #  wish to update.
+        # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
+        #  not include all table keys.
+        def update(opts)
+          key = {}
+          updates = {}
+          @keys.each_value do |attr_sym|
+            unless value = opts.delete(attr_sym)
+              raise Errors::KeyMissing.new(
+                "Missing required key #{attr_sym} in #{opts}"
+              )
+            end
+            attr_name = attributes[attr_sym].database_name
+            key[attr_name] = attributes[attr_sym].serialize(value)
+          end
+          request_opts = {
+            table_name: table_name,
+            key: key
+          }
+          update_expressions = []
+          exp_attr_names = {}
+          exp_attr_values = {}
+          name_sub_token = "A"
+          value_sub_token = "a"
+          opts.each do |attr_sym, value|
+            name_sub = "#" + name_sub_token
+            value_sub = ":" + value_sub_token
+            name_sub_token = name_sub_token.succ
+            value_sub_token = value_sub_token.succ
+
+            attr_name = attributes[attr_sym].database_name
+            update_expressions << "#{name_sub} = #{value_sub}"
+            exp_attr_names[name_sub] = attr_name
+            exp_attr_values[value_sub] = attributes[attr_sym].serialize(value)
+          end
+          unless update_expressions.empty?
+            uex = "SET " + update_expressions.join(", ")
+            request_opts[:update_expression] = uex
+            request_opts[:expression_attribute_names] = exp_attr_names
+            request_opts[:expression_attribute_values] = exp_attr_values
+          end
+          dynamodb_client.update_item(request_opts)
         end
 
         private

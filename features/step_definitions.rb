@@ -124,6 +124,11 @@ When(/^we call the 'find' class method with parameter data:$/) do |string|
   @instance = @model.find(data)
 end
 
+When(/^we call the 'update' class method with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  @model.update(data)
+end
+
 Then(/^we should receive an aws\-record item with attribute data:$/) do |string|
   data = JSON.parse(string, symbolize_names: true)
   data.each do |key, value|

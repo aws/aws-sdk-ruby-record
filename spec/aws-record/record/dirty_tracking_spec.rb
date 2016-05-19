@@ -50,6 +50,11 @@ describe Aws::Record::DirtyTracking do
       instance.mykey = nil
       expect(instance.mykey_dirty?).to be false
     end
+
+    it "should recognize initialization values as dirty" do
+      item = klass.new(mykey: "Key", body: "Hello!")
+      expect(item.mykey_dirty?).to be_truthy
+    end
   end
 
   describe '#[attribute]_dirty!' do 

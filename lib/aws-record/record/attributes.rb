@@ -22,8 +22,28 @@ module Aws
         sub_class.instance_variable_set("@storage_attributes", {})
       end
 
-      def initialize
+      # @example Usage Example
+      #   class MyModel
+      #     include Aws::Record
+      #     integer_attr :id,   hash_key: true
+      #     string_attr  :name, range_key: true
+      #     string_attr  :body
+      #   end
+      #
+      #   item = MyModel.new(id: 1, name: "Quick Create")
+      #
+      # Base initialization method for a new item. Optionally, allows you to
+      # provide initial attribute values for the model. You do not need to
+      # provide all, or even any, attributes at item creation time.
+      #
+      # @param [Hash] attr_values Attribute symbol/value pairs for any initial
+      #  attribute values you wish to set.
+      # @return [Aws::Record] An item instance for your model.
+      def initialize(attr_values = {})
         @data = {}
+        attr_values.each do |attr_name, attr_value|
+          send("#{attr_name}=", attr_value)
+        end
       end
 
       # Returns a hash representation of the attribute data.

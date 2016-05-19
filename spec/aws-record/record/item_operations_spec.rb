@@ -22,7 +22,7 @@ module Aws
           include(Aws::Record)
           set_table_name("TestTable")
           integer_attr(:id, hash_key: true)
-          date_attr(:date, range_key: true)
+          date_attr(:date, range_key: true, database_attribute_name: "MyDate")
           string_attr(:body)
           boolean_attr(:bool, database_attribute_name: "my_boolean")
         end
@@ -52,14 +52,14 @@ module Aws
             table_name: "TestTable",
             item: {
               "id" => { n: "1" },
-              "date" => { s: "2015-12-14" },
+              "MyDate" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
             expression_attribute_names: {
               "#H" => "id",
-              "#R" => "date"
+              "#R" => "MyDate"
             }
           }])
         end
@@ -100,14 +100,14 @@ module Aws
             table_name: "TestTable",
             item: {
               "id" => { n: "1" },
-              "date" => { s: "2015-12-14" },
+              "MyDate" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
             expression_attribute_names: {
               "#H" => "id",
-              "#R" => "date"
+              "#R" => "MyDate"
             }
           }])
         end
@@ -123,7 +123,7 @@ module Aws
             table_name: "TestTable",
             item: {
               "id" => { n: "1" },
-              "date" => { s: "2015-12-14" },
+              "MyDate" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
             }
           }])
@@ -142,7 +142,7 @@ module Aws
             table_name: "TestTable",
             key: {
               "id" => { n: "1" },
-              "date" => { s: "2015-12-14" }
+              "MyDate" => { s: "2015-12-14" }
             },
             attribute_updates: {
               "body" => {
@@ -167,14 +167,14 @@ module Aws
             table_name: "TestTable",
             item: {
               "id" => { n: "1" },
-              "date" => { s: "2015-12-14" },
+              "MyDate" => { s: "2015-12-14" },
               "body" => { s: "Hello!" }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
             expression_attribute_names: {
               "#H" => "id",
-              "#R" => "date"
+              "#R" => "MyDate"
             }
           }])
         end
@@ -206,7 +206,7 @@ module Aws
             {
               item: {
                 "id" => 5,
-                "date" => "2015-12-15",
+                "MyDate" => "2015-12-15",
                 "my_boolean" => true
               }
             })
@@ -217,7 +217,7 @@ module Aws
             table_name: "TestTable",
             key: {
               "id" => { n: "5" },
-              "date" => { s: "2015-12-15" }
+              "MyDate" => { s: "2015-12-15" }
             }
           }])
           expect(ret).to be_a(klass)
@@ -235,6 +235,49 @@ module Aws
         end
       end
 
+      describe "#update" do
+        it 'can find and update an item from Amazon DynamoDB' do
+          klass.configure_client(client: stub_client)
+          klass.update(id: 1, date: "2016-05-18", body: "New", bool: true)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2016-05-18" }
+            },
+            update_expression: "SET #A = :a, #B = :b",
+            expression_attribute_names: {
+              "#A" => "body",
+              "#B" => "my_boolean"
+            },
+            expression_attribute_values: {
+              ":a" => { s: "New" },
+              ":b" => { bool: true }
+            }
+          }])
+        end
+
+        it 'will upsert even if only keys provided' do
+          klass.configure_client(client: stub_client)
+          klass.update(id: 1, date: "2016-05-18")
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2016-05-18" }
+            }
+          }])
+        end
+
+        it 'raises if any key attributes are missing' do
+          klass.configure_client(client: stub_client)
+          update_opts = { id: 5, body: "Fail" }
+          expect { klass.update(update_opts) }.to raise_error(
+            Aws::Record::Errors::KeyMissing
+          )
+        end
+      end
+
       describe "#delete!" do
         it 'can delete an item from Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
@@ -246,7 +289,7 @@ module Aws
             table_name: "TestTable",
             key: {
               "id" => { n: "3" },
-              "date" => { s: "2015-12-17" }
+              "MyDate" => { s: "2015-12-17" }
             }
           }])
         end
