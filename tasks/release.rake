@@ -40,6 +40,7 @@ task 'release:check' => [
 task 'release:build' => [
   'changelog:version',
   'release:bump-version',
+  'docs:zip',
   'git:tag',
   'gems:build'
 ]

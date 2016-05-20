@@ -1,4 +1,3 @@
-require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 
 $REPO_ROOT = File.dirname(__FILE__)
