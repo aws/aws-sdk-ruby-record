@@ -23,6 +23,7 @@ module Aws
     autoload :Errors,           'aws-record/record/errors'
     autoload :ItemCollection,   'aws-record/record/item_collection'
     autoload :ItemOperations,   'aws-record/record/item_operations'
+    autoload :NullValidation,   'aws-record/record/null_validation'
     autoload :Query,            'aws-record/record/query'
     autoload :SecondaryIndexes, 'aws-record/record/secondary_indexes'
     autoload :TableMigration,   'aws-record/record/table_migration'

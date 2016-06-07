@@ -45,11 +45,8 @@ module Aws
       #  +:valid?+ and that call returned false. In such a case, checking root
       #  cause is dependent on the validation library you are using.
       def save!(opts = {})
-        ret = save(opts)
-        if ret
-          ret
-        else
-          raise Errors::ValidationError.new("Validation hook returned false!")
+        validation.validate! do
+          save(opts)
         end
       end
 
@@ -74,10 +71,10 @@ module Aws
       #  +valid?+ on this item, if that method exists. Otherwise, returns client
       #  call return value.
       def save(opts = {})
-        if _invalid_record?(opts)
-          false
-        else
+        if validation.valid?
           _perform_save(opts)
+        else
+          false
         end
       end
 
@@ -94,16 +91,8 @@ module Aws
       end
 
       private
-      def _invalid_record?(opts)
-        if self.respond_to?(:valid?)
-          if !self.valid?
-            true
-          else
-            false
-          end
-        else
-          false
-        end
+      def validation
+        @validation ||= self.class.validation_class.new(self)
       end
 
       def _perform_save(opts)
@@ -213,6 +202,14 @@ module Aws
       end
 
       module ItemOperationsClassMethods
+
+        def set_validation_class(klass)
+          @validation_class = klass
+        end
+
+        def validation_class
+          @validation_class || NullValidation
+        end
 
         # @example Usage Example
         #   class MyModel
