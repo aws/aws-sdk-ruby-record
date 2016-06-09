@@ -21,17 +21,17 @@ module Aws
       end
 
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
-      #  as defined by having new or altered key attributes, will attempt a
-      #  conditional
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      #  call, which will not overwrite an existing item. If the item only has
-      #  altered non-key attributes, will perform an
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      #  call. Uses this item instance's attributes in order to build the
-      #  request on your behalf.
+      # as defined by having new or altered key attributes, will attempt a
+      # conditional
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      # call, which will not overwrite an existing item. If the item only has
+      # altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+      # call. Uses this item instance's attributes in order to build the
+      # request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
-      #  without conditional validation or update logic.
+      # without conditional validation or update logic.
       #
       # @param [Hash] opts
       # @option opts [Boolean] :force if true, will save as a put operation and
@@ -54,17 +54,17 @@ module Aws
       end
 
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
-      #  as defined by having new or altered key attributes, will attempt a
-      #  conditional
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      #  call, which will not overwrite an existing item. If the item only has
-      #  altered non-key attributes, will perform an
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      #  call. Uses this item instance's attributes in order to build the
-      #  request on your behalf.
+      # as defined by having new or altered key attributes, will attempt a
+      # conditional
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
+      # call, which will not overwrite an existing item. If the item only has
+      # altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
+      # call. Uses this item instance's attributes in order to build the
+      # request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
-      #  without conditional validation or update logic.
+      # without conditional validation or update logic.
       #
       # @param [Hash] opts
       # @option opts [Boolean] :force if true, will save as a put operation and
