@@ -10,7 +10,12 @@ group :test do
   gem 'cucumber'
   gem 'simplecov', require: false
   gem 'coveralls', require: false
-  gem 'activemodel'
+
+  if ENV["NEW_RAILS"]
+    gem 'activemodel'
+  else
+    gem 'activemodel', '< 5.0'
+  end
 end
 
 group :docs do
