@@ -51,7 +51,7 @@ module Aws
             include(Aws::Record)
             set_table_name("TestTable")
             integer_attr(:id, hash_key: true)
-            date_attr(:date, range_key: true)
+            date_attr(:date, range_key: true, database_attribute_name: "datekey")
             string_attr(:lsi)
             string_attr(:gsi_partition)
             string_attr(:gsi_sort)
@@ -80,7 +80,7 @@ module Aws
                   attribute_type: "N"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   attribute_type: "S"
                 }
               ],
@@ -90,7 +90,7 @@ module Aws
                   key_type: "HASH"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   key_type: "RANGE"
                 }
               ],
@@ -125,7 +125,7 @@ module Aws
                   attribute_type: "N"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   attribute_type: "S"
                 },
                 {
@@ -139,7 +139,7 @@ module Aws
                   key_type: "HASH"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   key_type: "RANGE"
                 }
               ],
@@ -197,7 +197,7 @@ module Aws
                   attribute_type: "N"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   attribute_type: "S"
                 },
                 {
@@ -215,7 +215,7 @@ module Aws
                   key_type: "HASH"
                 },
                 {
-                  attribute_name: "date",
+                  attribute_name: "datekey",
                   key_type: "RANGE"
                 }
               ],
