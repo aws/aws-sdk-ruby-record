@@ -87,6 +87,11 @@ module Aws
         #   "M", "L". Optional if this attribute will never be used for a key or
         #   secondary index, but most convenience methods for setting attributes
         #   will provide this.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
@@ -118,6 +123,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def string_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::StringMarshaler, opts)
@@ -132,6 +142,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def boolean_attr(name, opts = {})
           opts[:dynamodb_type] = "BOOL"
           attr(name, Attributes::BooleanMarshaler, opts)
@@ -146,6 +161,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def integer_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
           attr(name, Attributes::IntegerMarshaler, opts)
@@ -160,6 +180,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def float_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
           attr(name, Attributes::FloatMarshaler, opts)
@@ -174,6 +199,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def date_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::DateMarshaler, opts)
@@ -188,6 +218,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is false.
         def datetime_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::DateTimeMarshaler, opts)
@@ -223,8 +258,14 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is true.
         def list_attr(name, opts = {})
           opts[:dynamodb_type] = "L"
+          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Attributes::ListMarshaler, opts)
         end
 
@@ -258,8 +299,14 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is true.
         def map_attr(name, opts = {})
           opts[:dynamodb_type] = "M"
+          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Attributes::MapMarshaler, opts)
         end
 
@@ -280,8 +327,14 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is true.
         def string_set_attr(name, opts = {})
           opts[:dynamodb_type] = "SS"
+          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Attributes::StringSetMarshaler, opts)
         end
 
@@ -302,8 +355,14 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
+        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate if mutations to values should be explicitly tracked when
+        #   determining if a value is "dirty". Important for collection types
+        #   which are often primarily modified by mutation of a single object
+        #   reference. By default, is true.
         def numeric_set_attr(name, opts = {})
           opts[:dynamodb_type] = "NS"
+          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Attributes::NumericSetMarshaler, opts)
         end
 
@@ -331,6 +390,13 @@ module Aws
         #   name symbols associated with them.
         def keys
           @keys
+        end
+
+        # @param [Symbol] attr_sym The symbolized name of the attribute.
+        # @return [Boolean] true if object mutations are tracked for dirty
+        #   checking of that attribute, false if mutations are not tracked.
+        def track_mutations?(attr_sym)
+          mutation_tracking_enabled? && attributes[attr_sym].track_mutations?
         end
 
         private

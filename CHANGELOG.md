@@ -1,6 +1,49 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::DirtyTracking - Improves dirty tracking by adding
+  support for tracking mutations of attribute value objects. This feature is on
+  by default for the "collection" types: `:list_attr`, `:map_attr`,
+  `:string_set_attr`, and `:numeric_set_attr`.
+  
+  Before this feature, the `#save` method's default behavior of running an
+  update call for dirty attributes only could cause problems for users of
+  collection attributes. As many of them are commonly manipulated using mutable
+  state, the underlying "clean" version of the objects would be modified and the
+  updated object would not be recognized as dirty, and therefore would not be
+  updated at all unless explicitly marked as dirty or through a force put.
+  
+  ```ruby
+  class Model
+    include Aws::Record
+    string_attr :uuid, hash_key: true
+    list_attr :collection
+  end
+  
+  item = Model.new(uuid: SecureRandom.uuid, collection: [1,2,3])
+  item.clean! # As if loaded from the database, to demonstrate the new tracking.
+  item.dirty? # => false
+  item.collection << 4 # In place mutation of the "collection" array.
+  item.dirty? # => true (Previous versions would not recognize this as dirty.
+  item.save # Would call Aws::DynamoDB::Client#update_item for :collection only.
+  ```
+  
+  Note that this feature is implemented using deep copies of collection objects
+  in memory, so there is a potential memory/performance hit in exchange for the
+  added accuracy. As such, mutation tracking can be explicitly turned off at the
+  attribute level or at the full model level, if desired.
+  
+  ```ruby
+  # Note that the disabling of mutation tracking is redundant in this example,
+  # for illustration purposes.
+  class Model
+    include Aws::Record
+    disable_mutation_tracking # For turning off mutation at the model level.
+    string_attr :uuid, hash_key: true
+    list_attr :collection, mutation_tracking: false # Turn off at attr level.
+  end
+  ```
+
 1.0.0.pre.8 (2016-05-19)
 ------------------
 

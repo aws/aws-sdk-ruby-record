@@ -50,6 +50,7 @@ module Aws
     #     # Attribute definitions go here...
     #   end
     def self.included(sub_class)
+      @track_mutations = true
       sub_class.send(:extend, RecordClassMethods)
       sub_class.send(:include, Attributes)
       sub_class.send(:include, ItemOperations)
@@ -181,6 +182,26 @@ module Aws
       # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
       def dynamodb_client
         @dynamodb_client ||= configure_client
+      end
+
+      # Turns off mutation tracking for all attributes in the model.
+      def disable_mutation_tracking
+        @track_mutations = false
+      end
+
+      # Turns on mutation tracking for all attributes in the model. Note that
+      # mutation tracking is on by default, so you generally would not need to
+      # call this. It is provided in case there is a need to dynamically turn
+      # this feature on and off, though that would be generally discouraged and
+      # could cause inaccurate mutation tracking at runtime.
+      def enable_mutation_tracking
+        @track_mutations = true
+      end
+
+      # @return [Boolean] true if mutation tracking is enabled at the model
+      # level, false otherwise.
+      def mutation_tracking_enabled?
+        @track_mutations == false ? false : true
       end
 
       private
