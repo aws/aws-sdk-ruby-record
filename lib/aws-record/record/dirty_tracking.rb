@@ -45,11 +45,7 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to to check for dirty changes.
       # @return [Boolean] +true+ if the specified attribute has any dirty changes, +false+ otherwise.
       def attribute_dirty?(name)
-        if @mutation_copies.has_key?(name)
-          @data[name] != @mutation_copies[name]
-        else
-          @dirty_data.has_key?(name)
-        end
+        @dirty_data.has_key?(name) || _mutated?(name)
       end 
 
       # Returns the original value of the specified attribute.
@@ -291,6 +287,14 @@ module Aws
           @dirty_data.delete(name)
         else
           attribute_dirty!(name)
+        end
+      end
+
+      def _mutated?(name)
+        if @mutation_copies.has_key?(name)
+          @data[name] != @mutation_copies[name]
+        else
+          false
         end
       end
 
