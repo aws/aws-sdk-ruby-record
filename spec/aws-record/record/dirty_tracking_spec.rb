@@ -267,4 +267,254 @@ describe Aws::Record::DirtyTracking do
 
   end
 
+  describe "Mutation Dirty Tracking" do
+    let(:klass) do
+      Class.new do
+        include(Aws::Record)
+        set_table_name(:test_table)
+        string_attr(:mykey, hash_key: true)
+        string_attr(:body)
+        list_attr(:dirty_list)
+        map_attr(:dirty_map)
+        string_set_attr(:dirty_set)
+        list_attr(:notrack_list, mutation_tracking: false)
+      end
+    end
+
+    describe "Tracking Turned Off" do
+      it 'does not track detailed mutations when mutation tracking is turned off' do
+        item = klass.new(mykey: "1", notrack_list: [1,2,3])
+        item.clean!
+        item.notrack_list << 4
+        expect(item.notrack_list).to eq([1,2,3,4])
+        expect(item.dirty?).to be_falsy
+      end
+
+      it 'does not track detailed mutations when tracking is globally off' do
+        klass.disable_mutation_tracking
+        item = klass.new(mykey: "1", dirty_list: [1,2,3])
+        item.clean!
+        item.dirty_list << 4
+        expect(item.dirty_list).to eq([1,2,3,4])
+        expect(item.dirty?).to be_falsy
+      end
+    end
+
+    describe "Lists" do
+      it 'marks mutated lists as dirty' do
+        item = klass.new(mykey: "1", dirty_list: [1,2,3])
+        item.clean!
+        item.dirty_list << 4
+        expect(item.dirty_list).to eq([1,2,3,4])
+        expect(item.dirty?).to be_truthy
+        expect(item.attribute_dirty?(:dirty_list)).to be_truthy
+      end
+
+      it 'has a copy of the mutated list to reference and can roll back' do
+        item = klass.new(mykey: "1", dirty_list: [1,2,3])
+        item.clean!
+        item.dirty_list << 4
+        expect(item.dirty_list_was).to eq([1,2,3])
+        item.rollback!(:dirty_list)
+        expect(item.dirty_list).to eq([1,2,3])
+      end
+
+      it 'includes the mutated list in the list of dirty attributes' do
+        item = klass.new(mykey: "1", body: "b", dirty_list: [1,2,3])
+        item.clean!
+        item.body = "body"
+        item.dirty_list << 4
+        expect(item.dirty).to eq([:body, :dirty_list])
+      end
+
+      it 'correctly unmarks attributes as dirty when rolling back from copy' do
+        item = klass.new(mykey: "1", dirty_list: [1,2,3])
+        item.clean!
+        item.attribute_dirty!(:dirty_list)
+        expect(item.dirty).to eq([:dirty_list])
+        item.dirty_list << 4
+        expect(item.dirty).to eq([:dirty_list])
+        item.rollback_attribute!(:dirty_list)
+        expect(item.dirty?).to be_falsy
+      end
+
+      it 'correctly handles #clean! with a mutated list' do
+        item = klass.new(mykey: "1", body: "b", dirty_list: [1,2,3])
+        item.clean!
+        item.dirty_list << 4
+        expect(item.dirty?).to be_truthy
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        expect(item.attribute_was(:dirty_list)).to eq([1,2,3,4])
+      end
+
+      it 'correctly handles nested mutated lists' do
+        my_list = [[1], [1,2], [1,2,3]]
+        item = klass.new(mykey: "1", dirty_list: my_list)
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        my_list[0] << 2
+        my_list[1] << 3
+        my_list[2] << 4
+        expect(item.dirty_list).to eq([[1,2], [1,2,3], [1,2,3,4]])
+        expect(item.dirty_list_was).to eq([[1], [1,2], [1,2,3]])
+        expect(item.dirty?).to be_truthy
+        item.rollback_attribute!(:dirty_list)
+        expect(item.dirty_list).to eq([[1], [1,2], [1,2,3]])
+      end
+
+      it 'correctly handles list equality through assignment' do
+        item = klass.new(mykey: "1", dirty_list: [1,2,3])
+        item.clean!
+        item.dirty_list << 4
+        expect(item.dirty?).to be_truthy
+        item.dirty_list = [1,2,3]
+        expect(item.dirty?).to be_falsy
+      end
+    end
+
+    describe "Maps" do
+      it 'marks mutated maps as dirty' do
+        item = klass.new(mykey: "1", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty_map).to eq({a: 1, b: '2', c: 3.0})
+        expect(item.dirty?).to be_truthy
+        expect(item.attribute_dirty?(:dirty_map)).to be_truthy
+      end
+
+      it 'has a copy of the mutated map to reference and can roll back' do
+        item = klass.new(mykey: "1", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty_map_was).to eq({a: 1, b: '2'})
+        item.rollback!(:dirty_map)
+        expect(item.dirty_map).to eq({a: 1, b: '2'})
+      end
+
+      it 'includes the mutated map in the list of dirty attributes' do
+        item = klass.new(mykey: "1", body: "b", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.body = "body"
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty).to eq([:body, :dirty_map])
+      end
+
+      it 'correctly unmarks attributes as dirty when rolling back from copy' do
+        item = klass.new(mykey: "1", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.attribute_dirty!(:dirty_map)
+        expect(item.dirty).to eq([:dirty_map])
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty).to eq([:dirty_map])
+        item.rollback_attribute!(:dirty_map)
+        expect(item.dirty?).to be_falsy
+      end
+
+      it 'correctly handles #clean! with a mutated map' do
+        item = klass.new(mykey: "1", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty?).to be_truthy
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        expect(item.attribute_was(:dirty_map)).to eq({a: 1, b: '2', c: 3.0})
+      end
+
+      it 'correctly handles nested mutated maps' do
+        my_map = {
+          a: { one: 1, two: 2.0 },
+          b: 2
+        }
+        item = klass.new(mykey: "1", dirty_map: my_map)
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        my_map[:a][:three] = "3"
+        my_map[:c] = { nesting: true }
+        expect(item.dirty_map).to eq({
+          a: { one: 1, two: 2.0, three: "3" },
+          b: 2,
+          c: { nesting: true }
+        })
+        expect(item.dirty_map_was).to eq({
+          a: { one: 1, two: 2.0 },
+          b: 2
+        })
+        expect(item.dirty?).to be_truthy
+        item.rollback_attribute!(:dirty_map)
+        expect(item.dirty_map).to eq({
+          a: { one: 1, two: 2.0 },
+          b: 2
+        })
+      end
+
+      it 'correctly handles map equality through assignment' do
+        item = klass.new(mykey: "1", dirty_map: { a: 1, b: '2' })
+        item.clean!
+        item.dirty_map[:c] = 3.0
+        expect(item.dirty?).to be_truthy
+        item.dirty_map = { a: 1, b: '2' }
+        expect(item.dirty?).to be_falsy
+      end
+    end
+
+    describe "Sets" do
+      it 'marks mutated sets as dirty' do
+        item = klass.new(mykey: "1", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.dirty_set.add('d')
+        expect(item.dirty_set).to eq(Set.new(['a','b','c','d']))
+        expect(item.dirty?).to be_truthy
+        expect(item.attribute_dirty?(:dirty_set)).to be_truthy
+      end
+
+      it 'has a copy of the mutated set to reference and can roll back' do
+        item = klass.new(mykey: "1", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.dirty_set.add('d')
+        expect(item.dirty_set_was).to eq(Set.new(['a','b','c']))
+        item.rollback!(:dirty_set)
+        expect(item.dirty_set).to eq(Set.new(['a','b','c']))
+      end
+
+      it 'includes the mutated set in the list of dirty attributes' do
+        item = klass.new(mykey: "1", body: "b", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.body = "body"
+        item.dirty_set.add('d')
+        expect(item.dirty).to eq([:body, :dirty_set])
+      end
+
+      it 'correctly unmarks attributes as dirty when rolling back from copy' do
+        item = klass.new(mykey: "1", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.attribute_dirty!(:dirty_set)
+        expect(item.dirty).to eq([:dirty_set])
+        item.dirty_set.add('d')
+        expect(item.dirty).to eq([:dirty_set])
+        item.rollback_attribute!(:dirty_set)
+        expect(item.dirty?).to be_falsy
+      end
+
+      it 'correctly handles #clean! with a mutated set' do
+        item = klass.new(mykey: "1", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.dirty_set.add('d')
+        expect(item.dirty?).to be_truthy
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        expect(item.attribute_was(:dirty_set)).to eq(Set.new(['a','b','c','d']))
+      end
+
+      it 'correctly handles set equality through assignment' do
+        item = klass.new(mykey: "1", dirty_set: Set.new(['a','b','c']))
+        item.clean!
+        item.dirty_set.add('d')
+        expect(item.dirty?).to be_truthy
+        item.dirty_set = Set.new(['a','b','c'])
+        expect(item.dirty?).to be_falsy
+      end
+    end
+  end
+
 end

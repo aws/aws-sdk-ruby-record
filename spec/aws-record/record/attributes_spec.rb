@@ -152,6 +152,33 @@ module Aws
         end
       end
 
+      context "Mutation Tracking" do
+        it 'should do mutation tracking for list attributes' do
+          klass.list_attr(:mt)
+          expect(klass.attributes[:mt].track_mutations?).to be_truthy
+        end
+
+        it 'should do mutation tracking for map attributes' do
+          klass.map_attr(:mt)
+          expect(klass.attributes[:mt].track_mutations?).to be_truthy
+        end
+
+        it 'should do mutation tracking for numeric set attributes' do
+          klass.numeric_set_attr(:mt)
+          expect(klass.attributes[:mt].track_mutations?).to be_truthy
+        end
+
+        it 'should do mutation tracking for string set attributes' do
+          klass.string_set_attr(:mt)
+          expect(klass.attributes[:mt].track_mutations?).to be_truthy
+        end
+
+        it 'can turn off mutation tracking at the attribute level' do
+          klass.list_attr(:mt, mutation_tracking: false)
+          expect(klass.attributes[:mt].track_mutations?).to be_falsy
+        end
+      end
+
     end
   end
 end
