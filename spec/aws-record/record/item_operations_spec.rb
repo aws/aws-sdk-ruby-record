@@ -112,6 +112,27 @@ module Aws
           }])
         end
 
+        it 'does not persist attributes that are not defined' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "MyDate"
+            }
+          }])
+        end
+
         it 'will call #put_item without conditions if :force is included' do
           klass.configure_client(client: stub_client)
           item = klass.new
