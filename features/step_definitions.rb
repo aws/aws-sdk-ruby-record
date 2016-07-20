@@ -134,3 +134,19 @@ Given(/^an aws\-record model with definition:$/) do |string|
   @model.class_eval(string)
 end
 
+Then(/^the DynamoDB table should have exactly the following item attributes:$/) do |string|
+  data = JSON.parse(string)
+  key = {}
+  data["key"].each do |row|
+    attribute, value = row
+    key[attribute] = value
+  end
+  resp = @client.get_item(
+    table_name: @table_name,
+    key: key
+  )
+  expect(resp.item.keys.sort).to eq(data["item"].keys.sort)
+  data["item"].each do |k,v|
+    expect(resp.item[k]).to eq(v)
+  end
+end

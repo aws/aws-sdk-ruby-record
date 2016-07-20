@@ -241,20 +241,18 @@ Scenario: Updating an Object for Attribute Removal
         "z": null
       }
       """
-    And we call the 'find' class method with parameter data:
+    Then the DynamoDB table should have exactly the following item attributes:
       """
       {
-        "hk": "sample",
-        "rk": "sample"
-      }
-      """
-    Then we should receive an aws-record item with attribute data:
-      """
-      {
-        "hk": "sample",
-        "rk": "sample",
-        "x": "x",
-        "y": "foo",
-        "z": null
+        "key": {
+          "hk": "sample",
+          "rk": "sample"
+        },
+        "item": {
+          "hk": "sample",
+          "rk": "sample",
+          "x": "x",
+          "y": "foo"
+        }
       }
       """
