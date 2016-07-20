@@ -112,12 +112,12 @@ module Aws
         if force
           dynamodb_client.put_item(
             table_name: self.class.table_name,
-            item: build_item_for_save
+            item: _build_item_for_save
           )
         elsif expect_new
           put_opts = {
             table_name: self.class.table_name,
-            item: build_item_for_save
+            item: _build_item_for_save
           }.merge(prevent_overwrite_expression)
           begin
             dynamodb_client.put_item(put_opts)
@@ -129,21 +129,39 @@ module Aws
             )
           end
         else
-          dynamodb_client.update_item(
-            table_name: self.class.table_name,
-            key: key_values,
-            attribute_updates: dirty_changes_for_update
+          update_pairs = _dirty_changes_for_update
+          update_tuple = self.class.send(
+            :_build_update_expression,
+            update_pairs
           )
+          if update_tuple
+            uex, exp_attr_names, exp_attr_values = update_tuple
+            dynamodb_client.update_item(
+              table_name: self.class.table_name,
+              key: key_values,
+              update_expression: uex,
+              expression_attribute_names: exp_attr_names,
+              expression_attribute_values: exp_attr_values
+            )
+          else
+            dynamodb_client.update_item(
+              table_name: self.class.table_name,
+              key: key_values
+            )
+          end
         end
       end
 
-      def build_item_for_save
+      def _build_item_for_save
         validate_key_values
         attributes = self.class.attributes
         @data.inject({}) do |acc, name_value_pair|
           attr_name, raw_value = name_value_pair
-          db_name = attributes[attr_name].database_name
-          acc[db_name] = attributes[attr_name].serialize(raw_value)
+          attribute = attributes[attr_name]
+          if !raw_value.nil? || attribute.persist_nil?
+            db_name = attribute.database_name
+            acc[db_name] = attribute.serialize(raw_value)
+          end
           acc
         end
       end
@@ -198,15 +216,10 @@ module Aws
         }
       end
 
-      def dirty_changes_for_update
+      def _dirty_changes_for_update
         attributes = self.class.attributes
         ret = dirty.inject({}) do |acc, attr_name|
-          key = attributes[attr_name].database_name
-          value = {
-            value: attributes[attr_name].serialize(@data[attr_name]),
-            action: "PUT"
-          }
-          acc[key] = value
+          acc[attr_name] = @data[attr_name]
           acc
         end
         ret
@@ -289,24 +302,9 @@ module Aws
             table_name: table_name,
             key: key
           }
-          update_expressions = []
-          exp_attr_names = {}
-          exp_attr_values = {}
-          name_sub_token = "A"
-          value_sub_token = "a"
-          opts.each do |attr_sym, value|
-            name_sub = "#" + name_sub_token
-            value_sub = ":" + value_sub_token
-            name_sub_token = name_sub_token.succ
-            value_sub_token = value_sub_token.succ
-
-            attr_name = attributes[attr_sym].database_name
-            update_expressions << "#{name_sub} = #{value_sub}"
-            exp_attr_names[name_sub] = attr_name
-            exp_attr_values[value_sub] = attributes[attr_sym].serialize(value)
-          end
-          unless update_expressions.empty?
-            uex = "SET " + update_expressions.join(", ")
+          update_tuple = _build_update_expression(opts)
+          unless update_tuple.nil?
+            uex, exp_attr_names, exp_attr_values = update_tuple
             request_opts[:update_expression] = uex
             request_opts[:expression_attribute_names] = exp_attr_names
             request_opts[:expression_attribute_values] = exp_attr_values
@@ -315,6 +313,43 @@ module Aws
         end
 
         private
+        def _build_update_expression(attr_value_pairs)
+          set_expressions = []
+          remove_expressions = []
+          exp_attr_names = {}
+          exp_attr_values = {}
+          name_sub_token = "UE_A"
+          value_sub_token = "ue_a"
+          attr_value_pairs.each do |attr_sym, value|
+            name_sub = "#" + name_sub_token
+            value_sub = ":" + value_sub_token
+            name_sub_token = name_sub_token.succ
+            value_sub_token = value_sub_token.succ
+
+            attribute = attributes[attr_sym]
+            attr_name = attribute.database_name
+            exp_attr_names[name_sub] = attr_name
+            if _update_type_remove?(attribute, value)
+              remove_expressions << "#{name_sub}"
+            else
+              set_expressions << "#{name_sub} = #{value_sub}"
+              exp_attr_values[value_sub] = attribute.serialize(value)
+            end
+          end
+          update_expressions = []
+          unless set_expressions.empty?
+            update_expressions << "SET " + set_expressions.join(", ")
+          end
+          unless remove_expressions.empty?
+            update_expressions << "REMOVE " + remove_expressions.join(", ")
+          end
+          if update_expressions.empty?
+            nil
+          else
+            [update_expressions.join(" "), exp_attr_names, exp_attr_values]
+          end
+        end
+
         def build_item_from_resp(resp)
           record = new
           data = record.instance_variable_get("@data")
@@ -322,6 +357,10 @@ module Aws
             data[name] = attr.extract(resp.item)
           end
           record
+        end
+
+        def _update_type_remove?(attribute, value)
+          value.nil? && !attribute.persist_nil?
         end
       end
 
