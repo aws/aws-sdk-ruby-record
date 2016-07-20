@@ -221,7 +221,6 @@ Feature: Amazon DynamoDB Item Updates
       }
       """
 
-@wip
 Scenario: Updating an Object for Attribute Removal
     Given an aws-record model with data:
       """
