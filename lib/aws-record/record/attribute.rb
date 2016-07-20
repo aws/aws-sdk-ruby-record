@@ -40,16 +40,27 @@ module Aws
       #   secondary index, but most convenience methods for setting attributes
       #   will provide this.
       # @option options [Boolean] :mutation_tracking Optional attribute used to
-      #   indicate if mutations to values should be explicitly tracked when
+      #   indicate whether mutations to values should be explicitly tracked when
       #   determining if a value is "dirty". Important for collection types
       #   which are often primarily modified by mutation of a single object
       #   reference. By default, is false.
+      # @option options [Boolean] :persist_nil Optional attribute used to
+      #   indicate whether nil values should be persisted. If true, explicitly
+      #   set nil values will be saved to DynamoDB as a "null" type. If false,
+      #   nil values will be ignored and not persisted. By default, is false.
       def initialize(name, options = {})
         @name = name
         @database_name = options[:database_attribute_name] || name.to_s
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
         @mutation_tracking = options[:mutation_tracking]
+        @persist_nil = options[:persist_nil]
+        if options[:nil_as_empty_list] || options[:nil_as_empty_map]
+          @persist_nil = true
+        end
+        @marshaler_options = {}
+        @marshaler_options[:nil_as_empty_list] = options[:nil_as_empty_list]
+        @marshaler_options[:nil_as_empty_map] = options[:nil_as_empty_map]
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
@@ -58,7 +69,7 @@ module Aws
       # @return [Object] the type cast object. Return type is dependent on the
       #  marshaler used. See your attribute's marshaler class for details.
       def type_cast(raw_value)
-        @marshaler.type_cast(raw_value)
+        @marshaler.type_cast(raw_value, @marshaler_options)
       end
 
       # Attempts to serialize a raw value into the attribute's serialized
@@ -68,13 +79,19 @@ module Aws
       # @return [Object] the serialized object. Return type is dependent on the
       #  marshaler used. See your attribute's marshaler class for details.
       def serialize(raw_value)
-        @marshaler.serialize(raw_value)
+        @marshaler.serialize(raw_value, @marshaler_options)
       end
 
       # @return [Boolean] true if this attribute should do active mutation
-      #  tracking, false otherwise.
+      #  tracking, false otherwise. Default: false
       def track_mutations?
         @mutation_tracking ? true : false
+      end
+
+      # @return [Boolean] true if this attribute will actively persist nil
+      #   values, false otherwise. Default: false
+      def persist_nil?
+        @persist_nil ? true : false
       end
 
       # @api private

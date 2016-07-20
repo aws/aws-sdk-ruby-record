@@ -24,6 +24,13 @@ module Aws
           integer_attr(:id, hash_key: true)
           date_attr(:date, range_key: true, database_attribute_name: "MyDate")
           string_attr(:body)
+          string_attr(:persist_on_nil, persist_nil: true)
+          list_attr(:list_nil_to_empty, nil_as_empty_list: true)
+          list_attr(:list_nil_as_nil, persist_nil: true)
+          list_attr(:list_no_nil_persist)
+          map_attr(:map_nil_to_empty, nil_as_empty_map: true)
+          map_attr(:map_nil_as_nil, persist_nil: true)
+          map_attr(:map_no_nil_persist)
           boolean_attr(:bool, database_attribute_name: "my_boolean")
         end
       end
@@ -112,27 +119,6 @@ module Aws
           }])
         end
 
-        it 'does not persist attributes that are not defined' do
-          klass.configure_client(client: stub_client)
-          item = klass.new
-          item.id = 1
-          item.date = '2015-12-14'
-          item.save
-          expect(api_requests).to eq([{
-            table_name: "TestTable",
-            item: {
-              "id" => { n: "1" },
-              "MyDate" => { s: "2015-12-14" }
-            },
-            condition_expression: "attribute_not_exists(#H)"\
-              " and attribute_not_exists(#R)",
-            expression_attribute_names: {
-              "#H" => "id",
-              "#R" => "MyDate"
-            }
-          }])
-        end
-
         it 'will call #put_item without conditions if :force is included' do
           klass.configure_client(client: stub_client)
           item = klass.new
@@ -165,11 +151,12 @@ module Aws
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" }
             },
-            attribute_updates: {
-              "body" => {
-                value: { s: "Goodbye!" },
-                action: "PUT"
-              }
+            update_expression: "SET #UE_A = :ue_a",
+            expression_attribute_names: {
+              "#UE_A" => "body"
+            },
+            expression_attribute_values: {
+              ":ue_a" => { s: "Goodbye!" }
             }
           }])
         end
@@ -266,14 +253,34 @@ module Aws
               "id" => { n: "1" },
               "MyDate" => { s: "2016-05-18" }
             },
-            update_expression: "SET #A = :a, #B = :b",
+            update_expression: "SET #UE_A = :ue_a, #UE_B = :ue_b",
             expression_attribute_names: {
-              "#A" => "body",
-              "#B" => "my_boolean"
+              "#UE_A" => "body",
+              "#UE_B" => "my_boolean"
             },
             expression_attribute_values: {
-              ":a" => { s: "New" },
-              ":b" => { bool: true }
+              ":ue_a" => { s: "New" },
+              ":ue_b" => { bool: true }
+            }
+          }])
+        end
+
+        it 'will recognize nil as a removal operation if nil not persisted' do
+          klass.configure_client(client: stub_client)
+          klass.update(id: 1, date: "2016-07-20", body: nil, persist_on_nil: nil)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2016-07-20" }
+            },
+            update_expression: "SET #UE_B = :ue_b REMOVE #UE_A",
+            expression_attribute_names: {
+              "#UE_A" => "body",
+              "#UE_B" => "persist_on_nil"
+            },
+            expression_attribute_values: {
+              ":ue_b" => { null: true }
             }
           }])
         end
@@ -314,6 +321,129 @@ module Aws
             }
           }])
         end
+      end
+
+      describe 'nil persistence scenarios' do
+        it 'does not persist attributes that are not defined' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "MyDate"
+            }
+          }])
+        end
+
+        it 'does not persist nil attributes by default' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = nil
+          item.persist_on_nil = nil
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" },
+              "persist_on_nil" => { null: true }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "MyDate"
+            }
+          }])
+        end
+
+        it 'can persist nil list and map attributes as empty lists and maps' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.list_nil_to_empty = nil
+          item.map_nil_to_empty = nil
+          item.list_no_nil_persist = nil
+          item.map_no_nil_persist = nil
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "MyDate"
+            }
+          }])
+        end
+
+        it 'can persist nil list and map attributes as nil' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.list_nil_as_nil = nil
+          item.map_nil_as_nil = nil
+          item.list_no_nil_persist = nil
+          item.map_no_nil_persist = nil
+          item.save
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            item: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" },
+              "list_nil_as_nil" => { null: true },
+              "map_nil_as_nil" => { null: true }
+            },
+            condition_expression: "attribute_not_exists(#H)"\
+              " and attribute_not_exists(#R)",
+            expression_attribute_names: {
+              "#H" => "id",
+              "#R" => "MyDate"
+            }
+          }])
+        end
+
+        it 'correctly reads nil collections from DynamoDB' do
+          stub_client.stub_responses(:get_item,
+            {
+              item: {
+                "id" => 5,
+                "MyDate" => "2016-07-15",
+                "list_nil_to_empty" => nil,
+                "list_nil_as_nil" => nil,
+                "map_nil_to_empty" => nil,
+                "map_nil_as_nil" => nil
+              }
+            })
+          klass.configure_client(client: stub_client)
+          find_opts = { id: 5, date: '2016-07-15' }
+          item = klass.find(find_opts)
+          expect(item.list_nil_to_empty).to eq([])
+          expect(item.list_nil_as_nil).to eq(nil)
+          expect(item.map_nil_to_empty).to eq({})
+          expect(item.map_nil_as_nil).to eq(nil)
+        end
+
       end
 
       describe "validations with ActiveModel::Validations" do

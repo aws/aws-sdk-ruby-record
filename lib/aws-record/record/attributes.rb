@@ -88,10 +88,14 @@ module Aws
         #   secondary index, but most convenience methods for setting attributes
         #   will provide this.
         # @option options [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
+        #   indicate whether mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
@@ -128,6 +132,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def string_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::StringMarshaler, opts)
@@ -147,6 +155,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def boolean_attr(name, opts = {})
           opts[:dynamodb_type] = "BOOL"
           attr(name, Attributes::BooleanMarshaler, opts)
@@ -166,6 +178,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def integer_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
           attr(name, Attributes::IntegerMarshaler, opts)
@@ -185,6 +201,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def float_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
           attr(name, Attributes::FloatMarshaler, opts)
@@ -204,6 +224,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def date_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::DateMarshaler, opts)
@@ -223,6 +247,10 @@ module Aws
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
+        # @option options [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
         def datetime_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
           attr(name, Attributes::DateTimeMarshaler, opts)

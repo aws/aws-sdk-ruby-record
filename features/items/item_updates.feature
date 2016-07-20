@@ -220,3 +220,39 @@ Feature: Amazon DynamoDB Item Updates
         "z": "bar"
       }
       """
+
+Scenario: Updating an Object for Attribute Removal
+    Given an aws-record model with data:
+      """
+      [
+        { "method": "string_attr", "name": "hk", "hash_key": true },
+        { "method": "string_attr", "name": "rk", "range_key": true },
+        { "method": "string_attr", "name": "x" },
+        { "method": "string_attr", "name": "y" },
+        { "method": "string_attr", "name": "z" }
+      ]
+      """
+    When we call the 'update' class method with parameter data:
+      """
+      {
+        "hk": "sample",
+        "rk": "sample",
+        "y": "foo",
+        "z": null
+      }
+      """
+    Then the DynamoDB table should have exactly the following item attributes:
+      """
+      {
+        "key": {
+          "hk": "sample",
+          "rk": "sample"
+        },
+        "item": {
+          "hk": "sample",
+          "rk": "sample",
+          "x": "x",
+          "y": "foo"
+        }
+      }
+      """
