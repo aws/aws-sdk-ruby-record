@@ -21,7 +21,7 @@ module Aws
     # within the model class and item instances.
     class Attribute
 
-      attr_reader :name, :database_name, :dynamodb_type
+      attr_reader :name, :database_name, :dynamodb_type, :default_value
 
       # @param [Symbol] name Name of the attribute. It should be a name that is
       #  safe to use as a method.
@@ -48,6 +48,9 @@ module Aws
       #   indicate whether nil values should be persisted. If true, explicitly
       #   set nil values will be saved to DynamoDB as a "null" type. If false,
       #   nil values will be ignored and not persisted. By default, is false.
+      # @option options [Object] :default_value Optional attribute used to
+      #   define a "default value" to be used if the attribute's value on an
+      #   item is nil or not set at persistence time.
       def initialize(name, options = {})
         @name = name
         @database_name = options[:database_attribute_name] || name.to_s
@@ -55,12 +58,8 @@ module Aws
         @marshaler = options[:marshaler] || DefaultMarshaler
         @mutation_tracking = options[:mutation_tracking]
         @persist_nil = options[:persist_nil]
-        if options[:nil_as_empty_list] || options[:nil_as_empty_map]
-          @persist_nil = true
-        end
-        @marshaler_options = {}
-        @marshaler_options[:nil_as_empty_list] = options[:nil_as_empty_list]
-        @marshaler_options[:nil_as_empty_map] = options[:nil_as_empty_map]
+        dv = options[:default_value]
+        @default_value = type_cast(dv) unless dv.nil?
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
@@ -69,7 +68,9 @@ module Aws
       # @return [Object] the type cast object. Return type is dependent on the
       #  marshaler used. See your attribute's marshaler class for details.
       def type_cast(raw_value)
-        @marshaler.type_cast(raw_value, @marshaler_options)
+        cast_value = @marshaler.type_cast(raw_value)
+        cast_value = default_value if cast_value.nil?
+        cast_value
       end
 
       # Attempts to serialize a raw value into the attribute's serialized
@@ -79,7 +80,9 @@ module Aws
       # @return [Object] the serialized object. Return type is dependent on the
       #  marshaler used. See your attribute's marshaler class for details.
       def serialize(raw_value)
-        @marshaler.serialize(raw_value, @marshaler_options)
+        cast_value = type_cast(raw_value)
+        cast_value = default_value if cast_value.nil?
+        @marshaler.serialize(cast_value)
       end
 
       # @return [Boolean] true if this attribute should do active mutation

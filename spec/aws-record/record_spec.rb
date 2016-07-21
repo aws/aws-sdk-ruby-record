@@ -134,7 +134,7 @@ module Aws
           include(Aws::Record)
           set_table_name("TestTable")
           string_attr(:uuid, hash_key: true)
-          attr(:mt, Aws::Record::Attributes::StringMarshaler, mutation_tracking: true)
+          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new, mutation_tracking: true)
         end
       }
 

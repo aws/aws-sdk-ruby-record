@@ -87,15 +87,18 @@ module Aws
         #   "M", "L". Optional if this attribute will never be used for a key or
         #   secondary index, but most convenience methods for setting attributes
         #   will provide this.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate whether mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
+        #   indicate whether mutations to values should be explicitly tracked
+        #   when determining if a value is "dirty". Important for collection
+        #   types which are often primarily modified by mutation of a single
+        #   object reference. By default, is false.
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
@@ -127,18 +130,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def string_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(name, Attributes::StringMarshaler, opts)
+          attr(name, Marshalers::StringMarshaler.new(opts), opts)
         end
 
         # Define a boolean-type attribute for your model.
@@ -150,18 +156,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def boolean_attr(name, opts = {})
           opts[:dynamodb_type] = "BOOL"
-          attr(name, Attributes::BooleanMarshaler, opts)
+          attr(name, Marshalers::BooleanMarshaler.new(opts), opts)
         end
 
         # Define a integer-type attribute for your model.
@@ -173,18 +182,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def integer_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
-          attr(name, Attributes::IntegerMarshaler, opts)
+          attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
         end
 
         # Define a float-type attribute for your model.
@@ -196,18 +208,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def float_attr(name, opts = {})
           opts[:dynamodb_type] = "N"
-          attr(name, Attributes::FloatMarshaler, opts)
+          attr(name, Marshalers::FloatMarshaler.new(opts), opts)
         end
 
         # Define a date-type attribute for your model.
@@ -219,18 +234,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option options [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def date_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(name, Attributes::DateMarshaler, opts)
+          attr(name, Marshalers::DateMarshaler.new(opts), opts)
         end
 
         # Define a datetime-type attribute for your model.
@@ -242,18 +260,21 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is false.
-        # @option options [Boolean] :persist_nil Optional attribute used to
+        # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
         #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def datetime_attr(name, opts = {})
           opts[:dynamodb_type] = "S"
-          attr(name, Attributes::DateTimeMarshaler, opts)
+          attr(name, Marshalers::DateTimeMarshaler.new(opts), opts)
         end
 
         # Define a list-type attribute for your model.
@@ -279,22 +300,22 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option opts [Boolean] :nil_as_empty_list Set to true if this
-        #   attribute should interpret nil values as an empty list. If false,
-        #   nil values will remain nil.
         # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is true.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def list_attr(name, opts = {})
           opts[:dynamodb_type] = "L"
           opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
-          attr(name, Attributes::ListMarshaler, opts)
+          attr(name, Marshalers::ListMarshaler.new(opts), opts)
         end
 
         # Define a map-type attribute for your model.
@@ -320,22 +341,22 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
         # @param [Hash] opts
-        # @option opts [Boolean] :nil_as_empty_map Set to true if this
-        #   attribute should interpret nil values as an empty hash. If false,
-        #   nil values will remain nil.
         # @option opts [Boolean] :hash_key Set to true if this attribute is
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is true.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def map_attr(name, opts = {})
           opts[:dynamodb_type] = "M"
           opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
-          attr(name, Attributes::MapMarshaler, opts)
+          attr(name, Marshalers::MapMarshaler.new(opts), opts)
         end
 
         # Define a string set attribute for your model.
@@ -355,15 +376,18 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is true.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def string_set_attr(name, opts = {})
           opts[:dynamodb_type] = "SS"
           opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
-          attr(name, Attributes::StringSetMarshaler, opts)
+          attr(name, Marshalers::StringSetMarshaler.new(opts), opts)
         end
 
         # Define a numeric set attribute for your model.
@@ -383,15 +407,18 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option options [Boolean] :mutation_tracking Optional attribute used to
+        # @option opts [Boolean] :mutation_tracking Optional attribute used to
         #   indicate if mutations to values should be explicitly tracked when
         #   determining if a value is "dirty". Important for collection types
         #   which are often primarily modified by mutation of a single object
         #   reference. By default, is true.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
         def numeric_set_attr(name, opts = {})
           opts[:dynamodb_type] = "NS"
           opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
-          attr(name, Attributes::NumericSetMarshaler, opts)
+          attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
         # @return [Hash] hash of symbolized attribute names to attribute objects
