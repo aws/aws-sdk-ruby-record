@@ -1,6 +1,13 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Attribute - Added support for default values at the attribute
+  level.
+
+* Feature - Aws::Marshalers - Removed the marshalers in the `Aws::Attributes`
+  namespace, replacing them with instantiated marshaler objects. This enables
+  more functionality in marshalers such as the Date/DateTime marshalers.
+
 * Feature - Aws::Record::DirtyTracking - Improves dirty tracking by adding
   support for tracking mutations of attribute value objects. This feature is on
   by default for the "collection" types: `:list_attr`, `:map_attr`,
