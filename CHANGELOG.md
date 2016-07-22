@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.9 (2016-07-22)
 ------------------
 
 * Feature - Aws::Attribute - Added support for default values at the attribute
