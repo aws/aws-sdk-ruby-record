@@ -25,10 +25,10 @@ module Aws
           date_attr(:date, range_key: true, database_attribute_name: "MyDate")
           string_attr(:body)
           string_attr(:persist_on_nil, persist_nil: true)
-          list_attr(:list_nil_to_empty, nil_as_empty_list: true)
+          list_attr(:list_nil_to_empty, default_value: [])
           list_attr(:list_nil_as_nil, persist_nil: true)
           list_attr(:list_no_nil_persist)
-          map_attr(:map_nil_to_empty, nil_as_empty_map: true)
+          map_attr(:map_nil_to_empty, default_value: {})
           map_attr(:map_nil_as_nil, persist_nil: true)
           map_attr(:map_no_nil_persist)
           boolean_attr(:bool, database_attribute_name: "my_boolean")
@@ -60,7 +60,9 @@ module Aws
             item: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
-              "body" => { s: "Hello!" }
+              "body" => { s: "Hello!" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
@@ -108,7 +110,9 @@ module Aws
             item: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
-              "body" => { s: "Hello!" }
+              "body" => { s: "Hello!" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
@@ -131,7 +135,9 @@ module Aws
             item: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
-              "body" => { s: "Hello!" }
+              "body" => { s: "Hello!" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             }
           }])
         end
@@ -176,7 +182,9 @@ module Aws
             item: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
-              "body" => { s: "Hello!" }
+              "body" => { s: "Hello!" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
@@ -334,7 +342,9 @@ module Aws
             table_name: "TestTable",
             item: {
               "id" => { n: "1" },
-              "MyDate" => { s: "2015-12-14" }
+              "MyDate" => { s: "2015-12-14" },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
@@ -358,7 +368,9 @@ module Aws
             item: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
-              "persist_on_nil" => { null: true }
+              "persist_on_nil" => { null: true },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
@@ -369,7 +381,7 @@ module Aws
           }])
         end
 
-        it 'can persist nil list and map attributes as empty lists and maps' do
+        it 'can persist nil list and map attributes as default values' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
@@ -412,7 +424,9 @@ module Aws
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" },
               "list_nil_as_nil" => { null: true },
-              "map_nil_as_nil" => { null: true }
+              "map_nil_as_nil" => { null: true },
+              "list_nil_to_empty" => { l: [] },
+              "map_nil_to_empty" => { m: {} }
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",

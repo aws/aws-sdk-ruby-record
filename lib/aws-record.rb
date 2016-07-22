@@ -28,17 +28,17 @@ module Aws
     autoload :TableMigration,   'aws-record/record/table_migration'
     autoload :VERSION,          'aws-record/record/version'
 
-    module Attributes
-      autoload :StringMarshaler,    'aws-record/record/attributes/string_marshaler'
-      autoload :BooleanMarshaler,   'aws-record/record/attributes/boolean_marshaler'
-      autoload :IntegerMarshaler,   'aws-record/record/attributes/integer_marshaler'
-      autoload :FloatMarshaler,     'aws-record/record/attributes/float_marshaler'
-      autoload :DateMarshaler,      'aws-record/record/attributes/date_marshaler'
-      autoload :DateTimeMarshaler,  'aws-record/record/attributes/date_time_marshaler'
-      autoload :ListMarshaler,      'aws-record/record/attributes/list_marshaler'
-      autoload :MapMarshaler,       'aws-record/record/attributes/map_marshaler'
-      autoload :StringSetMarshaler, 'aws-record/record/attributes/string_set_marshaler'
-      autoload :NumericSetMarshaler, 'aws-record/record/attributes/numeric_set_marshaler'
+    module Marshalers
+      autoload :StringMarshaler,     'aws-record/record/marshalers/string_marshaler'
+      autoload :BooleanMarshaler,    'aws-record/record/marshalers/boolean_marshaler'
+      autoload :IntegerMarshaler,    'aws-record/record/marshalers/integer_marshaler'
+      autoload :FloatMarshaler,      'aws-record/record/marshalers/float_marshaler'
+      autoload :DateMarshaler,       'aws-record/record/marshalers/date_marshaler'
+      autoload :DateTimeMarshaler,   'aws-record/record/marshalers/date_time_marshaler'
+      autoload :ListMarshaler,       'aws-record/record/marshalers/list_marshaler'
+      autoload :MapMarshaler,        'aws-record/record/marshalers/map_marshaler'
+      autoload :StringSetMarshaler,  'aws-record/record/marshalers/string_set_marshaler'
+      autoload :NumericSetMarshaler, 'aws-record/record/marshalers/numeric_set_marshaler'
     end
 
   end

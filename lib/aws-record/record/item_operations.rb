@@ -155,6 +155,7 @@ module Aws
       def _build_item_for_save
         validate_key_values
         attributes = self.class.attributes
+        _populate_default_values(attributes)
         @data.inject({}) do |acc, name_value_pair|
           attr_name, raw_value = name_value_pair
           attribute = attributes[attr_name]
@@ -163,6 +164,14 @@ module Aws
             acc[db_name] = attribute.serialize(raw_value)
           end
           acc
+        end
+      end
+
+      def _populate_default_values(attributes)
+        attributes.each do |attr_name, attribute|
+          if !attribute.default_value.nil? && @data[attribute.name].nil?
+            @data[attr_name] = attribute.default_value
+          end
         end
       end
 
