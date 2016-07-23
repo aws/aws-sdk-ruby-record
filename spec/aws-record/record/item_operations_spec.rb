@@ -461,35 +461,63 @@ module Aws
       end
 
       describe "validations with ActiveModel::Validations" do
-        let(:klass_amv) do
-          ::TestTable = Class.new do
-            include(Aws::Record)
-            include(ActiveModel::Validations)
-            set_table_name("TestTable")
-            integer_attr(:id, hash_key: true)
-            date_attr(:date, range_key: true)
-            string_attr(:body)
-            boolean_attr(:bool, database_attribute_name: "my_boolean")
-            validates_presence_of(:id, :date)
+        class TestValidation
+          def initialize(record)
+            @record = record
+          end
+
+          def validate!
+            raise Aws::Record::Errors::ValidationError.new(error_message) unless valid?
+            yield
+          end
+
+          def valid?
+            @record.valid?
+          end
+
+          def error_message
+            @record.errors.full_messages.join(', ')
           end
         end
 
+        class ValidatableTestRecord
+          include Aws::Record
+          integer_attr :id, hash_key: true
+          string_attr :body
+
+          include ActiveModel::Validations
+          validates_presence_of :id, :body
+          set_validation_class TestValidation
+        end
+
         it 'will use ActiveModel::Validations :valid? method' do
-          klass_amv.configure_client(client: stub_client)
-          item = klass_amv.new
+          ValidatableTestRecord.configure_client(client: stub_client)
+          item = ValidatableTestRecord.new
           item.id = 3
           expect(item.save).to be_falsey
 
-          item.date = "2016-04-21"
           item.body = "Hello!"
           expect(item.save).to be_truthy
         end
 
         it 'will raise on an invalid model for #save!' do
-          klass_amv.configure_client(client: stub_client)
-          item = klass_amv.new
+          ValidatableTestRecord.configure_client(client: stub_client)
+          item = ValidatableTestRecord.new
           item.id = 3
           expect { item.save! }.to raise_error(Errors::ValidationError)
+        end
+
+        it 'raises the validation error messages' do
+          ValidatableTestRecord.configure_client(client: stub_client)
+          item = ValidatableTestRecord.new
+          item.id = 3
+          expect { item.save! }.to raise_error("Body can't be blank")
+        end
+
+        it 'joins the validation error messages' do
+          ValidatableTestRecord.configure_client(client: stub_client)
+          item = ValidatableTestRecord.new
+          expect { item.save! }.to raise_error("Id can't be blank, Body can't be blank")
         end
       end
 
