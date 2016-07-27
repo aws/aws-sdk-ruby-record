@@ -119,8 +119,8 @@ module Aws
         it 'should allow specification of a separate storage attribute name' do
           klass.string_attr(:a, database_attribute_name: 'column_a')
           klass.string_attr(:b)
-          expect(klass.attributes[:a].database_name).to eq('column_a')
-          expect(klass.attributes[:b].database_name).to eq('b')
+          expect(klass.attributes.storage_name_for(:a)).to eq('column_a')
+          expect(klass.attributes.storage_name_for(:b)).to eq('b')
         end
 
         it 'should reject storage name collisions' do
@@ -128,7 +128,7 @@ module Aws
           expect {
             klass.string_attr(:column_a)
           }.to raise_error(Errors::NameCollision)
-          expect(klass.attributes[:column_a]).to be_nil
+          expect(klass.attributes.present?(:column_a)).to be_falsy
         end
 
         it 'should enforce uniqueness of storage names' do
@@ -149,33 +149,6 @@ module Aws
           item = klass.new
           item.clever = "No problem."
           expect(item.to_h).to eq({ clever: "No problem." })
-        end
-      end
-
-      context "Mutation Tracking" do
-        it 'should do mutation tracking for list attributes' do
-          klass.list_attr(:mt)
-          expect(klass.attributes[:mt].track_mutations?).to be_truthy
-        end
-
-        it 'should do mutation tracking for map attributes' do
-          klass.map_attr(:mt)
-          expect(klass.attributes[:mt].track_mutations?).to be_truthy
-        end
-
-        it 'should do mutation tracking for numeric set attributes' do
-          klass.numeric_set_attr(:mt)
-          expect(klass.attributes[:mt].track_mutations?).to be_truthy
-        end
-
-        it 'should do mutation tracking for string set attributes' do
-          klass.string_set_attr(:mt)
-          expect(klass.attributes[:mt].track_mutations?).to be_truthy
-        end
-
-        it 'can turn off mutation tracking at the attribute level' do
-          klass.list_attr(:mt, mutation_tracking: false)
-          expect(klass.attributes[:mt].track_mutations?).to be_falsy
         end
       end
 

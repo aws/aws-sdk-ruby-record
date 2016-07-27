@@ -43,9 +43,10 @@ module Aws
         items.each do |item|
           record = model.new
           data = record.instance_variable_get("@data")
-          model.attributes.each do |name, attr|
-            data[name] = attr.extract(item)
+          model.attributes.attributes.each do |name, attr|
+            data.set_attribute(name, attr.extract(item))
           end
+          data.clean!
           ret << record
         end
         ret

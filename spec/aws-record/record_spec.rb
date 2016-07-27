@@ -134,17 +134,13 @@ module Aws
           include(Aws::Record)
           set_table_name("TestTable")
           string_attr(:uuid, hash_key: true)
-          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new, mutation_tracking: true)
+          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new)
         end
       }
 
-      it 'supports mutation tracking for the appropriate attributes by default' do
-        expect(model.track_mutations?(:mt)).to be_truthy
-      end
-
       it 'can turn off mutation tracking globally for a model' do
         model.disable_mutation_tracking
-        expect(model.track_mutations?(:mt)).to be_falsy
+        expect(model.mutation_tracking_enabled?).to be_falsy
       end
     end
 

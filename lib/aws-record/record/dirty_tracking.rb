@@ -19,15 +19,6 @@ module Aws
         sub_class.extend(DirtyTrackingClassMethods)
       end
 
-      # @private
-      #
-      # @override initialize(*)
-      def initialize(*)
-        @dirty_data = {}
-        @mutation_copies = {}
-        super
-      end
-
       # Returns +true+ if the specified attribute has any dirty changes, +false+ otherwise.
       #
       # @example
@@ -45,7 +36,8 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to to check for dirty changes.
       # @return [Boolean] +true+ if the specified attribute has any dirty changes, +false+ otherwise.
       def attribute_dirty?(name)
-        @dirty_data.has_key?(name) || _mutated?(name)
+        #@dirty_data.has_key?(name) || _mutated?(name)
+        @data.attribute_dirty?(name)
       end 
 
       # Returns the original value of the specified attribute.
@@ -64,11 +56,12 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to retrieve the original value of.
       # @return [Object] The original value of the specified attribute.
       def attribute_was(name)
-        if @mutation_copies.has_key?(name)
-          @mutation_copies[name]
-        else
-          attribute_dirty?(name) ? @dirty_data[name] : @data[name]
-        end
+        #if @mutation_copies.has_key?(name)
+        #  @mutation_copies[name]
+        #else
+        #  attribute_dirty?(name) ? @dirty_data[name] : @data.raw_value(name)
+        #end
+        @data.attribute_was(name)
       end
 
       # Mark that an attribute is changing. This is useful in situations where it is necessary to track that the value of an 
@@ -106,16 +99,15 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to mark as 
       #  changing.
       def attribute_dirty!(name)
-        return if attribute_dirty?(name)
-
-        current_value = @data[name]
-
-        @dirty_data[name] = 
-          begin
-            _deep_copy(current_value)
-          rescue TypeError
-            current_value
-          end
+        #return if attribute_dirty?(name)
+        #current_value = @data.raw_value(name)
+        #@dirty_data[name] = 
+        #  begin
+        #    _deep_copy(current_value)
+        #  rescue TypeError
+        #    current_value
+        #  end
+        @data.attribute_dirty!(name)
       end
 
       # Marks the changes as applied by clearing the current changes and making 
@@ -136,14 +128,15 @@ module Aws
       #  model.dirty? # false
       #
       def clean!
-        @dirty_data.clear
-        self.class.attributes.each do |name, attribute|
-          if self.class.track_mutations?(name)
-            if @data[name]
-              @mutation_copies[name] = _deep_copy(@data[name])
-            end
-          end
-        end
+        #@dirty_data.clear
+        #self.class.attributes.attributes.each do |name, attribute|
+        #  if self.class.track_mutations?(name)
+        #    if @data.raw_value(name)
+        #      @mutation_copies[name] = _deep_copy(@data.raw_value(name))
+        #    end
+        #  end
+        #end
+        @data.clean!
       end
 
       # Returns an array with the name of the attributes with dirty changes.
@@ -162,13 +155,14 @@ module Aws
       #
       # @return [Array] The names of attributes with dirty changes.
       def dirty
-        ret = @dirty_data.keys.dup
-        @mutation_copies.each do |key, value|
-          if @data[key] != value
-            ret << key unless ret.include?(key)
-          end
-        end
-        ret
+        #ret = @dirty_data.keys.dup
+        #@mutation_copies.each do |key, value|
+        #  if @data.raw_value(key) != value
+        #    ret << key unless ret.include?(key)
+        #  end
+        #end
+        #ret
+        @data.dirty
       end
 
       # Returns +true+ if any attributes have dirty changes, +false+ otherwise.
@@ -188,10 +182,11 @@ module Aws
       # @return [Boolean] +true+ if any attributes have dirty changes, +false+ 
       #  otherwise.
       def dirty?
-        return true if @dirty_data.size > 0
-        @mutation_copies.any? do |name, value|
-          @mutation_copies[name] != @data[name]
-        end
+        #return true if @dirty_data.size > 0
+        #@mutation_copies.any? do |name, value|
+        #  @mutation_copies[name] != @data.raw_value(name)
+        #end
+        @data.dirty?
       end
 
       # Fetches attributes for this instance of an item from Amazon DynamoDB 
@@ -236,14 +231,14 @@ module Aws
       #
       # @param [String, Symbol] name The name of the attribute to restore
       def rollback_attribute!(name)
-        return unless attribute_dirty?(name)
-
-        if @mutation_copies.has_key?(name)
-          @data[name] = @mutation_copies[name]
-          @dirty_data.delete(name) if @dirty_data.has_key?(name)
-        else
-          @data[name] = @dirty_data.delete(name)
-        end
+        #return unless attribute_dirty?(name)
+        #if @mutation_copies.has_key?(name)
+        #  @data.set_attribute(name, @mutation_copies[name])
+        #  @dirty_data.delete(name) if @dirty_data.has_key?(name)
+        #else
+        #  @data.set_attribute(name, @dirty_data.delete(name))
+        #end
+        @data.rollback_attribute!(name)
       end
 
       # Restores all attributes to their original values.
@@ -272,36 +267,6 @@ module Aws
         super.tap { clean! }
       end
 
-      private 
-      
-      # @private
-      #
-      # @override write_attribute(*)
-      def write_attribute(name, attribute, value)
-        _dirty_write_attribute(name, attribute, value)
-        super
-      end
-
-      def _dirty_write_attribute(name, attribute, value)
-        if value == attribute_was(name)
-          @dirty_data.delete(name)
-        else
-          attribute_dirty!(name)
-        end
-      end
-
-      def _mutated?(name)
-        if @mutation_copies.has_key?(name)
-          @data[name] != @mutation_copies[name]
-        else
-          false
-        end
-      end
-
-      def _deep_copy(obj)
-        Marshal.load(Marshal.dump(obj))
-      end
-
       module DirtyTrackingClassMethods
 
         private
@@ -316,7 +281,7 @@ module Aws
         # @private
         #
         # @override define_attr_methods(*)
-        def define_attr_methods(name, attribute)
+        def _define_attr_methods(name)
           super.tap do 
             define_method("#{name}_dirty?") do 
               attribute_dirty?(name)

@@ -102,12 +102,12 @@ module Aws
         def _si_key_schema(opts)
           key_schema = [{
             key_type: "HASH",
-            attribute_name: @attributes[opts[:hash_key]].database_name
+            attribute_name: @attributes.storage_name_for(opts[:hash_key])
           }]
           if opts[:range_key]
             key_schema << {
               key_type: "RANGE",
-              attribute_name: @attributes[opts[:range_key]].database_name
+              attribute_name: @attributes.storage_name_for(opts[:range_key])
             }
           end
           key_schema
@@ -139,13 +139,13 @@ module Aws
 
         def _validate_attributes_exist(*attr_names)
           missing = attr_names.select do |attr_name|
-            @attributes[attr_name].nil?
+            !@attributes.present?(attr_name)
           end
           unless missing.empty?
             raise ArgumentError.new(
               "#{missing.join(", ")} not present in model attributes."\
                 " Please ensure that attributes are defined in the model"\
-                " class BEFORE defining a index on those attributes."
+                " class BEFORE defining an index on those attributes."
             )
           end
         end

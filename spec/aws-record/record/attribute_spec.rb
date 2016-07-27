@@ -31,18 +31,6 @@ module Aws
         end
       end
 
-      context 'mutation_tracking' do
-        it 'does not track mutations by default' do
-          a = Attribute.new(:foo)
-          expect(a.track_mutations?).to eq(false)
-        end
-
-        it 'has an option to track mutations' do
-          a = Attribute.new(:foo, mutation_tracking: true)
-          expect(a.track_mutations?).to eq(true)
-        end
-      end
-
     end
   end
 end

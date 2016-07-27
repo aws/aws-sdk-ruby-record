@@ -18,8 +18,7 @@ module Aws
       def self.included(sub_class)
         sub_class.extend(ClassMethods)
         sub_class.instance_variable_set("@keys", {})
-        sub_class.instance_variable_set("@attributes", {})
-        sub_class.instance_variable_set("@storage_attributes", {})
+        sub_class.instance_variable_set("@attributes", ModelAttributes.new(self))
       end
 
       # @example Usage Example
@@ -40,7 +39,10 @@ module Aws
       #  attribute values you wish to set.
       # @return [Aws::Record] An item instance for your model.
       def initialize(attr_values = {})
-        @data = {}
+        opts = {
+          track_mutations: self.class.mutation_tracking_enabled?
+        }
+        @data = ItemData.new(self.class.attributes, opts)
         attr_values.each do |attr_name, attr_value|
           send("#{attr_name}=", attr_value)
         end
@@ -50,22 +52,8 @@ module Aws
       #
       # @return [Hash] Map of attribute names to raw values.
       def to_h
-        @data.dup
+        @data.hash_copy
       end
-
-      private
-
-      # @private
-      def read_attribute(name, attribute)
-        raw = @data[name]
-        attribute.type_cast(raw)
-      end
-
-      # @private
-      def write_attribute(name, attribute, value)
-        @data[name] = value
-      end
-        
 
       module ClassMethods
 
@@ -87,11 +75,6 @@ module Aws
         #   "M", "L". Optional if this attribute will never be used for a key or
         #   secondary index, but most convenience methods for setting attributes
         #   will provide this.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate whether mutations to values should be explicitly tracked
-        #   when determining if a value is "dirty". Important for collection
-        #   types which are often primarily modified by mutation of a single
-        #   object reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -104,21 +87,9 @@ module Aws
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def attr(name, marshaler, opts = {})
-          validate_attr_name(name)
-
-          opts = opts.merge(marshaler: marshaler)
-          attribute = Attribute.new(name, opts)
-
-          storage_name = attribute.database_name
-
-          check_for_naming_collisions(name, storage_name)
-          check_if_reserved(name)
-
-          @attributes[name] = attribute
-          @storage_attributes[storage_name] = name
-
-          define_attr_methods(name, attribute)
-          key_attributes(name, opts)
+          attribute = @attributes.register_attribute(name, marshaler, opts)
+          _define_attr_methods(name)
+          _key_attributes(name, opts)
         end
 
         # Define a string-type attribute for your model.
@@ -130,11 +101,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -156,11 +122,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -182,11 +143,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -208,11 +164,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -234,11 +185,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -260,11 +206,6 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is false.
         # @option opts [Boolean] :persist_nil Optional attribute used to
         #   indicate whether nil values should be persisted. If true, explicitly
         #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -304,17 +245,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is true.
         # @option opts [Object] :default_value Optional attribute used to
         #   define a "default value" to be used if the attribute's value on an
         #   item is nil or not set at persistence time.
         def list_attr(name, opts = {})
           opts[:dynamodb_type] = "L"
-          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Marshalers::ListMarshaler.new(opts), opts)
         end
 
@@ -345,17 +280,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is true.
         # @option opts [Object] :default_value Optional attribute used to
         #   define a "default value" to be used if the attribute's value on an
         #   item is nil or not set at persistence time.
         def map_attr(name, opts = {})
           opts[:dynamodb_type] = "M"
-          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Marshalers::MapMarshaler.new(opts), opts)
         end
 
@@ -376,17 +305,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is true.
         # @option opts [Object] :default_value Optional attribute used to
         #   define a "default value" to be used if the attribute's value on an
         #   item is nil or not set at persistence time.
         def string_set_attr(name, opts = {})
           opts[:dynamodb_type] = "SS"
-          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Marshalers::StringSetMarshaler.new(opts), opts)
         end
 
@@ -407,17 +330,11 @@ module Aws
         #   the hash key for the table.
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
-        # @option opts [Boolean] :mutation_tracking Optional attribute used to
-        #   indicate if mutations to values should be explicitly tracked when
-        #   determining if a value is "dirty". Important for collection types
-        #   which are often primarily modified by mutation of a single object
-        #   reference. By default, is true.
         # @option opts [Object] :default_value Optional attribute used to
         #   define a "default value" to be used if the attribute's value on an
         #   item is nil or not set at persistence time.
         def numeric_set_attr(name, opts = {})
           opts[:dynamodb_type] = "NS"
-          opts[:mutation_tracking] = true if opts[:mutation_tracking].nil?
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
@@ -426,19 +343,14 @@ module Aws
           @attributes
         end
 
-        # @return [Hash] hash of database names to attribute names
-        def storage_attributes
-          @storage_attributes
-        end
-
         # @return [Aws::Record::Attribute,nil]
         def hash_key
-          @attributes[@keys[:hash]]
+          @attributes.attribute_for(@keys[:hash])
         end
 
         # @return [Aws::Record::Attribute,nil]
         def range_key
-          @attributes[@keys[:range]]
+          @attributes.attribute_for(@keys[:range])
         end
 
         # @return [Hash] A mapping of the :hash and :range keys to the attribute
@@ -447,25 +359,18 @@ module Aws
           @keys
         end
 
-        # @param [Symbol] attr_sym The symbolized name of the attribute.
-        # @return [Boolean] true if object mutations are tracked for dirty
-        #   checking of that attribute, false if mutations are not tracked.
-        def track_mutations?(attr_sym)
-          mutation_tracking_enabled? && attributes[attr_sym].track_mutations?
-        end
-
         private
-        def define_attr_methods(name, attribute)
+        def _define_attr_methods(name)
           define_method(name) do
-            read_attribute(name, attribute)
+            @data.get_attribute(name)
           end
 
           define_method("#{name}=") do |value|
-            write_attribute(name, attribute, value)
+            @data.set_attribute(name, value)
           end
         end
 
-        def key_attributes(id, opts)
+        def _key_attributes(id, opts)
           if opts[:hash_key] == true && opts[:range_key] == true
             raise ArgumentError.new(
               "Cannot have the same attribute be a hash and range key."
@@ -479,45 +384,6 @@ module Aws
 
         def define_key(id, type)
           @keys[type] = id
-        end
-
-        def validate_attr_name(name)
-          unless name.is_a?(Symbol)
-            raise ArgumentError.new("Must use symbolized :name attribute.")
-          end
-          if @attributes[name]
-            raise Errors::NameCollision.new(
-              "Cannot overwrite existing attribute #{name}"
-            )
-          end
-        end
-
-        def check_if_reserved(name)
-          if instance_methods.include?(name)
-            raise Errors::ReservedName.new(
-              "Cannot name an attribute #{name}, that would collide with an"\
-                " existing instance method."
-            )
-          end
-        end
-
-        def check_for_naming_collisions(name, storage_name)
-          if @attributes[storage_name.to_sym]
-            raise Errors::NameCollision.new(
-              "Custom storage name #{storage_name} already exists as an"\
-                " attribute name in #{@attributes}"
-            )
-          elsif @storage_attributes[name.to_s]
-            raise Errors::NameCollision.new(
-              "Attribute name #{name} already exists as a custom storage"\
-                " name in #{@storage_attributes}"
-            )
-          elsif @storage_attributes[storage_name]
-            raise Errors::NameCollision.new(
-              "Custom storage name #{storage_name} already in use in"\
-                " #{@storage_attributes}"
-            )
-          end
         end
       end
 

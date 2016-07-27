@@ -39,11 +39,6 @@ module Aws
       #   "M", "L". Optional if this attribute will never be used for a key or
       #   secondary index, but most convenience methods for setting attributes
       #   will provide this.
-      # @option options [Boolean] :mutation_tracking Optional attribute used to
-      #   indicate whether mutations to values should be explicitly tracked when
-      #   determining if a value is "dirty". Important for collection types
-      #   which are often primarily modified by mutation of a single object
-      #   reference. By default, is false.
       # @option options [Boolean] :persist_nil Optional attribute used to
       #   indicate whether nil values should be persisted. If true, explicitly
       #   set nil values will be saved to DynamoDB as a "null" type. If false,
@@ -56,7 +51,6 @@ module Aws
         @database_name = options[:database_attribute_name] || name.to_s
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
-        @mutation_tracking = options[:mutation_tracking]
         @persist_nil = options[:persist_nil]
         dv = options[:default_value]
         @default_value = type_cast(dv) unless dv.nil?
@@ -83,12 +77,6 @@ module Aws
         cast_value = type_cast(raw_value)
         cast_value = default_value if cast_value.nil?
         @marshaler.serialize(cast_value)
-      end
-
-      # @return [Boolean] true if this attribute should do active mutation
-      #  tracking, false otherwise. Default: false
-      def track_mutations?
-        @mutation_tracking ? true : false
       end
 
       # @return [Boolean] true if this attribute will actively persist nil
