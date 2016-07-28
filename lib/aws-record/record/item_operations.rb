@@ -195,13 +195,14 @@ module Aws
       def prevent_overwrite_expression
         conditions = []
         expression_attribute_names = {}
+        keys = self.class.instance_variable_get("@keys")
         # Hash Key
         conditions << "attribute_not_exists(#H)"
-        expression_attribute_names["#H"] = self.class.hash_key.database_name
+        expression_attribute_names["#H"] = keys.hash_key_attribute.database_name
         # Range Key
         if self.class.range_key
           conditions << "attribute_not_exists(#R)"
-          expression_attribute_names["#R"] = self.class.range_key.database_name
+          expression_attribute_names["#R"] = keys.range_key_attribute.database_name
         end
         {
           condition_expression: conditions.join(" and "),
@@ -236,7 +237,7 @@ module Aws
         #  not include all table keys.
         def find(opts)
           key = {}
-          @keys.each_value do |attr_sym|
+          @keys.keys.each_value do |attr_sym|
             unless opts[attr_sym]
               raise Errors::KeyMissing.new(
                 "Missing required key #{attr_sym} in #{opts}"
@@ -283,7 +284,7 @@ module Aws
         def update(opts)
           key = {}
           updates = {}
-          @keys.each_value do |attr_sym|
+          @keys.keys.each_value do |attr_sym|
             unless value = opts.delete(attr_sym)
               raise Errors::KeyMissing.new(
                 "Missing required key #{attr_sym} in #{opts}"

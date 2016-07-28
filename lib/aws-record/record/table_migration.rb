@@ -133,18 +133,12 @@ module Aws
       private
       def _assert_model_valid(model)
         _assert_required_include(model)
-        _assert_keys(model)
+        model.model_valid?
       end
 
       def _assert_required_include(model)
         unless model.include?(::Aws::Record)
           raise Errors::InvalidModel.new("Table models must include Aws::Record")
-        end
-      end
-
-      def _assert_keys(model)
-        if model.hash_key.nil?
-          raise Errors::InvalidModel.new("Table models must include a hash key")
         end
       end
 

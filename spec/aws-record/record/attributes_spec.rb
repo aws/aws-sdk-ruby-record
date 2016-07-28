@@ -49,15 +49,15 @@ module Aws
         it 'should be able to assign a hash key' do
           klass.string_attr(:mykey, hash_key: true)
           klass.string_attr(:other)
-          expect(klass.hash_key.name).to eq(:mykey)
+          expect(klass.hash_key).to eq(:mykey)
         end
 
         it 'should be able to assign a hash and range key' do
           klass.string_attr(:mykey, hash_key: true)
           klass.string_attr(:ranged, range_key: true)
           klass.string_attr(:other)
-          expect(klass.hash_key.name).to eq(:mykey)
-          expect(klass.range_key.name).to eq(:ranged)
+          expect(klass.hash_key).to eq(:mykey)
+          expect(klass.range_key).to eq(:ranged)
         end
 
         it 'should reject assigning the same attribute as hash and range key' do

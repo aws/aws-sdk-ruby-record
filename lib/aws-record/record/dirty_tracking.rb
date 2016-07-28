@@ -36,7 +36,6 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to to check for dirty changes.
       # @return [Boolean] +true+ if the specified attribute has any dirty changes, +false+ otherwise.
       def attribute_dirty?(name)
-        #@dirty_data.has_key?(name) || _mutated?(name)
         @data.attribute_dirty?(name)
       end 
 
@@ -56,11 +55,6 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to retrieve the original value of.
       # @return [Object] The original value of the specified attribute.
       def attribute_was(name)
-        #if @mutation_copies.has_key?(name)
-        #  @mutation_copies[name]
-        #else
-        #  attribute_dirty?(name) ? @dirty_data[name] : @data.raw_value(name)
-        #end
         @data.attribute_was(name)
       end
 
@@ -99,44 +93,7 @@ module Aws
       # @param [String, Symbol] name The name of the attribute to mark as 
       #  changing.
       def attribute_dirty!(name)
-        #return if attribute_dirty?(name)
-        #current_value = @data.raw_value(name)
-        #@dirty_data[name] = 
-        #  begin
-        #    _deep_copy(current_value)
-        #  rescue TypeError
-        #    current_value
-        #  end
         @data.attribute_dirty!(name)
-      end
-
-      # Marks the changes as applied by clearing the current changes and making 
-      # them accessible through +previous_changes+.
-      #
-      # # @example
-      #  class Model
-      #    include Aws::Record
-      #    integer_attr :id, hash_key: true
-      #    string_attr  :name
-      #  end
-      #
-      #  model.name   # => 'Alex'
-      #  model.name = 'Nick'
-      #  model.dirty? # => true
-      #
-      #  model.clean!
-      #  model.dirty? # false
-      #
-      def clean!
-        #@dirty_data.clear
-        #self.class.attributes.attributes.each do |name, attribute|
-        #  if self.class.track_mutations?(name)
-        #    if @data.raw_value(name)
-        #      @mutation_copies[name] = _deep_copy(@data.raw_value(name))
-        #    end
-        #  end
-        #end
-        @data.clean!
       end
 
       # Returns an array with the name of the attributes with dirty changes.
@@ -155,13 +112,6 @@ module Aws
       #
       # @return [Array] The names of attributes with dirty changes.
       def dirty
-        #ret = @dirty_data.keys.dup
-        #@mutation_copies.each do |key, value|
-        #  if @data.raw_value(key) != value
-        #    ret << key unless ret.include?(key)
-        #  end
-        #end
-        #ret
         @data.dirty
       end
 
@@ -182,10 +132,6 @@ module Aws
       # @return [Boolean] +true+ if any attributes have dirty changes, +false+ 
       #  otherwise.
       def dirty?
-        #return true if @dirty_data.size > 0
-        #@mutation_copies.any? do |name, value|
-        #  @mutation_copies[name] != @data.raw_value(name)
-        #end
         @data.dirty?
       end
 
@@ -231,13 +177,6 @@ module Aws
       #
       # @param [String, Symbol] name The name of the attribute to restore
       def rollback_attribute!(name)
-        #return unless attribute_dirty?(name)
-        #if @mutation_copies.has_key?(name)
-        #  @data.set_attribute(name, @mutation_copies[name])
-        #  @dirty_data.delete(name) if @dirty_data.has_key?(name)
-        #else
-        #  @data.set_attribute(name, @dirty_data.delete(name))
-        #end
         @data.rollback_attribute!(name)
       end
 
@@ -258,6 +197,11 @@ module Aws
       # @param [Array, String, Symbol] names The names of attributes to restore. 
       def rollback!(names = dirty)
         Array(names).each { |name| rollback_attribute!(name) }
+      end
+
+      # @api private
+      def clean!
+        @data.clean!
       end
 
       # @private

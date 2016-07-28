@@ -17,8 +17,9 @@ module Aws
 
       def self.included(sub_class)
         sub_class.extend(ClassMethods)
-        sub_class.instance_variable_set("@keys", {})
-        sub_class.instance_variable_set("@attributes", ModelAttributes.new(self))
+        model_attributes = ModelAttributes.new(self)
+        sub_class.instance_variable_set("@attributes", model_attributes)
+        sub_class.instance_variable_set("@keys", KeyAttributes.new(model_attributes))
       end
 
       # @example Usage Example
@@ -338,25 +339,24 @@ module Aws
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
-        # @return [Hash] hash of symbolized attribute names to attribute objects
+        # @return [Symbol,nil]
+        def hash_key
+          @keys.hash_key
+        end
+
+        # @return [Symbol,nil]
+        def range_key
+          @keys.range_key
+        end
+
+        # @api private
         def attributes
           @attributes
         end
 
-        # @return [Aws::Record::Attribute,nil]
-        def hash_key
-          @attributes.attribute_for(@keys[:hash])
-        end
-
-        # @return [Aws::Record::Attribute,nil]
-        def range_key
-          @attributes.attribute_for(@keys[:range])
-        end
-
-        # @return [Hash] A mapping of the :hash and :range keys to the attribute
-        #   name symbols associated with them.
+        # @api private
         def keys
-          @keys
+          @keys.keys
         end
 
         private
@@ -376,15 +376,12 @@ module Aws
               "Cannot have the same attribute be a hash and range key."
             )
           elsif opts[:hash_key] == true
-            define_key(id, :hash)
+            @keys.hash_key = id
           elsif opts[:range_key] == true
-            define_key(id, :range)
+            @keys.range_key = id
           end
         end
 
-        def define_key(id, type)
-          @keys[type] = id
-        end
       end
 
     end

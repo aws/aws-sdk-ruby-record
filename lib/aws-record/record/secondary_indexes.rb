@@ -37,7 +37,7 @@ module Aws
         #   are copied from the table to the index. See shape details in the
         #   {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
         def local_secondary_index(name, opts)
-          opts[:hash_key] = hash_key.name
+          opts[:hash_key] = hash_key
           _validate_required_lsi_keys(opts)
           local_secondary_indexes[name] = opts
         end

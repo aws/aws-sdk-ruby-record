@@ -24,6 +24,7 @@ module Aws
     autoload :ItemCollection,   'aws-record/record/item_collection'
     autoload :ItemData,         'aws-record/record/item_data'
     autoload :ItemOperations,   'aws-record/record/item_operations'
+    autoload :KeyAttributes,    'aws-record/record/key_attributes'
     autoload :ModelAttributes,  'aws-record/record/model_attributes'
     autoload :Query,            'aws-record/record/query'
     autoload :SecondaryIndexes, 'aws-record/record/secondary_indexes'
