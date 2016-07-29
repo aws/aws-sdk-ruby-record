@@ -65,7 +65,6 @@ describe Aws::Record::DirtyTracking do
     end
 
     it "should mark the attribute as dirty" do 
-      instance.mykey << 'i'
       expect(instance.mykey_dirty?).to be false
 
       instance.mykey_dirty!
@@ -80,15 +79,15 @@ describe Aws::Record::DirtyTracking do
       expect(instance.mykey).to eq "Alex"
 
       instance.mykey << 'i'
-      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexi"
 
       instance.mykey_dirty!
-      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexi"
 
       instance.mykey << 's'
-      expect(instance.mykey_was).to eq "Alexi"
+      expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexis"
     end
 
@@ -277,19 +276,10 @@ describe Aws::Record::DirtyTracking do
         list_attr(:dirty_list)
         map_attr(:dirty_map)
         string_set_attr(:dirty_set)
-        list_attr(:notrack_list, mutation_tracking: false)
       end
     end
 
     describe "Tracking Turned Off" do
-      it 'does not track detailed mutations when mutation tracking is turned off' do
-        item = klass.new(mykey: "1", notrack_list: [1,2,3])
-        item.clean!
-        item.notrack_list << 4
-        expect(item.notrack_list).to eq([1,2,3,4])
-        expect(item.dirty?).to be_falsy
-      end
-
       it 'does not track detailed mutations when tracking is globally off' do
         klass.disable_mutation_tracking
         item = klass.new(mykey: "1", dirty_list: [1,2,3])

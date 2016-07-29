@@ -133,18 +133,12 @@ module Aws
       private
       def _assert_model_valid(model)
         _assert_required_include(model)
-        _assert_keys(model)
+        model.model_valid?
       end
 
       def _assert_required_include(model)
         unless model.include?(::Aws::Record)
           raise Errors::InvalidModel.new("Table models must include Aws::Record")
-        end
-      end
-
-      def _assert_keys(model)
-        if model.hash_key.nil?
-          raise Errors::InvalidModel.new("Table models must include a hash key")
         end
       end
 
@@ -158,6 +152,7 @@ module Aws
       end
 
       def _append_to_attribute_definitions(secondary_indexes, create_opts)
+        attributes = @model.attributes
         attr_def = create_opts[:attribute_definitions]
         secondary_indexes.each do |si|
           si[:key_schema].each do |key_schema|
@@ -165,9 +160,9 @@ module Aws
               a[:attribute_name] == key_schema[:attribute_name]
             }
             unless exists
-              attr = @model.attributes[
-                @model.storage_attributes[key_schema[:attribute_name]]
-              ]
+              attr = attributes.attribute_for(
+                attributes.db_to_attribute_name(key_schema[:attribute_name])
+              )
               attr_def << {
                 attribute_name: attr.database_name,
                 attribute_type: attr.dynamodb_type
@@ -208,7 +203,7 @@ module Aws
 
       def _keys
         @model.keys.inject({}) do |acc, (type, name)|
-          acc[type] = @model.attributes[name]
+          acc[type] = @model.attributes.attribute_for(name)
           acc
         end
       end

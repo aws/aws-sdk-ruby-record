@@ -204,6 +204,12 @@ module Aws
         @track_mutations == false ? false : true
       end
 
+      def model_valid?
+        if @keys.hash_key.nil?
+          raise Errors::InvalidModel.new("Table models must include a hash key")
+        end
+      end
+
       private
       def _user_agent(custom)
         if custom
