@@ -39,7 +39,7 @@ module Aws
 
       def clean!
         @dirty_flags = {}
-        @model_attributes.attributes.each do |name, attribute|
+        @model_attributes.attributes.each_key do |name|
           populate_default_values
           value = get_attribute(name)
           if @track_mutations

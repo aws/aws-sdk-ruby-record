@@ -88,7 +88,7 @@ module Aws
         # @option opts [Boolean] :range_key Set to true if this attribute is
         #   the range key for the table.
         def attr(name, marshaler, opts = {})
-          attribute = @attributes.register_attribute(name, marshaler, opts)
+          @attributes.register_attribute(name, marshaler, opts)
           _define_attr_methods(name)
           _key_attributes(name, opts)
         end
