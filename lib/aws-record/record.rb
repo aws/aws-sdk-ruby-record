@@ -121,7 +121,7 @@ module Aws
       #   not exist in DynamoDB.
       def provisioned_throughput
         begin
-          resp = dynamodb_client.describe_table(table_name: @table_name)
+          resp = dynamodb_client.describe_table(table_name: table_name)
           throughput = resp.table.provisioned_throughput
           return {
             read_capacity_units: throughput.read_capacity_units,
@@ -137,7 +137,7 @@ module Aws
       # @return [Boolean] true if the table does exist, false if it does not.
       def table_exists?
         begin
-          resp = dynamodb_client.describe_table(table_name: @table_name)
+          resp = dynamodb_client.describe_table(table_name: table_name)
           if resp.table.table_status == "ACTIVE"
             true
           else
