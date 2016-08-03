@@ -1,6 +1,9 @@
 Unreleased Changes
 ------------------
 
+* Issue - Aws::Record - Fixes the `#table_exists?` and `#provisioned_throughput`
+  methods, which could fail if called before `#table_name`.
+
 1.0.0.pre.10 (2016-08-03)
 ------------------
 
