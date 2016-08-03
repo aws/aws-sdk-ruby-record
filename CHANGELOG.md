@@ -1,13 +1,16 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record - Refactored tracking of model attributes, key attributes,
+  and item data to use internal classes over module composition.
+
 1.0.0.pre.9 (2016-07-22)
 ------------------
 
-* Feature - Aws::Attribute - Added support for default values at the attribute
+* Feature - Aws::Record::Attribute - Added support for default values at the attribute
   level.
 
-* Feature - Aws::Marshalers - Removed the marshalers in the `Aws::Attributes`
+* Feature - Aws::Record::Marshalers - Removed the marshalers in the `Aws::Attributes`
   namespace, replacing them with instantiated marshaler objects. This enables
   more functionality in marshalers such as the Date/DateTime marshalers.
 
