@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0.pre.10 (2016-08-03)
 ------------------
 
 * Feature - Aws::Record - Refactored tracking of model attributes, key attributes,
