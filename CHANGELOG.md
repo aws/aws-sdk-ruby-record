@@ -2,7 +2,9 @@ Unreleased Changes
 ------------------
 
 * Feature - Aws::Record - Refactored tracking of model attributes, key attributes,
-  and item data to use internal classes over module composition.
+  and item data to use internal classes over module composition. Dirty tracking is
+  also handled more consistently across attributes, and turning on/off of dirty
+  tracking is only possible at the model level (not for individual attributes).
 
 1.0.0.pre.9 (2016-07-22)
 ------------------
