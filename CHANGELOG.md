@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.0 (2016-08-15)
 ------------------
 
 * Issue - Aws::Record - Fixes the `#table_exists?` and `#provisioned_throughput`

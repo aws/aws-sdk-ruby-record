@@ -13,6 +13,6 @@
 
 module Aws
   module Record
-    VERSION = '1.0.0.pre.10'
+    VERSION = '1.0.0'
   end
 end
