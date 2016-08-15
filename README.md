@@ -1,6 +1,6 @@
 # Aws::Record
 
-[![Build Status](https://travis-ci.org/awslabs/aws-sdk-ruby-record.png?branch=master)](https://travis-ci.org/awslabs/aws-sdk-ruby-record) [![Code Climate](https://codeclimate.com/github/awslabs/aws-sdk-ruby-record.png)](https://codeclimate.com/github/awslabs/aws-sdk-ruby-record)
+[![Build Status](https://travis-ci.org/aws/aws-sdk-ruby-record.png?branch=master)](https://travis-ci.org/aws/aws-sdk-ruby-record) [![Code Climate](https://codeclimate.com/github/aws/aws-sdk-ruby-record.png)](https://codeclimate.com/github/aws/aws-sdk-ruby-record)
 
 A data mapping abstraction over the AWS SDK for Ruby's client for Amazon
 DynamoDB.
@@ -16,8 +16,8 @@ how you would like to use this gem. Feature requests are welcome.
 ## Links of Interest
 
 * [Documentation](http://docs.aws.amazon.com/awssdkrubyrecord/api/)
-* [Change Log](https://github.com/awslabs/aws-sdk-ruby-record/blob/master/CHANGELOG.md)
-* [Issues](https://github.com/awslabs/aws-sdk-ruby-record/issues)
+* [Change Log](https://github.com/aws/aws-sdk-ruby-record/blob/master/CHANGELOG.md)
+* [Issues](https://github.com/aws/aws-sdk-ruby-record/issues)
 * [License](http://aws.amazon.com/apache2.0/)
 
 ## Installation
