@@ -24,18 +24,24 @@ how you would like to use this gem. Feature requests are welcome.
 
 `Aws::Record` is available as the `aws-record` gem from RubyGems.
 
-```ruby
-gem install 'aws-record' --pre
+```shell
+gem install 'aws-record'
 ```
-
-Please use a major version when expressing a dependency on `aws-record`.
 
 ```ruby
 gem 'aws-record', '~> 1.0'
 ```
 
-Until the final release becomes available on Rubygems, leave off the version
-dependency in your Gemfile so Bundler can find it.
+This automatically includes a dependency on the `aws-sdk-resources` gem, major
+version 2. Be sure to include the `aws-sdk` or `aws-sdk-resources` gem in your
+Gemfile if you need to lock to a specific version, like so:
+
+```ruby
+# Gemfile
+
+gem 'aws-record', '~> 1.0'
+gem 'aws-sdk-resources', '~> 2.5'
+```
 
 ## Usage
 
