@@ -19,7 +19,7 @@ task 'test' => ['test:unit', 'test:integration']
 
 task :default => :test
 
-Dir.glob('**/*.rake').each do |task_file|
+Dir.glob('tasks/*.rake').each do |task_file|
   load task_file
 end
 
