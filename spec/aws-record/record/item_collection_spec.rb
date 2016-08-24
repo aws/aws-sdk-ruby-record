@@ -114,7 +114,7 @@ module Aws
             model,
             stub_client
           )
-          expect(c.empty?).to be_falsy
+          expect(c.empty?).to be_truthy
         end
       end
 
