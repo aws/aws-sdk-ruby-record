@@ -37,19 +37,19 @@ module Aws
         client
       end
 
-      describe "#each" do
-        let(:truncated_resp) do
-          {
-            items: [
-              { "id" => 1 },
-              { "id" => 2 },
-              { "id" => 3 }
-            ],
-            count: 3,
-            last_evaluated_key: { "id" => { n: "3" } }
-          }
-        end
+      let(:truncated_resp) do
+        {
+          items: [
+            { "id" => 1 },
+            { "id" => 2 },
+            { "id" => 3 }
+          ],
+          count: 3,
+          last_evaluated_key: { "id" => { n: "3" } }
+        }
+      end
 
+      describe "#each" do
         let(:non_truncated_resp) do
           {
             items: [
@@ -94,6 +94,13 @@ module Aws
           }
         end
 
+        let(:truncated_empty) do
+          {
+            items: [],
+            count: 0,
+            last_evaluated_key: { "id" => { n: "3" } }
+          }
+        end
 
         it "is not empty" do
           stub_client.stub_responses(:scan, resp_full)
@@ -115,6 +122,32 @@ module Aws
             stub_client
           )
           expect(c.empty?).to be_truthy
+        end
+
+        it "handles initial pages being empty" do
+          # Scans with limit fields may return empty pages, while values still
+          # exist.
+          stub_client.stub_responses(:scan, truncated_empty, resp_full)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable", limit: 3 },
+            model,
+            stub_client
+          )
+          expect(c.empty?).to be_falsy
+        end
+
+        it "handles final pages being empty" do
+          # LastEvaluatedKey being present does not guarantee additional data is
+          # coming, so make sure we handle a final empty page.
+          stub_client.stub_responses(:scan, truncated_resp, resp_empty)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          expect(c.empty?).to be_falsy
         end
       end
 

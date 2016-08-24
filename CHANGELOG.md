@@ -1,6 +1,9 @@
 Unreleased Changes
 ------------------
 
+* Issue - Aws::Record::ItemCollection - Fixes a faulty `#empty?` implementation,
+  which could return `false` for a response which is, in fact, empty.
+
 1.0.0 (2016-08-15)
 ------------------
 

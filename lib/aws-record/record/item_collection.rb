@@ -23,6 +23,18 @@ module Aws
         @client = client
       end
 
+      # Provides an enumeration of the results of a query or scan operation on
+      # your table, automatically converted into item classes.
+      #
+      # WARNING: This will enumerate over your entire partition in the case of
+      # query, and over your entire table in the case of scan, save for key and
+      # filter expressions used. This means that enumerable operations that
+      # iterate over the full result set could make many network calls, or use a
+      # lot of memory to build response objects. Use with caution.
+      #
+      # @return [Enumerable<Aws::Record>] an enumeration over the results of
+      #   your query or scan request. These results are automatically converted
+      #   into items on your behalf.
       def each(&block)
         return enum_for(:each) unless block_given?
         items.each_page do |page|
@@ -33,8 +45,19 @@ module Aws
         end
       end
 
+      # Checks if the query/scan result is completely blank.
+      #
+      # WARNING: This can and will query your entire partition, or scan your
+      # entire table, if no results are found. Especially if your table is
+      # large, use this with extreme caution.
+      #
+      # @return [Boolean] true if the query/scan result is empty, false
+      #   otherwise.
       def empty?
-        items.items.empty?
+        items.each_page do |page|
+          return false if !page.items.empty?
+        end
+        true
       end
 
       private
