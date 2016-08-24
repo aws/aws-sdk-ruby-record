@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.1 (2016-08-24)
 ------------------
 
 * Issue - Aws::Record::ItemCollection - Fixes a faulty `#empty?` implementation,
