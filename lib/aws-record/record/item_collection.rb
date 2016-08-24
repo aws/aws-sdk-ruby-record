@@ -34,7 +34,7 @@ module Aws
       end
 
       def empty?
-        items.empty?
+        items.items.empty?
       end
 
       private
