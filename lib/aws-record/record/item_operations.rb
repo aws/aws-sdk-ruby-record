@@ -136,13 +136,14 @@ module Aws
           )
           if update_tuple
             uex, exp_attr_names, exp_attr_values = update_tuple
-            dynamodb_client.update_item(
+            request_opts = {
               table_name: self.class.table_name,
               key: key_values,
               update_expression: uex,
               expression_attribute_names: exp_attr_names,
-              expression_attribute_values: exp_attr_values
-            )
+            }
+            request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
+            dynamodb_client.update_item(request_opts)
           else
             dynamodb_client.update_item(
               table_name: self.class.table_name,
@@ -302,7 +303,7 @@ module Aws
             uex, exp_attr_names, exp_attr_values = update_tuple
             request_opts[:update_expression] = uex
             request_opts[:expression_attribute_names] = exp_attr_names
-            request_opts[:expression_attribute_values] = exp_attr_values
+            request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
           end
           dynamodb_client.update_item(request_opts)
         end
