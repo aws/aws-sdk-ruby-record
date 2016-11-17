@@ -108,6 +108,7 @@ module Aws
 
       def _perform_save(opts)
         force = opts[:force]
+        conditions = opts[:conditions]
         expect_new = expect_new_item?
         if force
           dynamodb_client.put_item(
@@ -143,6 +144,7 @@ module Aws
               expression_attribute_names: exp_attr_names,
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
+            request_opts[:condition_expression] = conditions if conditions
             dynamodb_client.update_item(request_opts)
           else
             dynamodb_client.update_item(

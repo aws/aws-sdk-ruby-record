@@ -214,6 +214,32 @@ module Aws
           # None of this should have reached the API
           expect(api_requests).to eq([])
         end
+
+        it 'accepts :conditions option and use it in request' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.clean!
+          item.body = 'Goodbye!'
+          item.save(conditions: 'attribute_not_exists(date)')
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" }
+            },
+            condition_expression: "attribute_not_exists(date)",
+            update_expression: "SET #UE_A = :ue_a",
+            expression_attribute_names: {
+              "#UE_A" => "body"
+            },
+            expression_attribute_values: {
+              ":ue_a" => { s: "Goodbye!" }
+            }
+          }])
+        end
       end
 
       describe "#find" do
