@@ -144,7 +144,7 @@ module Aws
               expression_attribute_names: exp_attr_names,
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-            request_opts[:condition_expression] = conditions if conditions
+            _inject_conditions(request_opts, conditions) if conditions
             dynamodb_client.update_item(request_opts)
           else
             dynamodb_client.update_item(
@@ -153,6 +153,27 @@ module Aws
             )
           end
         end
+      end
+
+      def _inject_conditions(update, conditions)
+        placeholder = '#aue0'
+        exp_attr_names = {}
+        exp_attr_values = {}
+
+        conditions.gsub!(/#\{[^\}]+\}/) do |match|
+          exp_attr_names[placeholder.succ!] = match.delete('#{}')
+          placeholder
+        end
+
+        placeholder = ':aue0'
+        conditions.gsub!(/:\{[^\}]+\}/) do |match|
+          exp_attr_values[placeholder.succ!] = match.delete(':{}')
+          placeholder
+        end
+
+        update[:expression_attribute_names].merge!(exp_attr_names)
+        update[:expression_attribute_values].merge!(exp_attr_values)
+        update[:condition_expression] = conditions
       end
 
       def _build_item_for_save

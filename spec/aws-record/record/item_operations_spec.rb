@@ -223,20 +223,20 @@ module Aws
           item.body = 'Hello!'
           item.clean!
           item.body = 'Goodbye!'
-          item.save(conditions: 'attribute_not_exists(date)')
+          item.save(conditions: '#{date} = :{2016-10-01}')
           expect(api_requests).to eq([{
             table_name: "TestTable",
             key: {
               "id" => { n: "1" },
               "MyDate" => { s: "2015-12-14" }
             },
-            condition_expression: "attribute_not_exists(date)",
+            condition_expression: "#aue1 = :aue1",
             update_expression: "SET #UE_A = :ue_a",
             expression_attribute_names: {
-              "#UE_A" => "body"
+              "#UE_A" => "body", '#aue1' => 'date'
             },
             expression_attribute_values: {
-              ":ue_a" => { s: "Goodbye!" }
+              ":ue_a" => { s: "Goodbye!" }, ':aue1' => { s: '2016-10-01' }
             }
           }])
         end
