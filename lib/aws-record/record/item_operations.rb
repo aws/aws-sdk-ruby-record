@@ -145,6 +145,9 @@ module Aws
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
             _inject_conditions(request_opts, conditions) if conditions
+            if request_opts[:expression_attribute_values].blank?
+              request_opts.delete(:expression_attribute_values)
+            end
             dynamodb_client.update_item(request_opts)
           else
             dynamodb_client.update_item(
