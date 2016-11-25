@@ -293,6 +293,22 @@ module Aws
           }])
         end
 
+        it 'will recognize nil as a removal operation even if it is the only operation' do
+          klass.configure_client(client: stub_client)
+          klass.update(id: 1, date: "2016-07-20", body: nil)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2016-07-20" }
+            },
+            update_expression: "REMOVE #UE_A",
+            expression_attribute_names: {
+              "#UE_A" => "body"
+            }
+          }])
+        end
+
         it 'will upsert even if only keys provided' do
           klass.configure_client(client: stub_client)
           klass.update(id: 1, date: "2016-05-18")
