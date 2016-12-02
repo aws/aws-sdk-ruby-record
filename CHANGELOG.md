@@ -1,6 +1,11 @@
 Unreleased Changes
 ------------------
 
+* Issue - Aws::Record::ItemOperations - Fixes an issue where update operations
+  which consist of only `REMOVE` expressions failed due to an empty
+  `:expression_attribute_values` map. The fix makes the presence of that map
+  conditional on the existance of valid values.
+
 1.0.1 (2016-08-24)
 ------------------
 
