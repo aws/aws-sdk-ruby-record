@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.2 (2016-12-02)
 ------------------
 
 * Issue - Aws::Record::ItemOperations - Fixes an issue where update operations
