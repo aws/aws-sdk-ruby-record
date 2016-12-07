@@ -250,7 +250,8 @@ module Aws
           end
           request_opts = {
             table_name: table_name,
-            key: key
+            key: key,
+            consistent_read: opts[:consistent_read].present?
           }
           resp = dynamodb_client.get_item(request_opts)
           if resp.item.nil?
