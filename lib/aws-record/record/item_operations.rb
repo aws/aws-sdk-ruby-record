@@ -237,21 +237,52 @@ module Aws
         # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
         #  not include all table keys.
         def find(opts)
-          key = {}
+          find_with_opts(key: opts)
+        end
+
+        # @example Usage Example
+        #   class MyModel
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #
+        #   MyModel.find_with_opts(
+        #     key: { id: 1, name: "First" },
+        #     consistent_read: true
+        #   )
+        #
+        # Note that +#find_with_opts+ will pass through all options other than
+        # +:key+ unaltered to the underlying +Aws::DynamoDB::Client#get_item+
+        # request. You should ensure that you have an aws-sdk gem version which
+        # supports the options you are including, and avoid adding options not
+        # recognized by the underlying client to avoid runtime exceptions.
+        #
+        # @param [Hash] opts Options to pass through to the DynamoDB #get_item
+        #  request. The +:key+ option is a special case where attributes are
+        #  serialized and translated for you similar to the #find method.
+        # @option opts [Hash] :key attribute-value pairs for the key you wish to
+        #  search for.
+        # @return [Aws::Record] builds and returns an instance of your model.
+        # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
+        #  not include all table keys.
+        def find_with_opts(opts)
+          key = opts.delete(:key)
+          request_key = {}
           @keys.keys.each_value do |attr_sym|
-            unless opts[attr_sym]
+            unless key[attr_sym]
               raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{opts}"
+                "Missing required key #{attr_sym} in #{key}"
               )
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(opts[attr_sym])
+            request_key[attr_name] = attributes.attribute_for(attr_sym).
+              serialize(key[attr_sym])
           end
           request_opts = {
             table_name: table_name,
-            key: key
-          }
+            key: request_key
+          }.merge(opts)
           resp = dynamodb_client.get_item(request_opts)
           if resp.item.nil?
             nil
