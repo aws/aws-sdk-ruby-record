@@ -251,6 +251,58 @@ module Aws
         end
       end
 
+      describe "#find_with_opts" do
+        it 'can read an item from Amazon DynamoDB' do
+          stub_client.stub_responses(:get_item,
+            {
+              item: {
+                "id" => 5,
+                "MyDate" => "2015-12-15",
+                "my_boolean" => true
+              }
+            })
+          klass.configure_client(client: stub_client)
+          find_opts = { key: { id: 5, date: '2015-12-15' } }
+          ret = klass.find_with_opts(find_opts)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "5" },
+              "MyDate" => { s: "2015-12-15" }
+            }
+          }])
+          expect(ret).to be_a(klass)
+          expect(ret.id).to eq(5)
+          expect(ret.date).to eq(Date.parse('2015-12-15'))
+          expect(ret.bool).to be(true)
+        end
+
+        it 'enforces that the required keys are present' do
+          klass.configure_client(client: stub_client)
+          find_opts = { key: { id: 5 } }
+          expect { klass.find_with_opts(find_opts) }.to raise_error(
+            Aws::Record::Errors::KeyMissing
+          )
+        end
+
+        it 'passes through options to #get_item' do
+          klass.configure_client(client: stub_client)
+          find_opts = {
+            key: { id: 5, date: '2015-12-15' },
+            consistent_read: true
+          }
+          ret = klass.find_with_opts(find_opts)
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "5" },
+              "MyDate" => { s: "2015-12-15" }
+            },
+            consistent_read: true
+          }])
+        end
+      end
+
       describe "#update" do
         it 'can find and update an item from Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
