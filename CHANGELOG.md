@@ -1,6 +1,11 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::ItemOperations - Adds the `find_with_opts` class method
+  to model instances, which allows users to pass in both the key (as in `find`)
+  and parameters which are to be passed through to the underlying
+  `Aws::DynamoDB::Client#get_item` call.
+
 1.0.2 (2016-12-02)
 ------------------
 
