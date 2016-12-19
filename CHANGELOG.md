@@ -1,4 +1,4 @@
-Unreleased Changes
+1.0.3 (2016-12-19)
 ------------------
 
 * Feature - Aws::Record::ItemOperations - Adds the `find_with_opts` class method
