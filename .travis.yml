@@ -10,6 +10,9 @@ rvm:
 
 sudo: false
 
+env:
+  - OLD_RAILS=1
+
 script: bundle exec rake
 
 bundler_args: --without docs release repl
@@ -18,3 +21,8 @@ matrix:
   include:
     - rvm: 2.3.0
       env: NEW_RAILS=1
+    - rvm: 2.4.0
+      env: NEW_RAILS=1
+  exclude:
+    - rvm: 2.4.0
+      env: OLD_RAILS=1
