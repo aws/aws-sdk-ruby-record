@@ -11,6 +11,8 @@
 # or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
+require 'rspec/core/rake_task'
+
 desc "aws-record unit tests"
 RSpec::Core::RakeTask.new('test:unit') do |t|
   t.rspec_opts = "-I #{$REPO_ROOT}/lib"
