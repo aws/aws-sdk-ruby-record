@@ -33,6 +33,7 @@ module Aws
           t.model_class(TestModel)
           t.read_capacity_units(1)
           t.write_capacity_units(1)
+          t.client_options(stub_responses: true)
         end
       end
 
