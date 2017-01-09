@@ -30,6 +30,7 @@ Feature: Aws::Record::TableConfig
         t.model_class(TableConfigTestModel)
         t.read_capacity_units(2)
         t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
       end
       """
     When we migrate the TableConfig
