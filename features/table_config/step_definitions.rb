@@ -21,7 +21,7 @@ When(/^we migrate the TableConfig$/) do
 end
 
 Then(/^the TableConfig should be compatible with the remote table$/) do
-  pending # Write code here that turns the phrase above into concrete actions
+   expect(@table_config.compatible?).to be_truthy
 end
 
 Then(/^the TableConfig should be an exact match with the remote table$/) do

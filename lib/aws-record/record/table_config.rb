@@ -43,6 +43,19 @@ module Aws
         @client.wait_until(:table_exists, table_name: @model_class.table_name)
       end
 
+      def compatible?
+        table = @client.describe_table(table_name: @model_class.table_name).table
+        # throughtput
+        compatible = true
+        unless @read_capacity_units == table.provisioned_throughput.read_capacity_units
+          compatible = false
+        end
+        unless @write_capacity_units == table.provisioned_throughput.write_capacity_units
+          compatible = false
+        end
+        compatible
+      end
+
       private
       def _create_table_opts
         opts = {
