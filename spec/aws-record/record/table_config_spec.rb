@@ -135,6 +135,39 @@ module Aws
             }
           )
         end
+
+        it 'will validate required configuration values' do
+          cfg = TableConfig.define do |t|
+            t.client_options(stub_responses: true)
+          end
+          expect{ cfg.migrate! }.to raise_error(
+            Errors::MissingRequiredConfiguration,
+            'Missing: model_class, read_capacity_units, write_capacity_units'
+          )
+        end
+
+        it 'will validate model_class configuration' do
+          cfg = TableConfig.define do |t|
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          expect{ cfg.migrate! }.to raise_error(
+            Errors::MissingRequiredConfiguration,
+            'Missing: model_class'
+          )
+        end
+
+        it 'will validate provisioned throughput configuration values' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.client_options(stub_responses: true)
+          end
+          expect{ cfg.migrate! }.to raise_error(
+            Errors::MissingRequiredConfiguration,
+            'Missing: read_capacity_units, write_capacity_units'
+          )
+        end
       end
 
       describe '#compatible?' do

@@ -51,7 +51,8 @@ module Aws
       end
 
       def migrate!
-        # Validate that required params are present?
+        _validate_required_configuration
+
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
           # Throughput first, keys can't be updated, add attribute definitions
@@ -168,6 +169,16 @@ module Aws
         a.all? { |x| b.include?(x) } && b.all? { |x| a.include?(x) }
       end
 
+      def _validate_required_configuration
+        missing_config = []
+        missing_config << 'model_class' unless @model_class
+        missing_config << 'read_capacity_units' unless @read_capacity_units
+        missing_config << 'write_capacity_units' unless @write_capacity_units
+        unless missing_config.empty?
+          msg = missing_config.join(', ')
+          raise Errors::MissingRequiredConfiguration, 'Missing: ' + msg
+        end
+      end
     end
   end
 end
