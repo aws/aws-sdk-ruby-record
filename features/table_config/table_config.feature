@@ -37,3 +37,36 @@ Feature: Aws::Record::TableConfig
     Then calling 'table_exists?' on the model should return "true"
     And the TableConfig should be compatible with the remote table
     And the TableConfig should be an exact match with the remote table
+
+  Scenario: Update an Existing Table With TableConfig
+    Given an aws-record model with data:
+      """
+      [
+        { "method": "string_attr", "name": "id", "hash_key": true },
+        { "method": "integer_attr", "name": "count", "range_key": true },
+        { "method": "string_attr", "name": "body", "database_name": "content" }
+      ]
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we create a table migration for the model
+    And we call 'create!' with parameters:
+      """
+      {
+        "provisioned_throughput": {
+          "read_capacity_units": 1,
+          "write_capacity_units": 1
+        }
+      }
+      """
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should not be compatible with the remote table
+    When we migrate the TableConfig
+    Then the TableConfig should be compatible with the remote table

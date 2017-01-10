@@ -27,3 +27,7 @@ end
 Then(/^the TableConfig should be an exact match with the remote table$/) do
   expect(@table_config.exact_match?).to be_truthy
 end
+
+Then(/^the TableConfig should not be compatible with the remote table$/) do
+  expect(@table_config.compatible?).to be_falsy
+end

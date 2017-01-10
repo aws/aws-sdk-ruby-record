@@ -48,10 +48,11 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
+            'ResourceNotFoundException',
             { table: { table_status: "ACTIVE" } }
           )
           cfg.migrate!
-          expect(api_requests[0]).to eq(
+          expect(api_requests[1]).to eq(
             table_name: "TestModel",
             provisioned_throughput:
             {
@@ -78,6 +79,60 @@ module Aws
                 attribute_type: "S"
               }
             ]
+          )
+        end
+
+        it 'will update an existing table' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(2)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1,
+                  number_of_decreases_today: 0
+                },
+                table_status: "ACTIVE"
+              }
+            },
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModel",
+            provisioned_throughput:
+            {
+              read_capacity_units: 2,
+              write_capacity_units: 1
+            }
           )
         end
       end

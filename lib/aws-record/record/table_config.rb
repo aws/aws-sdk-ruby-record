@@ -52,8 +52,31 @@ module Aws
 
       def migrate!
         # Validate that required params are present?
-        @client.create_table(_create_table_opts)
-        @client.wait_until(:table_exists, table_name: @model_class.table_name)
+        begin
+          resp = @client.describe_table(table_name: @model_class.table_name)
+          # Throughput first, keys can't be updated, add attribute definitions
+          # with GSI support.
+          if _throughput_equal(resp)
+            nil
+          else
+            @client.update_table(
+              table_name: @model_class.table_name,
+              provisioned_throughput: {
+                read_capacity_units: @read_capacity_units,
+                write_capacity_units: @write_capacity_units
+              }
+            )
+            @client.wait_until(
+              :table_exists,
+              table_name: @model_class.table_name
+            )
+          end
+        rescue DynamoDB::Errors::ResourceNotFoundException
+          # Code Smell: Exception as control flow.
+          # Can I use SDK ability to skip raising an exception for this?
+          @client.create_table(_create_table_opts)
+          @client.wait_until(:table_exists, table_name: @model_class.table_name)
+        end
       end
 
       def compatible?
