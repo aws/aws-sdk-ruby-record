@@ -12,7 +12,7 @@
 # and limitations under the License.
 
 # language: en
-@dynamodb @table @table_config @wip
+@dynamodb @table @table_config
 Feature: Aws::Record::TableConfig
 
   Scenario: Create a New Table With TableConfig

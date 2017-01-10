@@ -84,7 +84,7 @@ module Aws
 
       describe '#compatible?' do
 
-        it 'compares against a #decribe_table call' do
+        it 'compares against a #describe_table call' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
             t.read_capacity_units(1)
@@ -119,13 +119,327 @@ module Aws
                 ],
                 provisioned_throughput: {
                   read_capacity_units: 1,
+                  write_capacity_units: 1,
+                  number_of_decreases_today: 0
+                }
+              }
+            }
+          )
+          expect(cfg.compatible?).to be_truthy
+        end
+
+        it 'fails when a configured value does not match' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
                   write_capacity_units: 1
                 }
               }
             }
           )
+          expect(cfg.compatible?).to be_falsy
+        end
 
+        it 'fails when the remote model does not match' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hashkey",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hashkey",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
+          expect(cfg.compatible?).to be_falsy
+        end
+
+        it 'matches with a superset of attribute definitions' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "bacon",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
           expect(cfg.compatible?).to be_truthy
+        end
+
+      end
+
+      describe '#exact_match?' do
+
+        it 'compares against a #describe_table call' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  },
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1,
+                  number_of_decreases_today: 0
+                }
+              }
+            }
+          )
+          expect(cfg.exact_match?).to be_truthy
+        end
+
+        it 'fails when a configured value does not match' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
+          expect(cfg.exact_match?).to be_falsy
+        end
+
+        it 'fails when the remote model does not match' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hashkey",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hashkey",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
+          expect(cfg.exact_match?).to be_falsy
+        end
+
+        it 'does not match with a superset of attribute definitions' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "bacon",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
+          expect(cfg.exact_match?).to be_falsy
         end
 
       end
