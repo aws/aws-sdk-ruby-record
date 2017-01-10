@@ -261,6 +261,21 @@ module Aws
           expect(cfg.compatible?).to be_truthy
         end
 
+        it 'returns false if the table does nto exist' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException'
+          )
+          expect(cfg.compatible?).to be_falsy
+        end
+
       end
 
       describe '#exact_match?' do
@@ -438,6 +453,21 @@ module Aws
                 }
               }
             }
+          )
+          expect(cfg.exact_match?).to be_falsy
+        end
+
+        it 'returns false if the table does nto exist' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException'
           )
           expect(cfg.exact_match?).to be_falsy
         end

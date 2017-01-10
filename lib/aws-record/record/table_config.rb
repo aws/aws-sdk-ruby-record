@@ -57,13 +57,21 @@ module Aws
       end
 
       def compatible?
-        resp = @client.describe_table(table_name: @model_class.table_name)
-        _throughput_equal(resp) && _keys_equal(resp) && _ad_superset(resp)
+        begin
+          resp = @client.describe_table(table_name: @model_class.table_name)
+          _throughput_equal(resp) && _keys_equal(resp) && _ad_superset(resp)
+        rescue DynamoDB::Errors::ResourceNotFoundException
+          false
+        end
       end
 
       def exact_match?
-        resp = @client.describe_table(table_name: @model_class.table_name)
-        _throughput_equal(resp) && _keys_equal(resp) && _ad_equal(resp)
+        begin
+          resp = @client.describe_table(table_name: @model_class.table_name)
+          _throughput_equal(resp) && _keys_equal(resp) && _ad_equal(resp)
+        rescue DynamoDB::Errors::ResourceNotFoundException
+          false
+        end
       end
 
       private
