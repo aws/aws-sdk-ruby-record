@@ -31,7 +31,7 @@ Feature: Aws::Record::TableConfig
       end
       """
     When we migrate the TableConfig
-    Then calling 'table_exists?' on the model should return "true"
+    Then eventually the table should exist in DynamoDB
     And the TableConfig should be compatible with the remote table
     And the TableConfig should be an exact match with the remote table
 
@@ -65,7 +65,6 @@ Feature: Aws::Record::TableConfig
     When we migrate the TableConfig
     Then the TableConfig should be compatible with the remote table
 
-  @wip
   Scenario: Create a New Table With Global Secondary Indexes
     Given an aws-record model with definition:
       """
@@ -75,7 +74,10 @@ Feature: Aws::Record::TableConfig
       global_secondary_index(
         :gsi,
         hash_key:  :id,
-        range_key: :gsi_range
+        range_key: :gsi_range,
+        projection: {
+          projection_type: "ALL"
+        }
       )
       """
     And a TableConfig of:

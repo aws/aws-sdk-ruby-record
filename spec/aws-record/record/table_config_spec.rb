@@ -184,7 +184,84 @@ module Aws
 
         context "Global Secondary Indexes" do
 
-          it 'can create a new table with global secondary indexes'
+          it 'can create a new table with global secondary indexes' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(1)
+                i.write_capacity_units(1)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              'ResourceNotFoundException',
+              { table: { table_status: "ACTIVE" } }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi",
+              provisioned_throughput:
+              {
+                read_capacity_units: 2,
+                write_capacity_units: 2
+              },
+              key_schema: [
+                {
+                  attribute_name: "hk",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "rk",
+                  key_type: "RANGE"
+                }
+              ],
+              attribute_definitions: [
+                {
+                  attribute_name: "hk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "rk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_pk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sk",
+                  attribute_type: "S"
+                }
+              ],
+              global_secondary_indexes: [
+                {
+                  index_name: "gsi",
+                  key_schema: [
+                    {
+                      key_type: "HASH",
+                      attribute_name: "gsi_pk"
+                    },
+                    {
+                      key_type: "RANGE",
+                      attribute_name: "gsi_sk"
+                    }
+                  ],
+                  projection: {
+                    projection_type: "INCLUDE",
+                    non_key_attributes: ['c', 'b', 'a'] 
+                  },
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1
+                  } 
+                }
+              ]
+            )
+          end
 
           it 'can update a table to add global secondary indexes'
 

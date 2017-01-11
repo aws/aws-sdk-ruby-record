@@ -122,6 +122,10 @@ module Aws
         }
         opts[:key_schema] = _key_schema
         opts[:attribute_definitions] = _attribute_definitions
+        gsi = _global_secondary_indexes
+        unless gsi.empty?
+          opts[:global_secondary_indexes] = gsi 
+        end
         opts
       end
 
