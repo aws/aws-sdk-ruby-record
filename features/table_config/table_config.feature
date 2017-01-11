@@ -16,13 +16,10 @@
 Feature: Aws::Record::TableConfig
 
   Scenario: Create a New Table With TableConfig
-    Given an aws-record model with data:
+    Given an aws-record model with definition:
       """
-      [
-        { "method": "string_attr", "name": "id", "hash_key": true },
-        { "method": "integer_attr", "name": "count", "range_key": true },
-        { "method": "string_attr", "name": "body", "database_name": "content" }
-      ]
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
       """
     And a TableConfig of:
       """
@@ -39,13 +36,10 @@ Feature: Aws::Record::TableConfig
     And the TableConfig should be an exact match with the remote table
 
   Scenario: Update an Existing Table With TableConfig
-    Given an aws-record model with data:
+    Given an aws-record model with definition:
       """
-      [
-        { "method": "string_attr", "name": "id", "hash_key": true },
-        { "method": "integer_attr", "name": "count", "range_key": true },
-        { "method": "string_attr", "name": "body", "database_name": "content" }
-      ]
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
       """
     And a TableConfig of:
       """
@@ -70,3 +64,33 @@ Feature: Aws::Record::TableConfig
     And the TableConfig should not be compatible with the remote table
     When we migrate the TableConfig
     Then the TableConfig should be compatible with the remote table
+
+  @wip
+  Scenario: Create a New Table With Global Secondary Indexes
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      string_attr  :gsi_range
+      global_secondary_index(
+        :gsi,
+        hash_key:  :id,
+        range_key: :gsi_range
+      )
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.global_secondary_index(:gsi) do |i|
+          i.read_capacity_units(1)
+          i.write_capacity_units(1)
+        end
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    And the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table

@@ -28,6 +28,7 @@ module Aws
 
       def initialize
         @client_options = {}
+        @global_secondary_indexes = {}
       end
 
       def model_class(model)
@@ -40,6 +41,12 @@ module Aws
 
       def write_capacity_units(units)
         @write_capacity_units = units
+      end
+
+      def global_secondary_index(name, &block)
+        gsi = GlobalSecondaryIndex.new
+        gsi.instance_eval(&block)
+        @global_secondary_indexes[name] = gsi
       end
 
       def client_options(opts)
@@ -83,7 +90,10 @@ module Aws
       def compatible?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          _throughput_equal(resp) && _keys_equal(resp) && _ad_superset(resp)
+          _throughput_equal(resp) &&
+            _keys_equal(resp) &&
+            _ad_superset(resp) &&
+            _gsi_superset(resp)
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -92,7 +102,10 @@ module Aws
       def exact_match?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          _throughput_equal(resp) && _keys_equal(resp) && _ad_equal(resp)
+          _throughput_equal(resp) &&
+            _keys_equal(resp) &&
+            _ad_equal(resp) &&
+            _gsi_equal(resp)
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -122,12 +135,29 @@ module Aws
       end
 
       def _attribute_definitions
-        _keys.map do |type, attr|
+        attribute_definitions = _keys.map do |type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
           }
         end
+        @model_class.global_secondary_indexes.each do |_, attributes|
+          gsi_keys = [attributes[:hash_key]]
+          gsi_keys << attributes[:range_key] if attributes[:range_key]
+          gsi_keys.each do |name|
+            attribute = @model_class.attributes.attribute_for(name)
+            exists = attribute_definitions.any? do |ad|
+              ad[:attribute_name] == attribute.database_name
+            end
+            unless exists
+              attribute_definitions << {
+                attribute_name: attribute.database_name,
+                attribute_type: attribute.dynamodb_type
+              }
+            end
+          end
+        end
+        attribute_definitions
       end
 
       def _keys
@@ -165,6 +195,87 @@ module Aws
         end
       end
 
+      def _gsi_superset(resp)
+        remote_gsis = resp.table.global_secondary_indexes
+        local_gsis = _global_secondary_indexes
+        remote_idx, local_idx = _gsi_index_names(remote_gsis, local_gsis)
+        if local_idx.subset?(remote_idx)
+           _gsi_set_compare(remote_gsis, local_gsis)
+        else
+          # If we have any local indexes not on the remote table,
+          # guaranteed false.
+          false
+        end
+      end
+
+      def _gsi_equal(resp)
+        remote_gsis = resp.table.global_secondary_indexes
+        local_gsis = _global_secondary_indexes
+        remote_idx, local_idx = _gsi_index_names(remote_gsis, local_gsis)
+        if local_idx == remote_idx
+          _gsi_set_compare(remote_gsis, local_gsis)
+        else
+          false
+        end
+      end
+
+      def _gsi_set_compare(remote_gsis, local_gsis)
+        local_gsis.all? do |lgsi|
+          rgsi = remote_gsis.find do |r|
+            r.index_name == lgsi[:index_name].to_s
+          end
+
+          remote_key_schema = rgsi.key_schema.map { |i| i.to_h }
+          ks_match = _array_unsorted_eql(remote_key_schema, lgsi[:key_schema])
+
+          rpt = rgsi.provisioned_throughput.to_h
+          lpt = lgsi[:provisioned_throughput]
+          pt_match = lpt.all? do |k,v|
+            rpt[k] == v
+          end
+
+          rp = rgsi.projection.to_h
+          lp = lgsi[:projection]
+          rp[:non_key_attributes].sort! if rp[:non_key_attributes]
+          lp[:non_key_attributes].sort! if lp[:non_key_attributes]
+          p_match = rp == lp
+
+          ks_match && pt_match && p_match
+        end
+      end
+
+      def _gsi_index_names(remote, local)
+        remote_index_names = Set.new
+        local_index_names = Set.new
+        if remote
+          remote.each do |gsi|
+            remote_index_names.add(gsi.index_name)
+          end
+        end
+        if local
+          local.each do |gsi|
+            local_index_names.add(gsi[:index_name].to_s)
+          end
+        end
+        [remote_index_names, local_index_names]
+      end
+
+      def _global_secondary_indexes
+        gsis = []
+        model_gsis = @model_class.global_secondary_indexes_for_migration
+        gsi_config = @global_secondary_indexes
+        if model_gsis
+          model_gsis.each do |mgsi|
+            config = gsi_config[mgsi[:index_name]]
+            # Validate throughput exists? Validate each throughput is in model?
+            gsis << mgsi.merge(
+              provisioned_throughput: config.provisioned_throughput
+            )
+          end
+        end
+        gsis
+      end
+
       def _array_unsorted_eql(a, b)
         a.all? { |x| b.include?(x) } && b.all? { |x| a.include?(x) }
       end
@@ -179,6 +290,23 @@ module Aws
           raise Errors::MissingRequiredConfiguration, 'Missing: ' + msg
         end
       end
+
+      class GlobalSecondaryIndex
+        attr_reader :provisioned_throughput
+
+        def initialize
+          @provisioned_throughput = {}
+        end
+
+        def read_capacity_units(units)
+          @provisioned_throughput[:read_capacity_units] = units
+        end
+
+        def write_capacity_units(units)
+          @provisioned_throughput[:write_capacity_units] = units
+        end
+      end
+
     end
   end
 end
