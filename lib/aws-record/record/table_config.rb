@@ -59,25 +59,32 @@ module Aws
 
       def migrate!
         _validate_required_configuration
-
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          # Throughput first, keys can't be updated, add attribute definitions
-          # with GSI support.
-          if _throughput_equal(resp)
+          if _compatible_check(resp)
             nil
           else
-            @client.update_table(
-              table_name: @model_class.table_name,
-              provisioned_throughput: {
-                read_capacity_units: @read_capacity_units,
-                write_capacity_units: @write_capacity_units
-              }
-            )
-            @client.wait_until(
+            # Gotcha: You need separate migrations for indexes and throughput
+            unless _throughput_equal(resp)
+              @client.update_table(
+                table_name: @model_class.table_name,
+                provisioned_throughput: {
+                  read_capacity_units: @read_capacity_units,
+                  write_capacity_units: @write_capacity_units
+                }
+              )
+              @client.wait_until(
+                :table_exists,
+                table_name: @model_class.table_name
+              )
+            end
+            unless _gsi_superset(resp)
+              @client.update_table(_update_index_opts(resp))
+              @client.wait_until(
               :table_exists,
               table_name: @model_class.table_name
             )
+            end
           end
         rescue DynamoDB::Errors::ResourceNotFoundException
           # Code Smell: Exception as control flow.
@@ -90,10 +97,7 @@ module Aws
       def compatible?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          _throughput_equal(resp) &&
-            _keys_equal(resp) &&
-            _ad_superset(resp) &&
-            _gsi_superset(resp)
+          _compatible_check(resp)
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -112,6 +116,13 @@ module Aws
       end
 
       private
+      def _compatible_check(resp)
+        _throughput_equal(resp) &&
+          _keys_equal(resp) &&
+          _ad_superset(resp) &&
+          _gsi_superset(resp)
+      end
+
       def _create_table_opts
         opts = {
           table_name: @model_class.table_name,
@@ -127,6 +138,59 @@ module Aws
           opts[:global_secondary_indexes] = gsi 
         end
         opts
+      end
+
+      def _update_index_opts(resp)
+        gsi_updates, attribute_definitions = _gsi_updates(resp)
+        opts = {
+          table_name: @model_class.table_name,
+          global_secondary_index_updates: gsi_updates
+        }
+        unless attribute_definitions.empty?
+          opts[:attribute_definitions] = attribute_definitions
+        end
+        opts
+      end
+
+      def _gsi_updates(resp)
+        gsi_updates = []
+        attributes_referenced = Set.new
+        remote_gsis = resp.table.global_secondary_indexes
+        local_gsis = _global_secondary_indexes
+        remote_idx, local_idx = _gsi_index_names(remote_gsis, local_gsis)
+        create_candidates = local_idx - remote_idx
+        update_candidates = local_idx.intersection(remote_idx)
+        create_candidates.each do |index_name|
+          gsi = @model_class.global_secondary_indexes_for_migration.find do |i|
+            i[:index_name].to_s == index_name
+          end
+          gsi[:key_schema].each do |k|
+            attributes_referenced.add(k[:attribute_name])
+          end
+          # This may be a problem, check if I can maintain symbols.
+          lgsi = @global_secondary_indexes[index_name.to_sym]
+          gsi[:provisioned_throughput] = lgsi.provisioned_throughput
+          gsi_updates << {
+            create: gsi
+          }
+        end
+        update_candidates.each do |index_name|
+          # This may be a problem, check if I can maintain symbols.
+          lgsi = @global_secondary_indexes[index_name.to_sym]
+          gsi_updates << {
+            update: {
+              index_name: index_name,
+              provisioned_throughput: lgsi.provisioned_throughput
+            }
+          }
+        end
+        attribute_definitions = _attribute_definitions
+        incremental_attributes = attributes_referenced.map do |attr_name|
+          attribute_definitions.find do |ad|
+            ad[:attribute_name] == attr_name
+          end
+        end
+        [gsi_updates, incremental_attributes]
       end
 
       def _key_schema

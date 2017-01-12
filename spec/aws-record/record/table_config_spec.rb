@@ -263,9 +263,503 @@ module Aws
             )
           end
 
-          it 'can update a table to add global secondary indexes'
+          it 'can update a table to add global secondary indexes' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(1)
+                i.write_capacity_units(1)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              {
+                table: {
+                  attribute_definitions: [
+                    {
+                      attribute_type: "S",
+                      attribute_name: "hk"
+                    },
+                    {
+                      attribute_name: "rk",
+                      attribute_type: "S"
+                    }
+                  ],
+                  table_name: "TestModelWithGsi",
+                  key_schema: [
+                    {
+                      attribute_name: "hk",
+                      key_type: "HASH"
+                    },
+                    {
+                      attribute_name: "rk",
+                      key_type: "RANGE"
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2,
+                    number_of_decreases_today: 0
+                  },
+                  table_status: "ACTIVE"
+                }
+              },
+              { table: { table_status: "ACTIVE" } }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi",
+              attribute_definitions: [
+                {
+                  attribute_name: "gsi_pk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sk",
+                  attribute_type: "S"
+                }
+              ],
+              global_secondary_index_updates: [
+                {
+                  create: {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      },
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ['c', 'b', 'a'] 
+                    },
+                    provisioned_throughput: {
+                      read_capacity_units: 1,
+                      write_capacity_units: 1
+                    } 
+                  }
+                }
+              ]
+            )
+          end
 
-          it 'can update a table to modify a global secondary index'
+          it 'separates throughput and index updates' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(1)
+                i.write_capacity_units(1)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              {
+                table: {
+                  attribute_definitions: [
+                    {
+                      attribute_type: "S",
+                      attribute_name: "hk"
+                    },
+                    {
+                      attribute_name: "rk",
+                      attribute_type: "S"
+                    }
+                  ],
+                  table_name: "TestModelWithGsi",
+                  key_schema: [
+                    {
+                      attribute_name: "hk",
+                      key_type: "HASH"
+                    },
+                    {
+                      attribute_name: "rk",
+                      key_type: "RANGE"
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
+                  },
+                  table_status: "ACTIVE"
+                }
+              },
+              { table: { table_status: "ACTIVE" } }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi",
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2
+              }
+            )
+            expect(api_requests[3]).to eq(
+              table_name: "TestModelWithGsi",
+              attribute_definitions: [
+                {
+                  attribute_name: "gsi_pk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sk",
+                  attribute_type: "S"
+                }
+              ],
+              global_secondary_index_updates: [
+                {
+                  create: {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      },
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ['c', 'b', 'a'] 
+                    },
+                    provisioned_throughput: {
+                      read_capacity_units: 1,
+                      write_capacity_units: 1
+                    } 
+                  }
+                }
+              ]
+            )
+          end
+
+          it 'correctly reuses attribute definitions during gsi creation' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi2)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(1)
+                i.write_capacity_units(1)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              {
+                table: {
+                  attribute_definitions: [
+                    {
+                      attribute_type: "S",
+                      attribute_name: "hk"
+                    },
+                    {
+                      attribute_name: "rk",
+                      attribute_type: "S"
+                    }
+                  ],
+                  table_name: "TestModelWithGsi2",
+                  key_schema: [
+                    {
+                      attribute_name: "hk",
+                      key_type: "HASH"
+                    },
+                    {
+                      attribute_name: "rk",
+                      key_type: "RANGE"
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2,
+                    number_of_decreases_today: 0
+                  },
+                  table_status: "ACTIVE"
+                }
+              },
+              { table: { table_status: "ACTIVE" } }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi2",
+              attribute_definitions: [
+                {
+                  attribute_name: "hk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sk",
+                  attribute_type: "S"
+                }
+              ],
+              global_secondary_index_updates: [
+                {
+                  create: {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "HASH",
+                        attribute_name: "hk"
+                      },
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "ALL"
+                    },
+                    provisioned_throughput: {
+                      read_capacity_units: 1,
+                      write_capacity_units: 1
+                    } 
+                  }
+                }
+              ]
+            )
+          end
+
+          it 'can update a table to modify a global secondary index' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi2)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(2)
+                i.write_capacity_units(2)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              {
+                table: {
+                  table_status: "ACTIVE",
+                  attribute_definitions: [
+                    {
+                      attribute_name: "hk",
+                      attribute_type: "S"
+                    },
+                    {
+                      attribute_name: "rk",
+                      attribute_type: "S"
+                    },
+                    {
+                      attribute_name: "gsi_pk",
+                      attribute_type: "S"
+                    },
+                    {
+                      attribute_name: "gsi_sk",
+                      attribute_type: "S"
+                    }
+                  ],
+                  table_name: "TestModel",
+                  key_schema: [
+                    {
+                      attribute_name: "hk",
+                      key_type: "HASH"
+                    },
+                    {
+                      attribute_name: "rk",
+                      key_type: "RANGE"
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2,
+                    number_of_decreases_today: 0
+                  },
+                  global_secondary_indexes: [
+                    {
+                      index_name: "gsi",
+                      key_schema: [
+                        {
+                          key_type: "RANGE",
+                          attribute_name: "gsi_sk"
+                        },
+                        {
+                          key_type: "HASH",
+                          attribute_name: "gsi_pk"
+                        }
+                      ],
+                      projection: {
+                        projection_type: "INCLUDE",
+                        non_key_attributes: ["a", "b", "c"]
+                      },
+                      item_count: 0,
+                      index_status: "ACTIVE",
+                      backfilling: false,
+                      provisioned_throughput: {
+                        read_capacity_units: 1,
+                        write_capacity_units: 1,
+                        number_of_decreases_today: 0
+                      }
+                    }
+                  ]
+                }
+              }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi2",
+              global_secondary_index_updates: [
+                {
+                  update: {
+                    index_name: "gsi",
+                    provisioned_throughput: {
+                      read_capacity_units: 2,
+                      write_capacity_units: 2
+                    } 
+                  }
+                }
+              ]
+            )
+          end
+
+          it 'can handle multiple global secondary index updates at once' do
+            cfg = TableConfig.define do |t|
+              t.model_class(TestModelWithGsi3)
+              t.read_capacity_units(2)
+              t.write_capacity_units(2)
+              t.global_secondary_index(:gsi) do |i|
+                i.read_capacity_units(2)
+                i.write_capacity_units(2)
+              end
+              t.global_secondary_index(:gsi2) do |i|
+                i.read_capacity_units(2)
+                i.write_capacity_units(2)
+              end
+              t.client_options(stub_responses: true)
+            end
+            stub_client = configure_test_client(cfg.client)
+            stub_client.stub_responses(
+              :describe_table,
+              {
+                table: {
+                  attribute_definitions: [
+                    {
+                      attribute_type: "S",
+                      attribute_name: "hk"
+                    },
+                    {
+                      attribute_name: "rk",
+                      attribute_type: "S"
+                    },
+                    {
+                      attribute_name: "gsi_sk",
+                      attribute_type: "S"
+                    }
+                  ],
+                  table_name: "TestModelWithGsi3",
+                  key_schema: [
+                    {
+                      attribute_name: "hk",
+                      key_type: "HASH"
+                    },
+                    {
+                      attribute_name: "rk",
+                      key_type: "RANGE"
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2,
+                    number_of_decreases_today: 0
+                  },
+                  global_secondary_indexes: [
+                    {
+                      index_name: "gsi",
+                      key_schema: [
+                        {
+                          key_type: "RANGE",
+                          attribute_name: "gsi_sk"
+                        },
+                        {
+                          key_type: "HASH",
+                          attribute_name: "hk"
+                        }
+                      ],
+                      projection: {
+                        projection_type: "ALL"
+                      },
+                      item_count: 0,
+                      index_status: "ACTIVE",
+                      backfilling: false,
+                      provisioned_throughput: {
+                        read_capacity_units: 1,
+                        write_capacity_units: 1,
+                        number_of_decreases_today: 0
+                      }
+                    }
+                  ],
+                  table_status: "ACTIVE"
+                }
+              },
+              { table: { table_status: "ACTIVE" } }
+            )
+            cfg.migrate!
+            expect(api_requests[1]).to eq(
+              table_name: "TestModelWithGsi3",
+              attribute_definitions: [
+                {
+                  attribute_name: "gsi_pk",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sk",
+                  attribute_type: "S"
+                }
+              ],
+              global_secondary_index_updates: [
+                {
+                  create: {
+                    index_name: "gsi2",
+                    key_schema: [
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      },
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "ALL"
+                    },
+                    provisioned_throughput: {
+                      read_capacity_units: 2,
+                      write_capacity_units: 2
+                    } 
+                  }
+                },
+                {
+                  update: {
+                    index_name: "gsi",
+                    provisioned_throughput: {
+                      read_capacity_units: 2,
+                      write_capacity_units: 2
+                    }
+                  }
+                }
+              ]
+            )
+          end
 
         end
 
@@ -1335,6 +1829,47 @@ class TestModelWithGsi
     projection: {
       projection_type: "INCLUDE",
       non_key_attributes: ["c", "b", "a"]
+    }
+  )
+end
+
+class TestModelWithGsi2
+  include Aws::Record
+
+  string_attr :hk, hash_key: true
+  string_attr :rk, range_key: true
+  string_attr :gsi_sk
+  global_secondary_index(
+    :gsi,
+    hash_key:  :hk,
+    range_key: :gsi_sk,
+    projection: {
+      projection_type: "ALL"
+    }
+  )
+end
+
+class TestModelWithGsi3
+  include Aws::Record
+
+  string_attr :hk, hash_key: true
+  string_attr :rk, range_key: true
+  string_attr :gsi_pk
+  string_attr :gsi_sk
+  global_secondary_index(
+    :gsi,
+    hash_key:  :hk,
+    range_key: :gsi_sk,
+    projection: {
+      projection_type: "ALL"
+    }
+  )
+  global_secondary_index(
+    :gsi2,
+    hash_key:  :gsi_pk,
+    range_key: :gsi_sk,
+    projection: {
+      projection_type: "ALL"
     }
   )
 end
