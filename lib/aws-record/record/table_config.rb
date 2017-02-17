@@ -26,33 +26,40 @@ module Aws
         end
       end
 
+      # @api private
       def initialize
         @client_options = {}
         @global_secondary_indexes = {}
       end
 
+      # @api private
       def model_class(model)
         @model_class = model
       end
 
+      # @api private
       def read_capacity_units(units)
         @read_capacity_units = units
       end
 
+      # @api private
       def write_capacity_units(units)
         @write_capacity_units = units
       end
 
+      # @api private
       def global_secondary_index(name, &block)
         gsi = GlobalSecondaryIndex.new
         gsi.instance_eval(&block)
         @global_secondary_indexes[name] = gsi
       end
 
+      # @api private
       def client_options(opts)
         @client_options = opts
       end
 
+      # @api private
       def configure_client
         @client = Aws::DynamoDB::Client.new(@client_options)
       end
