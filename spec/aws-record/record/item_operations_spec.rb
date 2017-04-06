@@ -163,7 +163,8 @@ module Aws
             },
             expression_attribute_values: {
               ":ue_a" => { s: "Goodbye!" }
-            }
+            },
+            return_consumed_capacity: "NONE"
           }])
         end
 
