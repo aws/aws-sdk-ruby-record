@@ -53,6 +53,7 @@ module Aws
       # not exist.
       class TableDoesNotExist < RuntimeError; end
 
+      class MissingRequiredConfiguration < RuntimeError; end
     end
   end
 end

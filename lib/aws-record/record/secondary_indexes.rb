@@ -89,14 +89,17 @@ module Aws
         private
         def _migration_format_indexes(indexes)
           return nil if indexes.empty?
-          indexes.collect do |name, opts|
+          mfi = indexes.collect do |name, opts|
             h = { index_name: name }
             h[:key_schema] = _si_key_schema(opts)
-            opts.delete(:hash_key)
-            opts.delete(:range_key)
+            hk = opts.delete(:hash_key)
+            rk = opts.delete(:range_key)
             h = h.merge(opts)
+            opts[:hash_key] = hk if hk
+            opts[:range_key] = rk if rk
             h
           end
+          mfi
         end
 
         def _si_key_schema(opts)

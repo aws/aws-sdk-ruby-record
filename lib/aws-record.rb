@@ -28,6 +28,7 @@ module Aws
     autoload :ModelAttributes,  'aws-record/record/model_attributes'
     autoload :Query,            'aws-record/record/query'
     autoload :SecondaryIndexes, 'aws-record/record/secondary_indexes'
+    autoload :TableConfig,      'aws-record/record/table_config'
     autoload :TableMigration,   'aws-record/record/table_migration'
     autoload :VERSION,          'aws-record/record/version'
 
