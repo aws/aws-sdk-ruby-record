@@ -13,11 +13,117 @@
 
 module Aws
   module Record
+
+    # +Aws::Record::TableConfig+ provides a DSL for describing and modifying
+    # the remote configuration of your DynamoDB tables. A table configuration
+    # object can perform intelligent comparisons and incremental migrations
+    # versus the current remote configuration, if the table exists, or do a full
+    # create if it does not. In this manner, table configuration becomes fully
+    # declarative.
+    #
+    # @example A basic model with configuration.
+    #   class Model
+    #     include Aws::Record
+    #     string_attr :uuid, hash_key: true
+    #   end
+    #
+    #   table_config = Aws::Record::TableConfig.define do |t|
+    #     t.model_class Model
+    #     t.read_capacity_units 10
+    #     t.write_capacity_units 5
+    #   end
+    #
+    # @example Running a conditional migration on a basic model.
+    #   table_config = Aws::Record::TableConfig.define do |t|
+    #     t.model_class Model
+    #     t.read_capacity_units 10
+    #     t.write_capacity_units 5
+    #   end
+    #
+    #   table_config.migrate! unless table_config.compatible?
+    #
+    # @example A model with a global secondary index.
+    #   class Forum
+    #     include Aws::Record
+    #     string_attr     :forum_uuid, hash_key: true
+    #     integer_attr    :post_id,    range_key: true
+    #     string_attr     :post_title
+    #     string_attr     :post_body
+    #     string_attr     :author_username
+    #     datetime_attr   :created_date
+    #     datetime_attr   :updated_date
+    #     string_set_attr :tags
+    #     map_attr        :metadata, default_value: {}
+    #
+    #     global_secondary_index(
+    #       :title,
+    #       hash_key:  :forum_uuid,
+    #       range_key: :post_title,
+    #       projection_type: "ALL"
+    #     )
+    #   end
+    #
+    #   table_config = Aws::Record::TableConfig.define do |t|
+    #     t.model_class Forum
+    #     t.read_capacity_units 10
+    #     t.write_capacity_units 5
+    #
+    #     t.global_secondary_index(:title) do |i|
+    #       i.read_capacity_units 5
+    #       i.write_capacity_units 5
+    #     end
+    #   end
+    #
     class TableConfig
 
       attr_accessor :client
 
       class << self
+
+        # Creates a new table configuration, using a DSL in the provided block.
+        # The DSL has the following methods:
+        # * +#model_class+ A class name reference to the +Aws::Record+ model
+        #   class.
+        # * +#read_capacity_units+ Sets the read capacity units for the table.
+        # * +#write_capacity_units+ Sets the write capacity units for the table.
+        # * +#global_secondary_index(index_symbol, &block)+ Defines a global
+        #   secondary index with capacity attributes in a block:
+        #   * +#read_capacity_units+ Sets the read capacity units for the
+        #     index.
+        #   * +#write_capacity_units+ Sets the write capacity units for the
+        #     index.
+        #
+        # @example Defining a migration with a GSI.
+        #   class Forum
+        #     include Aws::Record
+        #     string_attr     :forum_uuid, hash_key: true
+        #     integer_attr    :post_id,    range_key: true
+        #     string_attr     :post_title
+        #     string_attr     :post_body
+        #     string_attr     :author_username
+        #     datetime_attr   :created_date
+        #     datetime_attr   :updated_date
+        #     string_set_attr :tags
+        #     map_attr        :metadata, default_value: {}
+        #
+        #     global_secondary_index(
+        #       :title,
+        #       hash_key:  :forum_uuid,
+        #       range_key: :post_title,
+        #       projection_type: "ALL"
+        #     )
+        #   end
+        #
+        #   table_config = Aws::Record::TableConfig.define do |t|
+        #     t.model_class Forum
+        #     t.read_capacity_units 10
+        #     t.write_capacity_units 5
+        #
+        #     t.global_secondary_index(:title) do |i|
+        #       i.read_capacity_units 5
+        #       i.write_capacity_units 5
+        #     end
+        #   end
         def define(&block)
           cfg = TableConfig.new
           cfg.instance_eval(&block)
@@ -64,6 +170,11 @@ module Aws
         @client = Aws::DynamoDB::Client.new(@client_options)
       end
 
+      # Performs a migration, if needed, against the remote table. If
+      # +#compatible?+ would return true, the remote table already has the same
+      # throughput, key schema, attribute definitions, and global secondary
+      # indexes, so no further API calls are made. Otherwise, a DynamoDB table
+      # will be created or updated to match your declared configuration.
       def migrate!
         _validate_required_configuration
         begin
@@ -101,6 +212,15 @@ module Aws
         end
       end
 
+      # Checks the remote table for compatibility. Similar to +#exact_match?+,
+      # this will return +false+ if the remote table does not exist. It also
+      # checks the keys, declared global secondary indexes, declared attribute
+      # definitions, and throughput for exact matches. However, if the remote
+      # end has additional attribute definitions and global secondary indexes
+      # not defined in your config, will still return +true+. This allows for a
+      # check that is friendly to single table inheritance use cases.
+      #
+      # @return [Boolean] true if remote is compatible, false otherwise.
       def compatible?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
@@ -110,6 +230,12 @@ module Aws
         end
       end
 
+      # Checks against the remote table's configuration. If the remote table
+      # does not exist, guaranteed +false+. Otherwise, will check if the remote
+      # throughput, keys, attribute definitions, and global secondary indexes
+      # are exactly equal to your declared configuration.
+      #
+      # @return [Boolean] true if remote is an exact match, false otherwise.
       def exact_match?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
@@ -366,6 +492,7 @@ module Aws
         end
       end
 
+      # @api private
       class GlobalSecondaryIndex
         attr_reader :provisioned_throughput
 
