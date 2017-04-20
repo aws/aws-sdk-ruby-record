@@ -1,6 +1,16 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::TableConfig - A declarative way to describe
+  configuration for your Amazon DynamoDB tables, with smart migrations based on
+  the current remote state. More details in the documentation.
+
+* Issue - Aws::Record::TableMigration - Legacy table migrations could have
+  issues with global secondary indexes if a table was deleted and recreated
+  multiple times.
+
+  See [related GitHub issue #64](https://github.com/aws/aws-sdk-ruby-record/issues/64).
+
 1.0.3 (2016-12-19)
 ------------------
 
