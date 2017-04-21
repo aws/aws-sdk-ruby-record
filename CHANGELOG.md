@@ -1,4 +1,4 @@
-Unreleased Changes
+1.1.0 (2017-04-21)
 ------------------
 
 * Feature - Aws::Record::TableConfig - A declarative way to describe
