@@ -39,7 +39,7 @@ module Aws
             it 'casts timestamps to dates' do
               expected = Date.parse('2009-02-13')
               input = 1234567890
-              expect(@marshaler.type_cast(input)).to eq(expected)
+              expect(@marshaler.type_cast(input)).to be_within(1).of(expected)
             end
 
             it 'casts strings to dates' do
@@ -69,7 +69,7 @@ module Aws
               end
             end
           end
-          
+
           before(:each) do
             @marshaler = DateMarshaler.new(formatter: jisx0301_formatter)
           end
