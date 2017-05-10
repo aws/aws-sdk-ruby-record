@@ -141,13 +141,15 @@ module Aws
               key: key_values,
               update_expression: uex,
               expression_attribute_names: exp_attr_names,
+              return_consumed_capacity: (opts[:return_consumed_capacity] || "NONE"),
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
             dynamodb_client.update_item(request_opts)
           else
             dynamodb_client.update_item(
               table_name: self.class.table_name,
-              key: key_values
+              key: key_values,
+              return_consumed_capacity: (opts[:return_consumed_capacity] || "NONE"),
             )
           end
         end
