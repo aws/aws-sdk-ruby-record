@@ -95,8 +95,13 @@ module Aws
         if @default_value_or_lambda.respond_to?(:call)
           @default_value_or_lambda.call
         else
-          @default_value_or_lambda
+          _deep_copy(@default_value_or_lambda)
         end
+      end
+
+      private
+      def _deep_copy(obj)
+        Marshal.load(Marshal.dump(obj))
       end
 
     end

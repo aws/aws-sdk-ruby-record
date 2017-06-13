@@ -144,5 +144,21 @@ module Aws
       end
     end
 
+    describe 'default_value' do
+      let(:model) {
+        Class.new do
+          include(Aws::Record)
+          set_table_name("TestTable")
+          string_attr(:uuid, hash_key: true)
+          map_attr(:things, default_value: {})
+        end
+      }
+
+      it 'uses a deep copy of the default_value' do
+        model.new.things['foo'] = 'bar'
+        expect(model.new.things).to eq({})
+      end
+    end
+
   end
 end
