@@ -1,6 +1,17 @@
 Unreleased Changes
 ------------------
 
+* Feature - Support lambdas for default values
+
+  ```ruby
+  date_attr :date, default_value -> { Date.today }
+  ```
+
+* Issue - An attribute's default_value could be modified and carried over to
+  new instances of the model.
+
+  See [related GitHub issue #69](https://github.com/aws/aws-sdk-ruby-record/issues/69)
+
 1.1.0 (2017-04-21)
 ------------------
 

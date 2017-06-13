@@ -31,6 +31,20 @@ module Aws
         end
       end
 
+      context 'default_value' do
+        it 'supports lambdas' do
+          a = Attribute.new(:foo, default_value: -> { 2 + 3 })
+          expect(a.default_value).to eq(5)
+        end
+
+        it 'uses a deep copy' do
+          a = Attribute.new(:foo, default_value: {})
+          a.default_value['greeting'] = 'hi'
+
+          expect(a.default_value).to eq({})
+        end
+      end
+
     end
   end
 end
