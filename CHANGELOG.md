@@ -1,6 +1,12 @@
 Unreleased Changes
 ------------------
 
+* Feature - Support lambdas for default values
+
+  ```ruby
+  date_attr :date, default_value -> { Date.today }
+  ```
+
 1.1.0 (2017-04-21)
 ------------------
 

@@ -21,7 +21,7 @@ module Aws
     # within the model class and item instances.
     class Attribute
 
-      attr_reader :name, :database_name, :dynamodb_type, :default_value
+      attr_reader :name, :database_name, :dynamodb_type
 
       # @param [Symbol] name Name of the attribute. It should be a name that is
       #  safe to use as a method.
@@ -53,7 +53,7 @@ module Aws
         @marshaler = options[:marshaler] || DefaultMarshaler
         @persist_nil = options[:persist_nil]
         dv = options[:default_value]
-        @default_value = type_cast(dv) unless dv.nil?
+        @default_value_or_lambda = type_cast(dv) unless dv.nil?
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
@@ -88,6 +88,15 @@ module Aws
       # @api private
       def extract(dynamodb_item)
         dynamodb_item[@database_name]
+      end
+
+      # @api private
+      def default_value
+        if @default_value_or_lambda.respond_to?(:call)
+          @default_value_or_lambda.call
+        else
+          @default_value_or_lambda
+        end
       end
 
     end
