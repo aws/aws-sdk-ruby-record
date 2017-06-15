@@ -214,6 +214,37 @@ module Aws
           # None of this should have reached the API
           expect(api_requests).to eq([])
         end
+
+        context "modifications to default values" do
+          let(:klass_with_defaults) do
+            Class.new do
+              include(Aws::Record)
+              set_table_name("TestTable")
+              string_attr(:mykey, hash_key: true)
+              map_attr(:dirty_map, default_value: {})
+            end
+          end
+
+          it 'persists modifications to default values' do
+            klass_with_defaults.configure_client(client: stub_client)
+            item = klass_with_defaults.new(mykey: "key")
+            item.dirty_map["a"] = 1
+            item.save
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              item: {
+                "mykey" => { s: "key" },
+                "dirty_map" => {
+                  m: { "a" => { n: "1" } }
+                }
+              },
+              condition_expression: "attribute_not_exists(#H)",
+              expression_attribute_names: {
+                "#H" => "mykey",
+              }
+            }])
+          end
+        end
       end
 
       describe "#find" do

@@ -54,3 +54,17 @@ Then(/^calling save should raise a conditional save exception$/) do
     Aws::Record::Errors::ConditionalWriteFailed
   )
 end
+
+When(/^we apply the following keys and values to map attribute "([^"]*)":$/) do |attribute, map_block|
+  # This code will explode, probably with a NoMethodError, if you put in a
+  # non-map attribute. It also intentionally uses mutation over assignment.
+  value = @instance.send(:"#{attribute}")
+  map = eval(map_block)
+  value.merge!(map)
+end
+
+Then(/^the attribute "([^"]*)" on the item should match:$/) do |attribute, value_block|
+  expected = eval(value_block)
+  actual = @instance.send(:"#{attribute}")
+  expect(actual).to eq(expected)
+end

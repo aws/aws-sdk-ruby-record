@@ -23,6 +23,7 @@ module Aws
         @model_attributes = model_attributes
         @track_mutations = opts[:track_mutations]
         @track_mutations = true if opts[:track_mutations].nil?
+        populate_default_values
       end
 
       def get_attribute(name)
