@@ -279,6 +279,26 @@ describe Aws::Record::DirtyTracking do
       end
     end
 
+    describe "Default Values" do
+      let(:klass_with_defaults) do
+        Class.new do
+          include(Aws::Record)
+          set_table_name(:test_table)
+          string_attr(:mykey, hash_key: true)
+          map_attr(:dirty_map, default_value: {})
+        end
+      end
+
+      it 'tracks mutations to the default value' do
+        item = klass_with_defaults.new(mykey: "key")
+        item.clean!
+        expect(item.dirty?).to be_falsy
+        item.dirty_map[:key] = "value"
+        expect(item.dirty_map).to eq({ key: "value" })
+        expect(item.dirty?).to be_truthy
+      end
+    end
+
     describe "Tracking Turned Off" do
       it 'does not track detailed mutations when tracking is globally off' do
         klass.disable_mutation_tracking
