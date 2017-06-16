@@ -53,7 +53,9 @@ module Aws
         @marshaler = options[:marshaler] || DefaultMarshaler
         @persist_nil = options[:persist_nil]
         dv = options[:default_value]
-        @default_value_or_lambda = type_cast(dv) unless dv.nil?
+        unless dv.nil?
+          @default_value_or_lambda = dv.respond_to?(:call) ? dv : type_cast(dv)
+        end
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
