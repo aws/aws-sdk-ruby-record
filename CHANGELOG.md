@@ -1,4 +1,4 @@
-Unreleased Changes
+1.1.1 (2017-06-16)
 ------------------
 
 * Feature - Support lambdas for default attribute values.
