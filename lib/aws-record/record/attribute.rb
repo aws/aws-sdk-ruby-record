@@ -95,7 +95,7 @@ module Aws
       # @api private
       def default_value
         if @default_value_or_lambda.respond_to?(:call)
-          @default_value_or_lambda.call
+          type_cast(@default_value_or_lambda.call)
         else
           _deep_copy(@default_value_or_lambda)
         end
