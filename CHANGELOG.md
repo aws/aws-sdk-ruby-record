@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Upgrading - Support version 3 of the AWS SDK for Ruby. This is being released as major version 2 of `aws-record`, though the APIs remain the same. Do note, however, that we've changed our SDK dependency to only depend on `aws-sdk-dynamodb`. This means that if you were depending on other service clients transitively via `aws-record`, you will need to add dependencies on the appropriate service gems when upgrading.
+
 1.1.1 (2017-06-16)
 ------------------
 
