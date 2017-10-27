@@ -131,7 +131,6 @@ Feature: Amazon DynamoDB Querying and Scanning
       ]
       """
 
-  @wip
   Scenario: Paginate Manually With Multiple Calls
     When we call the 'scan' class method with parameter data:
       """
