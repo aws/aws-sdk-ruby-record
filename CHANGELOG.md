@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::ItemCollection - Add the `#page` and `#last_evaluated_key` methods to `Aws::Record::ItemCollection`. This helps to support use cases where you'd like to control the result set size with the `:limit` parameter, or if you want to expose pagination capabilities to an outside caller, for example a list-type operation exposed in a web API.
+
 2.0.0 (2017-08-29)
 ------------------
 
