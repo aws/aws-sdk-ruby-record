@@ -130,3 +130,63 @@ Feature: Amazon DynamoDB Querying and Scanning
         }
       ]
       """
+
+  @wip
+  Scenario: Paginate Manually With Multiple Calls
+    When we call the 'scan' class method with parameter data:
+      """
+      {
+        "limit": 2
+      }
+      """
+    Then we should receive an aws-record page with 2 values from members:
+      """
+      [
+        {
+          "id": "1",
+          "count": 5,
+          "body": "First item."
+        },
+        {
+          "id": "1",
+          "count": 10,
+          "body": "Second item."
+        },
+        {
+          "id": "1",
+          "count": 15,
+          "body": "Third item."
+        },
+        {
+          "id": "2",
+          "count": 10,
+          "body": "Fourth item."
+        }
+      ]
+      """
+    When we call the 'scan' class method using the page's pagination token
+    Then we should receive an aws-record page with 2 values from members:
+      """
+      [
+        {
+          "id": "1",
+          "count": 5,
+          "body": "First item."
+        },
+        {
+          "id": "1",
+          "count": 10,
+          "body": "Second item."
+        },
+        {
+          "id": "1",
+          "count": 15,
+          "body": "Third item."
+        },
+        {
+          "id": "2",
+          "count": 10,
+          "body": "Fourth item."
+        }
+      ]
+      """
