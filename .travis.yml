@@ -1,7 +1,6 @@
 language: ruby
 
 rvm:
-  - 1.9.3
   - 2.0.0
   - 2.1
   - 2.2
@@ -19,8 +18,6 @@ bundler_args: --without docs release repl
 
 matrix:
   include:
-    - rvm: 2.3.0
-      env: NEW_RAILS=1
     - rvm: 2.4.0
       env: NEW_RAILS=1
   exclude:
