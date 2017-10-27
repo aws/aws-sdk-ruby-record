@@ -49,17 +49,94 @@ module Aws
         }
       end
 
-      describe "#each" do
-        let(:non_truncated_resp) do
-          {
-            items: [
-              { "id" => 4 },
-              { "id" => 5 }
-            ],
-            count: 2,
-            last_evaluated_key: nil
-          }
+      let(:non_truncated_resp) do
+        {
+          items: [
+            { "id" => 4 },
+            { "id" => 5 }
+          ],
+          count: 2,
+          last_evaluated_key: nil
+        }
+      end
+
+      describe "#page" do
+        it "provides an array of items from a single client call" do
+          stub_client.stub_responses(:scan, truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          actual = c.page
+          expect(actual.size).to eq(3)
+          actual_ids = actual.map { |a| a.id }
+          expect(actual_ids).to eq([1,2,3])
+          expect(c.last_evaluated_key).to eq({"id" => { "n" => "3" }})
         end
+      end
+
+      describe "#last_evaluated_key" do
+        it "points you to the client response pagination value if present" do
+          stub_client.stub_responses(:scan, truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          c.take(2) # Trigger the "call"
+          expect(c.last_evaluated_key).to eq({"id" => { "n" => "3" }})
+        end
+
+        it "provides a nil pagination value if no pages remain" do
+          stub_client.stub_responses(:scan, non_truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          c.take(2) # Trigger the "call"
+          expect(c.last_evaluated_key).to be_nil
+        end
+
+        it "correctly provides the most recent pagination key" do
+          stub_client.stub_responses(:scan, truncated_resp, non_truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          c.take(4) # Trigger the "call" and the second "page"
+          expect(c.last_evaluated_key).to be_nil
+        end
+
+        it "gathers evaluation keys from #page as well" do
+          stub_client.stub_responses(:scan, truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          c.page
+          expect(c.last_evaluated_key).to eq({"id" => { "n" => "3" }})
+          stub_client.stub_responses(:scan, non_truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          c.page
+          expect(c.last_evaluated_key).to be_nil
+        end
+      end
+
+      describe "#each" do
 
         it "correctly iterates through a paginated response" do
           stub_client.stub_responses(:scan, truncated_resp, non_truncated_resp)

@@ -38,11 +38,38 @@ module Aws
       def each(&block)
         return enum_for(:each) unless block_given?
         items.each_page do |page|
+          @last_evaluated_key = page.last_evaluated_key
           items_array = _build_items_from_response(page.items, @model)
           items_array.each do |item|
             yield item
           end
         end
+      end
+
+      # Provides the first "page" of responses from your query operation. This
+      # will only make a single client call, and will provide the items, if any
+      # exist, from that response. It will not attempt to follow up on
+      # pagination tokens, so this is not guaranteed to include all items that
+      # match your search.
+      #
+      # @return [Array<Aws::Record>] an array of the record items found in the
+      #   first page of reponses from the query or scan call.
+      def page
+        search_response = items
+        @last_evaluated_key = search_response.last_evaluated_key
+        _build_items_from_response(search_response.items, @model)
+      end
+
+      # Provides the pagination key most recently used by the underlying client.
+      # This can be useful in the case where you're exposing pagination to an
+      # outside caller, and want to be able to "resume" your scan in a new call
+      # without starting over.
+      #
+      # @return [Hash] a hash representing an attribute key/value pair, suitable
+      #   for use as the +exclusive_start_key+ in another query or scan
+      #   operation. If there are no more pages in the result, will be nil.
+      def last_evaluated_key
+        @last_evaluated_key
       end
 
       # Checks if the query/scan result is completely blank.
