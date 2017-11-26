@@ -31,7 +31,7 @@ module Aws
       def initialize(model, opts = {})
         _assert_model_valid(model)
         @model = model
-        @client = opts[:client] || Aws::DynamoDB::Client.new
+        @client = opts[:client] || model.dynamodb_client || Aws::DynamoDB::Client.new
       end
 
       # This method calls

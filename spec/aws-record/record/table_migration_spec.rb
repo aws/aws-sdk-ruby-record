@@ -44,6 +44,27 @@ module Aws
         )
       end
 
+      context 'client' do
+        let(:model_stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+        let(:model) do
+          model = Class.new do
+            include(Aws::Record)
+            set_table_name("TestTable")
+            integer_attr(:id, hash_key: true)
+          end
+          model.configure_client client: model_stub_client
+          model
+        end
+
+        it 'uses client given as option with the highest priority' do
+          expect(TableMigration.new(model, client: stub_client).client).to eq stub_client
+        end
+
+        it 'uses client set to model' do
+          expect(TableMigration.new(model).client).to eq model_stub_client
+        end
+      end
+
       context "Migration Operations" do
 
         let(:klass) do
