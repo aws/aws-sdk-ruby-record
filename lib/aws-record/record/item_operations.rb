@@ -108,49 +108,61 @@ module Aws
 
       def _perform_save(opts)
         force = opts[:force]
+        perform_upsert = opts[:perform_upsert]
         expect_new = expect_new_item?
+
         if force
-          dynamodb_client.put_item(
-            table_name: self.class.table_name,
-            item: _build_item_for_save
-          )
+          _perform_put_item
         elsif expect_new
-          put_opts = {
-            table_name: self.class.table_name,
-            item: _build_item_for_save
-          }.merge(prevent_overwrite_expression)
-          begin
-            dynamodb_client.put_item(put_opts)
-          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
-            raise Errors::ConditionalWriteFailed.new(
-              "Conditional #put_item call failed! Check that conditional write"\
-                " conditions are met, or include the :force option to clobber"\
-                " the remote item."
-            )
+          if perform_upsert
+            _perform_update_item
+          else
+            _perform_put_item(prevent_overwrite_expression)
           end
         else
-          update_pairs = _dirty_changes_for_update
-          update_tuple = self.class.send(
-            :_build_update_expression,
-            update_pairs
-          )
-          if update_tuple
-            uex, exp_attr_names, exp_attr_values = update_tuple
-            request_opts = {
-              table_name: self.class.table_name,
-              key: key_values,
-              update_expression: uex,
-              expression_attribute_names: exp_attr_names,
-            }
-            request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-            dynamodb_client.update_item(request_opts)
-          else
-            dynamodb_client.update_item(
-              table_name: self.class.table_name,
-              key: key_values
-            )
-          end
+          _perform_update_item
         end
+      end
+
+      def _perform_put_item put_opts={}
+        dynamodb_client.put_item(
+          {
+            table_name: self.class.table_name,
+            item: _build_item_for_save
+          }.merge(put_opts)
+        )
+      rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
+        raise Errors::ConditionalWriteFailed.new(
+          "Conditional #put_item call failed! Check that conditional write"\
+            " conditions are met, or include the :force option to clobber"\
+            " the remote item. Original error: #{e.message}"
+        )
+      end
+
+      def _perform_update_item update_opts={}
+        update_pairs = _dirty_changes_for_update
+        update_tuple = self.class.send(
+          :_build_update_expression,
+          update_pairs
+        )
+        if update_tuple
+          uex, exp_attr_names, exp_attr_values = update_tuple
+          request_opts = {
+            table_name: self.class.table_name,
+            key: key_values,
+            update_expression: uex,
+            expression_attribute_names: exp_attr_names,
+          }
+          request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
+        else
+          request_opts = {
+            table_name: self.class.table_name,
+            key: key_values
+          }
+        end
+        dynamodb_client.update_item(
+          request_opts.merge(update_opts)
+        )
       end
 
       def _build_item_for_save
