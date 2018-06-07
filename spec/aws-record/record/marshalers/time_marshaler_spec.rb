@@ -42,12 +42,6 @@ module Aws
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
-            it 'converts Dates to Time' do
-              expected = Time.parse("2009-02-13 08:00:00 UTC")
-              input = Date.parse("2009-02-13")
-              expect(@marshaler.type_cast(input)).to eq(expected)
-            end
-
             it 'converts DateTimes to Time' do
               expected = Time.parse("2009-02-13 23:31:30 UTC")
               input = DateTime.parse("2009-02-13 23:31:30 UTC")
