@@ -360,12 +360,12 @@ module Aws
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
-        # @return [Symbol,nil]
+        # @return [Symbol,nil] The symbolic name of the table's hash key.
         def hash_key
           @keys.hash_key
         end
 
-        # @return [Symbol,nil]
+        # @return [Symbol,nil] The symbloc name of the table's range key, or nil if there is no range key.
         def range_key
           @keys.range_key
         end

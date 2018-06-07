@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::Marshalers::TimeMarshaler - Adds the `time_attr` method to AWS Record models, which uses `Time` as the underlying type.
+
 2.0.1 (2017-10-27)
 ------------------
 
