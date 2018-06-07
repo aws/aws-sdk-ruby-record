@@ -219,6 +219,27 @@ module Aws
           attr(name, Marshalers::DateTimeMarshaler.new(opts), opts)
         end
 
+        # Define a time-type attribute for your model.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Boolean] :hash_key Set to true if this attribute is
+        #   the hash key for the table.
+        # @option opts [Boolean] :range_key Set to true if this attribute is
+        #   the range key for the table.
+        # @option opts [Boolean] :persist_nil Optional attribute used to
+        #   indicate whether nil values should be persisted. If true, explicitly
+        #   set nil values will be saved to DynamoDB as a "null" type. If false,
+        #   nil values will be ignored and not persisted. By default, is false.
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time.
+        def time_attr(name, opts = {})
+          opts[:dynamodb_type] = "S"
+          attr(name, Marshalers::TimeMarshaler.new(opts), opts)
+        end
+
         # Define a list-type attribute for your model.
         #
         # Lists do not have to be homogeneous, but they do have to be types that
