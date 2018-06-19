@@ -85,9 +85,7 @@ module Aws
       # Performs mass assignment of model attributes
       def assign_attributes(opts)
         opts.each do |field, new_value|
-          if !respond_to?("#{field}=")
-            raise ArgumentError.new "Invalid field: #{field} for model"
-          end
+          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?("#{field}=")
           @data.set_attribute(field, new_value)
         end
       end

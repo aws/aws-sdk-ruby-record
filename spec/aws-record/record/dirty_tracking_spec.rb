@@ -212,6 +212,43 @@ describe Aws::Record::DirtyTracking do
     end
   end
 
+  describe "persisted? with ActiveModel::Model" do
+
+    let(:klass) do
+      Class.new do
+        include(ActiveModel::Model)
+        include(Aws::Record)
+  
+        set_table_name(:test_table)
+  
+        string_attr(:mykey, hash_key: true)
+        string_attr(:body)
+      end
+    end
+
+    before(:each) do 
+      klass.configure_client(client: stub_client)
+    end
+
+    it "appropriately determines whether an item is persisted" do
+      item = klass.new
+      item.mykey = "mykey"
+      item.body = "body"
+        
+      # Test all combinations of new_recorded and destroyed
+      expect(item.persisted?).to be false
+      item.save
+      expect(item.persisted?).to be true
+      item.delete!
+      expect(item.persisted?).to be false
+      item = klass.new
+      item.mykey = "mykey"
+      item.body = "body"
+      item.delete!
+      expect(item.persisted?).to be false
+    end
+  end
+
   describe '#rollback_[attribute]!' do 
 
     it "should restore the attribute to its last known clean value" do 
