@@ -104,7 +104,9 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
+          expect(item.new_record?).to be(true)
           item.save
+          expect(item.new_record?).to be(false)
           expect(api_requests).to eq([{
             table_name: "TestTable",
             item: {
@@ -420,6 +422,7 @@ module Aws
           item.id = 3
           item.date = "2015-12-17"
           expect(item.delete!).to be(true)
+          expect(item.destroyed?).to be(true)
           expect(api_requests).to eq([{
             table_name: "TestTable",
             key: {
@@ -427,6 +430,19 @@ module Aws
               "MyDate" => { s: "2015-12-17" }
             }
           }])
+        end
+      end
+
+      describe "save after delete scenarios" do
+        it 'sets destroyed to false after saving a destroyed record' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 3
+          item.date = "2015-12-17"
+          expect(item.delete!).to be(true)
+          expect(item.destroyed?).to be(true)
+          item.save
+          expect(item.destroyed?).to be(false)
         end
       end
 

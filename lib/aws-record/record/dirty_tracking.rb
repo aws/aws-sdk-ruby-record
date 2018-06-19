@@ -135,6 +135,18 @@ module Aws
         @data.dirty?
       end
 
+      def persisted?
+        @data.persisted?
+      end
+
+      def new_record?
+        @data.new_record?
+      end
+
+      def destroyed?
+        @data.destroyed?
+      end
+
       # Fetches attributes for this instance of an item from Amazon DynamoDB 
       # using its primary key and the +find(*)+ class method.
       #

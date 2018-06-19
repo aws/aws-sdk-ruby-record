@@ -23,8 +23,13 @@ module Aws
         @model_attributes = model_attributes
         @track_mutations = opts[:track_mutations]
         @track_mutations = true if opts[:track_mutations].nil?
+        @new_record = true
+        @destroyed = false
+
         populate_default_values
       end
+      
+      attr_accessor :new_record, :destroyed
 
       def get_attribute(name)
         @model_attributes.attribute_for(name).type_cast(@data[name])
@@ -32,6 +37,18 @@ module Aws
 
       def set_attribute(name, value)
         @data[name] = value
+      end
+
+      def new_record?
+        @new_record
+      end
+
+      def destroyed?
+        @destroyed
+      end
+
+      def persisted?
+        !(new_record? || destroyed?)
       end
 
       def raw_value(name)

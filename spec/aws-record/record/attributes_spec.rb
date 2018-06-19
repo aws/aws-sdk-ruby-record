@@ -150,6 +150,22 @@ module Aws
           item.clever = "No problem."
           expect(item.to_h).to eq({ clever: "No problem." })
         end
+
+        it 'should provide a parametrized representation of the hash key' do
+          klass.string_attr(:mykey, hash_key: true)
+          item = klass.new
+          item.mykey = "test_key"
+          expect(item.to_param).to eq("test_key")
+        end
+
+        it 'should provide a parametrized representation of hash and range keys' do
+          klass.string_attr(:mykey, hash_key: true)
+          klass.string_attr(:myrkey, range_key: true)
+          item = klass.new
+          item.mykey = "test_key"
+          item.myrkey = "test_range_key"
+          expect(item.to_param).to eq("test_key:test_range_key")
+        end
       end
 
     end
