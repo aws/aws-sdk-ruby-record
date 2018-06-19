@@ -77,6 +77,23 @@ module Aws
         end
       end
 
+      describe "#new_record" do
+        it 'marks records fetched from a client call as not being new' do
+          stub_client.stub_responses(:scan, non_truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+
+          c.each do |record|
+            expect(record.new_record?).to eq false
+            expect(record.destroyed?).to be false
+          end
+        end
+      end
+
       describe "#last_evaluated_key" do
         it "points you to the client response pagination value if present" do
           stub_client.stub_responses(:scan, truncated_resp)

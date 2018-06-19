@@ -56,6 +56,19 @@ module Aws
         @data.hash_copy
       end
 
+      # Returns a string representation of the key attributes
+      #
+      # @return [String] String of key attributes that can be used to query a model
+      def to_param
+        hkey = public_send(self.class.hash_key)
+        if self.class.range_key
+          rkey = public_send(self.class.range_key)
+          "#{hkey}:#{rkey}"
+        else
+          "#{hkey}"
+        end
+      end
+
       module ClassMethods
 
         # Define an attribute for your model, providing your own attribute type.

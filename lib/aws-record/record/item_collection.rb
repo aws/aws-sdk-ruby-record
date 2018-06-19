@@ -97,6 +97,7 @@ module Aws
             data.set_attribute(name, attr.extract(item))
           end
           data.clean!
+          data.new_record = false
           ret << record
         end
         ret

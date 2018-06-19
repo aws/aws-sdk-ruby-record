@@ -81,6 +81,24 @@ module Aws
         end
       end
 
+
+      # Performs mass assignment of model attributes
+      def assign_attributes(opts)
+        opts.each do |field, new_value|
+          if !respond_to?("#{field}=")
+            raise ArgumentError.new "Invalid field: #{field} for model"
+          end
+          @data.set_attribute field, new_value
+        end
+      end
+
+      # Updates model attributes and then performs a conditional save
+      def update(opts)
+        self.assign_attributes opts
+
+        self.save
+      end
+
       # Deletes the item instance that matches the key values of this item
       # instance in Amazon DynamoDB. Uses the
       # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
@@ -90,7 +108,7 @@ module Aws
           table_name: self.class.table_name,
           key: key_values
         )
-        true
+        self.instance_variable_get("@data").destroyed = true
       end
 
       private
@@ -151,6 +169,10 @@ module Aws
             )
           end
         end
+        data = self.instance_variable_get("@data")
+        data.destroyed = false if data.destroyed
+        data.new_record = false if data.new_record
+        true
       end
 
       def _build_item_for_save

@@ -188,6 +188,30 @@ describe Aws::Record::DirtyTracking do
 
   end
 
+  describe "persisted?" do
+    before(:each) do 
+      klass.configure_client(client: stub_client)
+    end
+
+    it "appropriately determines whether an item is persisted" do
+      item = klass.new
+      item.mykey = SecureRandom.uuid
+      item.body = SecureRandom.uuid
+        
+      # Test all combinations of new_recorded and destroyed
+      expect(item.persisted?).to be false
+      item.save
+      expect(item.persisted?).to be true
+      item.delete!
+      expect(item.persisted?).to be false
+      item = klass.new
+      item.mykey = SecureRandom.uuid
+      item.body = SecureRandom.uuid
+      item.delete!
+      expect(item.persisted?).to be false
+    end
+  end
+
   describe '#rollback_[attribute]!' do 
 
     it "should restore the attribute to its last known clean value" do 
@@ -232,6 +256,39 @@ describe Aws::Record::DirtyTracking do
         expect(instance.body).to eq original_body
       end
 
+    end
+
+  end
+
+  describe "#update" do
+
+    before(:each) do 
+      klass.configure_client(client: stub_client)
+    end
+
+    it 'should perform a hash based attribute assignment without persisting changes' do
+      item = klass.new
+      item.mykey = SecureRandom.uuid
+      item.body = SecureRandom.uuid
+      item.save
+
+      new_key = SecureRandom.uuid
+      new_body = SecureRandom.uuid
+      item.assign_attributes :mykey => new_key, :body => new_body
+      expect(item.mykey).to eq new_key
+      expect(item.body).to eq new_body
+      expect(item.dirty?).to be true
+    end
+
+    it 'should throw an argument error when you try to update an invalid attribute' do
+      item = klass.new
+      item.mykey = SecureRandom.uuid
+      item.body = SecureRandom.uuid
+      item.save
+
+      expect {
+        item.assign_attributes :mykey_key => SecureRandom.uuid
+      }.to raise_error(ArgumentError)
     end
 
   end
