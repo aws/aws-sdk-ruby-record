@@ -151,20 +151,42 @@ module Aws
           expect(item.to_h).to eq({ clever: "No problem." })
         end
 
-        it 'should provide a parametrized representation of the hash key' do
-          klass.string_attr(:mykey, hash_key: true)
-          item = klass.new
-          item.mykey = "test_key"
-          expect(item.to_param).to eq("test_key")
-        end
+        describe("#to_param") do
 
-        it 'should provide a parametrized representation of hash and range keys' do
-          klass.string_attr(:mykey, hash_key: true)
-          klass.string_attr(:myrkey, range_key: true)
-          item = klass.new
-          item.mykey = "test_key"
-          item.myrkey = "test_range_key"
-          expect(item.to_param).to eq("test_key:test_range_key")
+          let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+
+          before(:each) do 
+            klass.configure_client(client: stub_client)
+            klass.set_table_name("TestTable")
+          end
+
+          it 'should provide a parametrized representation of the hash key' do
+            klass.string_attr(:mykey, hash_key: true)
+            item = klass.new
+            item.mykey = "test_key"
+            item.save
+            expect(item.to_param).to eq("test_key")
+          end
+
+          it 'should provide a parametrized representation of hash and range keys' do
+            klass.string_attr(:mykey, hash_key: true)
+            klass.string_attr(:myrkey, range_key: true)
+            item = klass.new
+            item.mykey = "test_key"
+            item.myrkey = "test_range_key"
+            item.save
+            expect(item.to_param).to eq("test_key:test_range_key")
+          end
+
+          it 'to_param returns nil if the item has not been persisted' do
+            klass.string_attr(:mykey, hash_key: true)
+            klass.string_attr(:myrkey, range_key: true)
+            item = klass.new
+            item.mykey = "test_key"
+            item.myrkey = "test_range_key"
+            expect(item.to_param).to eq(nil)
+          end
+
         end
       end
 
