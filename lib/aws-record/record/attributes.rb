@@ -66,9 +66,9 @@ module Aws
         hkey = public_send(self.class.hash_key)
         if self.class.range_key
           rkey = public_send(self.class.range_key)
-          "#{hkey}:#{rkey}"
+          "#{URI.encode(hkey)}##{URI.encode(rkey)}"
         else
-          "#{hkey}"
+          "#{URI.encode(hkey)}"
         end
       end
 
