@@ -56,22 +56,6 @@ module Aws
         @data.hash_copy
       end
 
-      # Returns a string representation of the key attributes
-      # returns nil if the model has not been persisted yet
-      #
-      # @return [String] String of key attributes that can be used to query a model
-      def to_param
-        return nil unless persisted?
-
-        hkey = public_send(self.class.hash_key)
-        if self.class.range_key
-          rkey = public_send(self.class.range_key)
-          "#{CGI.escape(hkey)};#{CGI.escape(rkey)}"
-        else
-          "#{CGI.escape(hkey)}"
-        end
-      end
-
       module ClassMethods
 
         # Define an attribute for your model, providing your own attribute type.
