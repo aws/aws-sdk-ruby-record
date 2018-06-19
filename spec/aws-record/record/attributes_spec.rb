@@ -175,17 +175,17 @@ module Aws
             item.mykey = "test_key"
             item.myrkey = "test_range_key"
             item.save
-            expect(item.to_param).to eq("test_key#test_range_key")
+            expect(item.to_param).to eq("test_key;test_range_key")
           end
 
           it 'should URI encode hash and range keys' do
             klass.string_attr(:mykey, hash_key: true)
             klass.string_attr(:myrkey, range_key: true)
             item = klass.new
-            item.mykey = "test-ke#y"
-            item.myrkey = "test-range_ke#y"
+            item.mykey = "te;st-ke#y"
+            item.myrkey = "te;st-range_ke#y"
             item.save
-            expect(item.to_param).to eq("test-ke%23y#test-range_ke%23y")
+            expect(item.to_param).to eq("te%3Bst-ke%23y;te%3Bst-range_ke%23y")
           end
 
           it 'to_param returns nil if the item has not been persisted' do
@@ -230,17 +230,17 @@ module Aws
             item.mykey = "test_key"
             item.myrkey = "test_range_key"
             item.save
-            expect(item.to_param).to eq("test_key#test_range_key")
+            expect(item.to_param).to eq("test_key;test_range_key")
           end
 
-          it 'should URI encode hash and range keys' do
+          it 'should encode hash and range keys' do
             klass.string_attr(:mykey, hash_key: true)
             klass.string_attr(:myrkey, range_key: true)
             item = klass.new
-            item.mykey = "test-ke#y"
-            item.myrkey = "test-range_ke#y"
+            item.mykey = "te;st-ke#y"
+            item.myrkey = "te;st-range_ke#y"
             item.save
-            expect(item.to_param).to eq("test-ke%23y#test-range_ke%23y")
+            expect(item.to_param).to eq("te%3Bst-ke%23y;te%3Bst-range_ke%23y")
           end
 
           it 'to_param returns nil if the item has not been persisted' do
