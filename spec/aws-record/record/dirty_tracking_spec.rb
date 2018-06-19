@@ -195,8 +195,8 @@ describe Aws::Record::DirtyTracking do
 
     it "appropriately determines whether an item is persisted" do
       item = klass.new
-      item.mykey = SecureRandom.uuid
-      item.body = SecureRandom.uuid
+      item.mykey = "mykey"
+      item.body = "body"
         
       # Test all combinations of new_recorded and destroyed
       expect(item.persisted?).to be false
@@ -205,8 +205,8 @@ describe Aws::Record::DirtyTracking do
       item.delete!
       expect(item.persisted?).to be false
       item = klass.new
-      item.mykey = SecureRandom.uuid
-      item.body = SecureRandom.uuid
+      item.mykey = "mykey"
+      item.body = "body"
       item.delete!
       expect(item.persisted?).to be false
     end
@@ -266,28 +266,60 @@ describe Aws::Record::DirtyTracking do
       klass.configure_client(client: stub_client)
     end
 
-    it 'should perform a hash based attribute assignment without persisting changes' do
+    it 'assign_attributes should perform a hash based attribute assignment without persisting changes' do
       item = klass.new
-      item.mykey = SecureRandom.uuid
-      item.body = SecureRandom.uuid
+      item.mykey = "mykey"
+      item.body = "body"
       item.save
 
-      new_key = SecureRandom.uuid
-      new_body = SecureRandom.uuid
-      item.assign_attributes :mykey => new_key, :body => new_body
+      new_key = "newkey"
+      new_body = "newbody"
+      item.assign_attributes(:mykey => new_key, :body => new_body)
       expect(item.mykey).to eq new_key
       expect(item.body).to eq new_body
       expect(item.dirty?).to be true
     end
 
+    it 'update should perform a hash based attribute assignment and persist changes' do
+      item = klass.new
+      item.mykey = "mykey"
+      item.body = "body"
+      item.save
+
+      new_key = "newkey"
+      new_body = "newbody"
+      item.update(:mykey =>new_key, :body => new_body)
+      expect(item.mykey).to eq new_key
+      expect(item.body).to eq new_body
+      expect(item.dirty?).to be false
+    end
+
+    it 'update! should throw an error when a validation error occurs' do
+      model = Class.new do
+        include(Aws::Record)
+        include(ActiveModel::Validations)
+        set_table_name("TestTable")
+        integer_attr(:id, hash_key: true)
+        string_attr(:body)
+        validates_length_of(:body, :maximum => 5)
+      end
+      model.configure_client(client: stub_client)
+
+      record = model.new(:id => 1, :body => "12345")
+      record.save
+      expect {
+        record.update!(:body => "123456").to raise_error(Errors::ValidationError)
+      }
+    end
+
     it 'should throw an argument error when you try to update an invalid attribute' do
       item = klass.new
-      item.mykey = SecureRandom.uuid
-      item.body = SecureRandom.uuid
+      item.mykey = "mykey"
+      item.body = "body"
       item.save
 
       expect {
-        item.assign_attributes :mykey_key => SecureRandom.uuid
+        item.assign_attributes :mykey_key => "ThrowsError"
       }.to raise_error(ArgumentError)
     end
 

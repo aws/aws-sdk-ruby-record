@@ -88,15 +88,25 @@ module Aws
           if !respond_to?("#{field}=")
             raise ArgumentError.new "Invalid field: #{field} for model"
           end
-          @data.set_attribute field, new_value
+          @data.set_attribute(field, new_value)
         end
       end
 
       # Updates model attributes and then performs a conditional save
       def update(opts)
-        self.assign_attributes opts
+        self.assign_attributes(opts)
 
         self.save
+      end
+
+      # Updates model attributes and performs validation
+      def update!(opts = {})
+        ret = update(opts)
+        if ret
+          ret
+        else
+          raise Errors::ValidationError.new("Validation hook returned false!")
+        end
       end
 
       # Deletes the item instance that matches the key values of this item
@@ -170,8 +180,8 @@ module Aws
           end
         end
         data = self.instance_variable_get("@data")
-        data.destroyed = false if data.destroyed
-        data.new_record = false if data.new_record
+        data.destroyed = false
+        data.new_record = false
         true
       end
 

@@ -78,7 +78,13 @@ module Aws
       end
 
       describe "#new_record" do
-        it 'marks records fetched from a client call as not being new' do
+        it "marks a new record as being new" do
+          record = model.new
+          expect(record.new_record?).to be(true)
+          expect(record.destroyed?).to be(false)
+        end
+
+        it "marks records fetched from a client call as not being new" do
           stub_client.stub_responses(:scan, non_truncated_resp)
           c = ItemCollection.new(
             :scan,
@@ -88,8 +94,8 @@ module Aws
           )
 
           c.each do |record|
-            expect(record.new_record?).to eq false
-            expect(record.destroyed?).to be false
+            expect(record.new_record?).to be(false)
+            expect(record.destroyed?).to be(false)
           end
         end
       end
