@@ -82,7 +82,10 @@ module Aws
       end
 
 
-      # Performs mass assignment of model attributes
+      # Deletes the item instance that matches the key values of this item
+      # instance in Amazon DynamoDB.
+      # 
+      # @param [Hash] opts
       def assign_attributes(opts)
         opts.each do |field, new_value|
           field = field.to_sym
@@ -91,14 +94,20 @@ module Aws
         end
       end
 
-      # Updates model attributes and then performs a conditional save
+      # Mass assigns the attributes to the model and then performs a save
+      # 
+      # @param [Hash] opts
       def update(opts)
         self.assign_attributes(opts)
 
         self.save
       end
 
-      # Updates model attributes and performs validation
+      # Updates model attributes and validates new values
+      #
+      # @param [Hash] opts
+      # @raise [Aws::Record::Errors::ValidationError] if any new values
+      #  violate the models validations.
       def update!(opts = {})
         ret = update(opts)
         if ret

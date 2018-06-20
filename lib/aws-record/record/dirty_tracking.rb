@@ -135,14 +135,66 @@ module Aws
         @data.dirty?
       end
 
+      # Returns +true+ if the model is not new and has not been deleted, +false+ otherwise.
+      #
+      # @example
+      #  class Model
+      #    include Aws::Record
+      #    integer_attr :id, hash_key: true
+      #    string_attr  :name
+      #  end
+      #
+      #  model = Model.new
+      #  model.persisted? # => false
+      #  model.save
+      #  model.persisted? # => true
+      #  model.delete!
+      #  model.persisted? # => false
+      #
+      # @return [Boolean] +true+ if the model is not new and has not been deleted, +false+ 
+      #  otherwise.
       def persisted?
         @data.persisted?
       end
 
+      # Returns +true+ if the model is newly initialized, +false+ otherwise.
+      #
+      # @example
+      #  class Model
+      #    include Aws::Record
+      #    integer_attr :id, hash_key: true
+      #    string_attr  :name
+      #  end
+      #
+      #  model = Model.new
+      #  model.new_record? # => true
+      #  model.save
+      #  model.new_record? # => false
+      #
+      # @return [Boolean] +true+ if the model is newly initialized, +false+ 
+      #  otherwise.
       def new_record?
         @data.new_record?
       end
 
+      # Returns +true+ if the model has been destroyed, +false+ otherwise.
+      #
+      # @example
+      #  class Model
+      #    include Aws::Record
+      #    integer_attr :id, hash_key: true
+      #    string_attr  :name
+      #  end
+      #
+      #  model = Model.new
+      #  model.destroyed? # => false
+      #  model.save
+      #  model.destroyed? # => false
+      #  model.delete! 
+      #  model.destroyed? # => true
+      #
+      # @return [Boolean] +true+ if the model has been destroyed, +false+ 
+      #  otherwise.
       def destroyed?
         @data.destroyed?
       end
