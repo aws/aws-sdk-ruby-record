@@ -331,6 +331,20 @@ describe Aws::Record::DirtyTracking do
       expect(item.dirty?).to be false
     end
 
+    it 'automatically tokenizes update hash keys' do
+      item = klass.new
+      item.mykey = "mykey"
+      item.body = "body"
+      item.save
+
+      new_key = "newkey"
+      new_body = "newbody"
+      item.update(:mykey =>new_key, "body" => new_body)
+      expect(item.mykey).to eq new_key
+      expect(item.body).to eq new_body
+      expect(item.dirty?).to be false
+    end
+
     it 'update! should throw an error when a validation error occurs' do
       model = Class.new do
         include(Aws::Record)
@@ -402,6 +416,20 @@ describe Aws::Record::DirtyTracking do
       new_key = "newkey"
       new_body = "newbody"
       item.update(:mykey =>new_key, :body => new_body)
+      expect(item.mykey).to eq new_key
+      expect(item.body).to eq new_body
+      expect(item.dirty?).to be false
+    end
+
+    it 'automatically tokenizes update hash keys' do
+      item = klass.new
+      item.mykey = "mykey"
+      item.body = "body"
+      item.save
+
+      new_key = "newkey"
+      new_body = "newbody"
+      item.update(:mykey =>new_key, "body" => new_body)
       expect(item.mykey).to eq new_key
       expect(item.body).to eq new_body
       expect(item.dirty?).to be false
