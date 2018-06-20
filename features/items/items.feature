@@ -106,3 +106,34 @@ Feature: Amazon DynamoDB Items
         ["count", 5]
       ]
       """
+
+  Scenario: Update an Item from Amazon DynamoDB with aws-record
+    Given an item exists in the DynamoDB table with item data:
+      """
+      {
+        "id": "4",
+        "count": 5,
+        "content": "Body content."
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "4",
+        "count": 5
+      }
+      """
+    And we call 'update' on the aws-record item instance with parameter data:
+      """
+      {
+        "body": "Updated Body Content."
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": "4",
+        "count": 5,
+        "body": "Updated Body Content."
+      }
+      """

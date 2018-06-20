@@ -45,6 +45,11 @@ When(/^we call 'delete!' on the aws\-record item instance$/) do
   @instance.delete!
 end
 
+When(/^we call 'update' on the aws\-record item instance with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  @instance.update(data)
+end
+
 When(/^we set the item attribute "([^"]*)" to be "([^"]*)"$/) do |attr, value|
   @instance.send(:"#{attr}=", value)
 end
