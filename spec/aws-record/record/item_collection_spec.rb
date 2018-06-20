@@ -119,6 +119,7 @@ module Aws
           c.each do |record|
             expect(record.new_record?).to be(false)
             expect(record.destroyed?).to be(false)
+            expect(record.persisted?).to be(true)
           end
         end
       end

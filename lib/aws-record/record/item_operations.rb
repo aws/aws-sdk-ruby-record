@@ -412,6 +412,7 @@ module Aws
           data = record.instance_variable_get("@data")
           attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(resp.item))
+            data.new_record = false
           end
           record
         end
