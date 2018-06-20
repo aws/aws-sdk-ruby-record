@@ -273,6 +273,8 @@ module Aws
           expect(ret.id).to eq(5)
           expect(ret.date).to eq(Date.parse('2015-12-15'))
           expect(ret.bool).to be(true)
+          expect(ret.new_record?).to be(false)
+          expect(ret.persisted?).to be(true)
         end
 
         it 'enforces that the required keys are present' do
@@ -308,6 +310,8 @@ module Aws
           expect(ret.id).to eq(5)
           expect(ret.date).to eq(Date.parse('2015-12-15'))
           expect(ret.bool).to be(true)
+          expect(ret.new_record?).to be(false)
+          expect(ret.persisted?).to be(true)
         end
 
         it 'enforces that the required keys are present' do
