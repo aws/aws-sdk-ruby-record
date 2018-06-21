@@ -88,18 +88,22 @@ module Aws
       # @example Usage Example
       #   class MyModel
       #     include Aws::Record
-      #     integer_attr :id,   hash_key: true
+      #     integer_attr :uuid,   hash_key: true
       #     string_attr  :name, range_key: true
+      #     integer_attr :age
+      #     float_attr   :height
       #   end
       #
-      #   model = MyModel.new(id: 4, name: "John")
-      #   model.name  # => "John"
-      #   model.save   
+      #   model = MyModel.new(id: 4, name: "John", age: 4, height: 70.5)
+      #   model.age    # => 4
+      #   model.height # => 70.5
+      #   model.save
+      #   model.dirty? # => false  
       # 
-      #   model.assign_attributes(id: 7, name: "Janeß")
-      #   model.id         # => 7
-      #   model.name       # => "Jane"
-      #   model.persisted? # => false
+      #   model.assign_attributes(age: 5, height: 150.75)
+      #   model.age    # => 5
+      #   model.height # => 150.75
+      #   model.dirty? # => true
       #   
       #
       # @param [Hash] opts
@@ -117,21 +121,26 @@ module Aws
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
       #
-      #
       # @example Usage Example
       #   class MyModel
       #     include Aws::Record
-      #     integer_attr :id,   hash_key: true
+      #     integer_attr :uuid,   hash_key: true
       #     string_attr  :name, range_key: true
+      #     integer_attr :age
+      #     float_attr   :height
       #   end
       #
-      #   model = MyModel.new(id: 4, name: "John")
-      #   model.name  # => "John"
-      #   model.save   
+      #   model = MyModel.new(id: 4, name: "John", age: 4, height: 70.5)
+      #   model.age    # => 4
+      #   model.height # => 70.5
+      #   model.save
+      #   model.dirty? # => false  
       # 
-      #   model.update(name: "Janeß")
-      #   model.name       # => "Jane"
-      #   model.persisted? # => true
+      #   model.update(age: 5, height: 150.75)
+      #   model.age    # => 5
+      #   model.height # => 150.75
+      #   model.dirty? # => false
+      #
       # 
       # @param [Hash] new_param, contains the new parameters for the model
       #
