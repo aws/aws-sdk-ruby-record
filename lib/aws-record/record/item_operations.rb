@@ -84,7 +84,24 @@ module Aws
 
       # Deletes the item instance that matches the key values of this item
       # instance in Amazon DynamoDB.
+      #
+      # @example Usage Example
+      #   class MyModel
+      #     include Aws::Record
+      #     integer_attr :id,   hash_key: true
+      #     string_attr  :name, range_key: true
+      #   end
+      #
+      #   model = MyModel.new(id: 4, name: "John")
+      #   model.name  # => "John"
+      #   model.save   
       # 
+      #   model.assign_attributes(id: 7, name: "Janeß")
+      #   model.id         # => 7
+      #   model.name       # => "Jane"
+      #   model.persisted? # => false
+      #   
+      #
       # @param [Hash] opts
       def assign_attributes(opts)
         opts.each do |field, new_value|
@@ -98,6 +115,22 @@ module Aws
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
+      #
+      #
+      # @example Usage Example
+      #   class MyModel
+      #     include Aws::Record
+      #     integer_attr :id,   hash_key: true
+      #     string_attr  :name, range_key: true
+      #   end
+      #
+      #   model = MyModel.new(id: 4, name: "John")
+      #   model.name  # => "John"
+      #   model.save   
+      # 
+      #   model.update(name: "Janeß")
+      #   model.name       # => "Jane"
+      #   model.persisted? # => true
       # 
       # @param [Hash] new_param, contains the new parameters for the model
       #
