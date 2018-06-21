@@ -106,8 +106,9 @@ module Aws
       def assign_attributes(opts)
         opts.each do |field, new_value|
           field = field.to_sym
-          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?("#{field}=")
-          @data.set_attribute(field, new_value)
+          setter = "#{field}="
+          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?("setter")
+          public_send(setter, new_value)
         end
       end
 
