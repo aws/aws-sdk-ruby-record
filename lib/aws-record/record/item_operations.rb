@@ -98,9 +98,12 @@ module Aws
       # 
       # @param [Hash] opts
       def update(opts)
-        self.assign_attributes(opts)
-
-        self.save
+        if _invalid_record?(opts)
+          false
+        else
+          assign_attributes(opts)
+          save
+        end
       end
 
       # Updates model attributes and validates new values
@@ -108,7 +111,7 @@ module Aws
       # @param [Hash] opts
       # @raise [Aws::Record::Errors::ValidationError] if any new values
       #  violate the models validations.
-      def update!(opts = {})
+      def update!(opts)
         ret = update(opts)
         if ret
           ret
