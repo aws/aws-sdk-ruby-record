@@ -1,9 +1,11 @@
 Unreleased Changes
 ------------------
 
-* Feature - Aws::Record::DirtyTracking - Add the `persisted?`, `new_record?`, and `destroyed` methods to `Aws::Record::DirtyTracking`, which supports use cases where you'd like to see if a record has just been newly initialized, or has been deleted or was a preexisting record retrieved from DynamoDB. Note that these methods are present in `ActiveModel::Model` so you should require that module before `Aws::Record`
+* Feature - Aws::Record - Add the `persisted?`, `new_record?`, and `destroyed?` methods to `Aws::Record`, which supports use cases where you'd like to see if a record has just been newly initialized, or has been deleted or was a preexisting record retrieved from DynamoDB. Note that these methods are present in `ActiveModel::Model` so you should require that module before `Aws::Record`
 
-* Feature - Aws::Record::ItemOperations - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record::ItemOperations` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that new attribute values satisfty any attached `ActiveModel::Validations` 
+* Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that a `ValidationError` is thrown on an invalid update 
+
+* Upgrading - If you already include `ActiveModel::Model` on your models the new `persisted?`, `new_record?` and `destroyed?` methods will not function properly unless you include `ActiveModel::Model` before `Aws::Record`
 
 2.0.2 (2018-06-08)
 ------------------
