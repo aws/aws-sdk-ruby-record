@@ -95,29 +95,42 @@ module Aws
       end
 
       # Mass assigns the attributes to the model and then performs a save
+      #
+      # You can use the +:force+ option to perform a simple put/overwrite
+      # without conditional validation or update logic.
       # 
+      # @param [Hash] new_param, contains the new parameters for the model
+      #
       # @param [Hash] opts
-      def update(opts)
-        if _invalid_record?(opts)
-          false
-        else
-          assign_attributes(opts)
-          save
-        end
+      # @option opts [Boolean] :force if true, will save as a put operation and
+      #  overwrite any existing item on the remote end. Otherwise, and by
+      #  default, will either perform a conditional put or an update call.
+      # @return false if the record is invalid as defined by an attempt to call
+      #  +valid?+ on this item, if that method exists. Otherwise, returns client
+      #  call return value.
+      def update(new_params, opts = {})
+        assign_attributes(new_params)
+        save(opts)
       end
 
       # Updates model attributes and validates new values
       #
+      # You can use the +:force+ option to perform a simple put/overwrite
+      # without conditional validation or update logic.
+      # 
+      # @param [Hash] new_param, contains the new parameters for the model
+      #
       # @param [Hash] opts
+      # @option opts [Boolean] :force if true, will save as a put operation and
+      #  overwrite any existing item on the remote end. Otherwise, and by
+      #  default, will either perform a conditional put or an update call.
+      # @return The update mode if the update is successful
+      #
       # @raise [Aws::Record::Errors::ValidationError] if any new values
       #  violate the models validations.
-      def update!(opts)
-        ret = update(opts)
-        if ret
-          ret
-        else
-          raise Errors::ValidationError.new("Validation hook returned false!")
-        end
+      def update!(new_params, opts = {})
+        assign_attributes(new_params)
+        save!(opts)
       end
 
       # Deletes the item instance that matches the key values of this item
