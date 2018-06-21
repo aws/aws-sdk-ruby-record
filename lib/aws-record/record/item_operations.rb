@@ -107,7 +107,7 @@ module Aws
         opts.each do |field, new_value|
           field = field.to_sym
           setter = "#{field}="
-          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?("setter")
+          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?(setter)
           public_send(setter, new_value)
         end
       end
