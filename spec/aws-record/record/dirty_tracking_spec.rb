@@ -345,6 +345,26 @@ describe Aws::Record::DirtyTracking do
       expect(item.dirty?).to be false
     end
 
+    it 'update not update when an invalid update is performed' do
+      model = Object.const_set('TestUpdateValidationModel',
+        Class.new do
+          include(Aws::Record)
+          include(ActiveModel::Validations)
+          set_table_name("TestTable")
+          integer_attr(:id, hash_key: true)
+          string_attr(:body)
+          validates_length_of(:body, :maximum => 5)
+        end
+      )
+      model.configure_client(client: stub_client)
+
+      record = model.new(:id => 1, :body => "12345")
+      record.save
+      
+      res = record.update(:body => "123456")
+      expect(res).to be(false)
+    end
+
     it 'update! should throw an error when a validation error occurs' do
       model = Class.new do
         include(Aws::Record)
