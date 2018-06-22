@@ -121,6 +121,10 @@ module Aws
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
       #
+      # Note that aws-record allows you to change your model's key values,
+      # but this will be interpreted as persisting a new item to your DynamoDB
+      # table
+      #
       # @example Usage Example
       #   class MyModel
       #     include Aws::Record
@@ -160,6 +164,10 @@ module Aws
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
+      #
+      # Note that aws-record allows you to change your model's key values,
+      # but this will be interpreted as persisting a new item to your DynamoDB
+      # table
       # 
       # @param [Hash] new_param, contains the new parameters for the model
       #
