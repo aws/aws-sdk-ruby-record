@@ -5,7 +5,7 @@ Unreleased Changes
 
 * Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that a `ValidationError` is thrown on an invalid update 
 
-* Upgrading - If you already include `ActiveModel::Model` on your models the new `persisted?`, `new_record?` and `destroyed?` methods will not function properly unless you include `ActiveModel::Model` before `Aws::Record`
+* Upgrading - If you already include `ActiveModel::Model` on your models the new `persisted?`, `new_record?` and `destroyed?` methods will not function properly unless you include `ActiveModel::Model` before `Aws::Record`. Additionally, new methods could lead to collisions if you happened to have attributes such as `:update` or `:assign_attributes`. In such a case, you would want to version lock below `2.1.0`, or use the `:database_attribute_name` property and change your attribute name in code.
 
 2.0.2 (2018-06-08)
 ------------------
