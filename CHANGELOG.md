@@ -1,4 +1,4 @@
-Unreleased Changes
+2.1.0 (2018-06-25)
 ------------------
 
 * Feature - Aws::Record - Add the `persisted?`, `new_record?`, and `destroyed?` methods to `Aws::Record`, which supports use cases where you'd like to see if a record has just been newly initialized, or has been deleted or was a preexisting record retrieved from DynamoDB. Note that these methods are present in `ActiveModel::Model` so you should require that module before `Aws::Record`
