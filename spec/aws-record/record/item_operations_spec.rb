@@ -32,6 +32,7 @@ module Aws
           map_attr(:map_nil_as_nil, persist_nil: true)
           map_attr(:map_no_nil_persist)
           boolean_attr(:bool, database_attribute_name: "my_boolean")
+          epoch_time_attr(:ttl)
         end
       end
 
@@ -54,6 +55,7 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
+          item.ttl = Time.parse("2018-07-09 22:02:12 UTC")
           item.save!
           expect(api_requests).to eq([{
             table_name: "TestTable",
@@ -62,7 +64,8 @@ module Aws
               "MyDate" => { s: "2015-12-14" },
               "body" => { s: "Hello!" },
               "list_nil_to_empty" => { l: [] },
-              "map_nil_to_empty" => { m: {} }
+              "map_nil_to_empty" => { m: {} },
+              "ttl" => { n: "1531173732" },
             },
             condition_expression: "attribute_not_exists(#H)"\
               " and attribute_not_exists(#R)",
