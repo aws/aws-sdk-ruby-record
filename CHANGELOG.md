@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::Marshalers::EpochTimeMarshaler - Adds the `epoch_time_attr`, which behaves much like `time_attr` except the Amazon DynamoDB storage type is numeric, and the serialized value is epoch seconds.
+
 2.1.0 (2018-06-25)
 ------------------
 
