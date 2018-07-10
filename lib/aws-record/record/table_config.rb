@@ -74,6 +74,19 @@ module Aws
     #     end
     #   end
     #
+    #  @example A model with a Time to Live attribute
+    #    class ExpiringTokens
+    #      string_attr :token_uuid, hash_key: true
+    #      epoch_time_attr :ttl
+    #    end
+    #
+    #    table_config = Aws::Record::TableConfig.define do |t|
+    #      t.model_class ExpiringTokens
+    #      t.read_capacity_units 10
+    #      t.write_capacity_units 1
+    #      t.ttl_attribute :ttl
+    #    end
+    #
     class TableConfig
 
       attr_accessor :client
@@ -92,6 +105,8 @@ module Aws
         #     index.
         #   * +#write_capacity_units+ Sets the write capacity units for the
         #     index.
+        # * +#ttl_attribute+ Sets the attribute ID to be used as the TTL
+        #     attribute, and if present, TTL will be enabled for the table.
         #
         # @example Defining a migration with a GSI.
         #   class Forum

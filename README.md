@@ -65,18 +65,15 @@ class MyModel
 end
 ```
 
-If a matching table does not exist in DynamoDB, you can use table migrations to
-create your table.
+If a matching table does not exist in DynamoDB, you can use the TableConfig DSL to create your table:
 
 ```ruby
-migration = Aws::Record::TableMigration.new(MyModel)
-migration.create!(
-  provisioned_throughput: {
-    read_capacity_units: 5,
-    write_capacity_units: 2
-  }
-)
-migration.wait_until_available
+cfg = Aws::Record::TableConfig.define do |t|
+  t.model_class(MyModel)
+  t.read_capacity_units(5)
+  t.write_capacity_units(2)
+end
+cfg.migrate!
 ```
 
 With a table in place, you can then use your model class to manipulate items in
