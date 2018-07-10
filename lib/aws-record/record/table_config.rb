@@ -74,6 +74,19 @@ module Aws
     #     end
     #   end
     #
+    #  @example A model with a Time to Live attribute
+    #    class ExpiringTokens
+    #      string_attr :token_uuid, hash_key: true
+    #      epoch_time_attr :ttl
+    #    end
+    #
+    #    table_config = Aws::Record::TableConfig.define do |t|
+    #      t.model_class ExpiringTokens
+    #      t.read_capacity_units 10
+    #      t.write_capacity_units 1
+    #      t.ttl_attribute :ttl
+    #    end
+    #
     class TableConfig
 
       attr_accessor :client
@@ -92,6 +105,8 @@ module Aws
         #     index.
         #   * +#write_capacity_units+ Sets the write capacity units for the
         #     index.
+        # * +#ttl_attribute+ Sets the attribute ID to be used as the TTL
+        #     attribute, and if present, TTL will be enabled for the table.
         #
         # @example Defining a migration with a GSI.
         #   class Forum
@@ -170,6 +185,16 @@ module Aws
         @client = Aws::DynamoDB::Client.new(@client_options)
       end
 
+      # @api private
+      def ttl_attribute(attribute_symbol)
+        attribute = @model_class.attributes.attribute_for(attribute_symbol)
+        if attribute
+          @ttl_attribute = attribute.database_name
+        else
+          raise ArgumentError, "Invalid attribute #{attribute_symbol} for #{@model_class}"
+        end
+      end
+
       # Performs a migration, if needed, against the remote table. If
       # +#compatible?+ would return true, the remote table already has the same
       # throughput, key schema, attribute definitions, and global secondary
@@ -210,6 +235,22 @@ module Aws
           @client.create_table(_create_table_opts)
           @client.wait_until(:table_exists, table_name: @model_class.table_name)
         end
+        # At this stage, we have a table and need to check for after-effects to
+        # apply.
+        # First up is TTL attribute. Since this migration is not exact match,
+        # we will only alter TTL status if we have a TTL attribute defined. We
+        # may someday support explicit TTL deletion, but we do not yet do this.
+        if @ttl_attribute
+          if !_ttl_compatibility_check
+            client.update_time_to_live(
+              table_name: @model_class.table_name,
+              time_to_live_specification: {
+                enabled: true,
+                attribute_name: @ttl_attribute
+              }
+            )
+          end # Else TTL is compatible and we are done.
+        end # Else our work is done.
       end
 
       # Checks the remote table for compatibility. Similar to +#exact_match?+,
@@ -224,7 +265,7 @@ module Aws
       def compatible?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          _compatible_check(resp)
+          _compatible_check(resp) && _ttl_compatibility_check
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -242,13 +283,41 @@ module Aws
           _throughput_equal(resp) &&
             _keys_equal(resp) &&
             _ad_equal(resp) &&
-            _gsi_equal(resp)
+            _gsi_equal(resp) &&
+            _ttl_match_check
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
       end
 
       private
+      def _ttl_compatibility_check
+        if @ttl_attribute
+          ttl_status = @client.describe_time_to_live(
+            table_name: @model_class.table_name
+          )
+          desc = ttl_status.time_to_live_description
+          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+            desc.attribute_name == @ttl_attribute
+        else
+          true
+        end
+      end
+
+      def _ttl_match_check
+        ttl_status = @client.describe_time_to_live(
+          table_name: @model_class.table_name
+        )
+        desc = ttl_status.time_to_live_description
+        if @ttl_attribute
+          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+            desc.attribute_name == @ttl_attribute
+        else
+          !["ENABLED", "ENABLING"].include?(desc.time_to_live_status) ||
+            desc.attribute_name == nil
+        end
+      end
+
       def _compatible_check(resp)
         _throughput_equal(resp) &&
           _keys_equal(resp) &&
