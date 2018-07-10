@@ -147,7 +147,7 @@ Feature: Aws::Record::TableConfig
     Then the TableConfig should be compatible with the remote table
     And the TableConfig should be an exact match with the remote table
 
-  @wip @ttl
+  @ttl
   Scenario: Create a New Table With TTL
     Given an aws-record model with definition:
       """
@@ -170,7 +170,7 @@ Feature: Aws::Record::TableConfig
     And the TableConfig should be compatible with the remote table
     And the TableConfig should be an exact match with the remote table
 
-  @wip @ttl
+  @ttl
   Scenario: Update an Existing Table With TTL
     Given an aws-record model with definition:
       """

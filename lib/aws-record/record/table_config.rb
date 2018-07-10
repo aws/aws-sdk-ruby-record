@@ -226,11 +226,7 @@ module Aws
         # we will only alter TTL status if we have a TTL attribute defined. We
         # may someday support explicit TTL deletion, but we do not yet do this.
         if @ttl_attribute
-          ttl_status = @client.describe_time_to_live(
-            table_name: @model_class.table_name
-          )
-          desc = ttl_status.time_to_live_description
-          if !["ENABLED", "ENABLING"].include?(desc.time_to_live_status) || desc.attribute_name != @ttl_attribute
+          if !_ttl_compatibility_check
             client.update_time_to_live(
               table_name: @model_class.table_name,
               time_to_live_specification: {
@@ -254,7 +250,7 @@ module Aws
       def compatible?
         begin
           resp = @client.describe_table(table_name: @model_class.table_name)
-          _compatible_check(resp)
+          _compatible_check(resp) && _ttl_compatibility_check
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -272,7 +268,8 @@ module Aws
           _throughput_equal(resp) &&
             _keys_equal(resp) &&
             _ad_equal(resp) &&
-            _gsi_equal(resp)
+            _gsi_equal(resp) &&
+            _ttl_match_check
         rescue DynamoDB::Errors::ResourceNotFoundException
           false
         end
@@ -280,12 +277,30 @@ module Aws
 
       private
       def _ttl_compatibility_check
+        if @ttl_attribute
+          ttl_status = @client.describe_time_to_live(
+            table_name: @model_class.table_name
+          )
+          desc = ttl_status.time_to_live_description
+          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+            desc.attribute_name == @ttl_attribute
+        else
+          true
+        end
+      end
+
+      def _ttl_match_check
         ttl_status = @client.describe_time_to_live(
           table_name: @model_class.table_name
         )
         desc = ttl_status.time_to_live_description
-        !["ENABLED", "ENABLING"].include?(desc.time_to_live_status) ||
-          desc.attribute_name != @ttl_attribute
+        if @ttl_attribute
+          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+            desc.attribute_name == @ttl_attribute
+        else
+          !["ENABLED", "ENABLING"].include?(desc.time_to_live_status) ||
+            desc.attribute_name == nil
+        end
       end
 
       def _compatible_check(resp)
