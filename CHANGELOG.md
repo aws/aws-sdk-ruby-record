@@ -1,4 +1,4 @@
-Unreleased Changes
+2.1.1 (2018-07-10)
 ------------------
 
 * Feature - Aws::Record::TableConfig - Adds `:ttl_attribute` to the TableConfig DSL. When used with `epoch_time_attr` attributes or other attributes stored as epoch time, your TableConfig migrations will enable TTL on your DynamoDB table, and will use your specified attribute as the TTL attribute.
