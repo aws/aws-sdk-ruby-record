@@ -1477,7 +1477,7 @@ module Aws
           expect(cfg.exact_match?).to be_falsy
         end
         
-                it 'returns false if a global secondary index is missing' do
+        it 'returns false if a global secondary index is missing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModelWithGsi)
             t.read_capacity_units(2)
@@ -1801,6 +1801,72 @@ module Aws
 
       end
 
+      context "TTL Attributes" do
+        it 'raises an exception when TTL is applied to a missing attribute' do
+          expect {
+            TableConfig.define do |t|
+              t.model_class(TestModelWithTtl)
+              t.read_capacity_units(1)
+              t.write_capacity_units(1)
+              t.ttl_attribute(:bizarro_ttl)
+              t.client_options(stub_responses: true)
+            end
+          }.to raise_error(ArgumentError)
+        end
+
+        it 'applies TTL attribute settings' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithTtl)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.ttl_attribute(:ttl)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithTtl",
+            provisioned_throughput:
+            {
+              read_capacity_units: 1,
+              write_capacity_units: 1
+            },
+            key_schema: [
+              {
+                attribute_name: "hk",
+                key_type: "HASH"
+              },
+              {
+                attribute_name: "rk",
+                key_type: "RANGE"
+              }
+            ],
+            attribute_definitions: [
+              {
+                attribute_name: "hk",
+                attribute_type: "S"
+              },
+              {
+                attribute_name: "rk",
+                attribute_type: "S"
+              }
+            ]
+          )
+          expect(api_requests[4]).to eq(
+            table_name: "TestModelWithTtl",
+            time_to_live_specification: {
+              enabled: true,
+              attribute_name: "TimeToLive"
+            }
+          )
+        end
+      end
+
     end
   end
 end
@@ -1872,4 +1938,12 @@ class TestModelWithGsi3
       projection_type: "ALL"
     }
   )
+end
+
+class TestModelWithTtl
+  include Aws::Record
+
+  string_attr :hk, hash_key: true
+  string_attr :rk, range_key: true
+  epoch_time_attr :ttl, database_attribute_name: "TimeToLive"
 end

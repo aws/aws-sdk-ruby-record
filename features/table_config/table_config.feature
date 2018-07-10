@@ -146,3 +146,59 @@ Feature: Aws::Record::TableConfig
     When we migrate the TableConfig
     Then the TableConfig should be compatible with the remote table
     And the TableConfig should be an exact match with the remote table
+
+  @wip @ttl
+  Scenario: Create a New Table With TTL
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      epoch_time_attr :ttl
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.ttl_attribute(:ttl)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @wip @ttl
+  Scenario: Update an Existing Table With TTL
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      epoch_time_attr :ttl
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.ttl_attribute(:ttl)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we create a table migration for the model
+    And we call 'create!' with parameters:
+      """
+      {
+        "provisioned_throughput": {
+          "read_capacity_units": 2,
+          "write_capacity_units": 2
+        }
+      }
+      """
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should not be compatible with the remote table
+    When we migrate the TableConfig
+    Then the TableConfig should be compatible with the remote table
