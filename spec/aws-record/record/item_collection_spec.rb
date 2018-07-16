@@ -196,6 +196,23 @@ module Aws
           expected = [1,2,3,4,5]
           actual = c.map { |item| item.id }
           expect(actual).to eq(expected)
+          expect(api_requests.size).to eq(2)
+        end
+
+        it "makes the minimum number of required requests" do
+          # This ensures we don't create a query/scan regression where we fully
+          # iterate when we don't need the full item set.
+          stub_client.stub_responses(:scan, truncated_resp, non_truncated_resp)
+          c = ItemCollection.new(
+            :scan,
+            { table_name: "TestTable" },
+            model,
+            stub_client
+          )
+          expected = 1
+          actual = c.first.id
+          expect(actual).to eq(expected)
+          expect(api_requests.size).to eq(1)
         end
       end
 
