@@ -42,6 +42,12 @@ module Aws
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
+            it 'converts BigDecimal objects to Time' do
+              expected = Time.at(1531173732)
+              input = BigDecimal.new(1531173732)
+              expect(@marshaler.type_cast(input)).to eq(expected)
+            end
+
             it 'converts DateTimes to Time' do
               expected = Time.parse("2009-02-13 23:31:30 UTC")
               input = DateTime.parse("2009-02-13 23:31:30 UTC")

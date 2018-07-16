@@ -55,6 +55,8 @@ module Aws
             raw_value
           when Integer # timestamp
             ::Time.at(raw_value)
+          when BigDecimal
+            ::Time.at(raw_value)
           else # Date, DateTime, or String
             ::Time.parse(raw_value.to_s)
           end
