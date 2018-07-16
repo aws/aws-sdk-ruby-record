@@ -74,18 +74,18 @@ module Aws
     #     end
     #   end
     #
-    #  @example A model with a Time to Live attribute
-    #    class ExpiringTokens
-    #      string_attr :token_uuid, hash_key: true
-    #      epoch_time_attr :ttl
-    #    end
+    # @example A model with a Time to Live attribute
+    #   class ExpiringTokens
+    #     string_attr :token_uuid, hash_key: true
+    #     epoch_time_attr :ttl
+    #   end
     #
-    #    table_config = Aws::Record::TableConfig.define do |t|
-    #      t.model_class ExpiringTokens
-    #      t.read_capacity_units 10
-    #      t.write_capacity_units 1
-    #      t.ttl_attribute :ttl
-    #    end
+    #   table_config = Aws::Record::TableConfig.define do |t|
+    #     t.model_class ExpiringTokens
+    #     t.read_capacity_units 10
+    #     t.write_capacity_units 1
+    #     t.ttl_attribute :ttl
+    #   end
     #
     class TableConfig
 
