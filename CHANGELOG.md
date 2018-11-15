@@ -1,4 +1,4 @@
-Unreleased Changes
+2.1.2 (2018-11-15)
 ------------------
 
 * Issue - Aws::Record::Marshalers::EpochTimeMarshaler - Fixed a bug where epoch time objects didn't properly marshal from database entries.
