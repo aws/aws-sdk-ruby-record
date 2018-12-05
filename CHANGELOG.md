@@ -1,4 +1,4 @@
-Unreleased Changes
+2.2.0 (2018-12-05)
 ------------------
 
 * Feature - Aws::Record::TableConfig - Adds support for the "PAY_PER_REQUEST" billing mode in table configurations.
