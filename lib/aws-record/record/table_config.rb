@@ -33,6 +33,17 @@ module Aws
     #     t.write_capacity_units 5
     #   end
     #
+    # @example A basic model with pay per request billing.
+    #   class Model
+    #     include Aws::Record
+    #     string_attr :uuid, hash_key: true
+    #   end
+    #
+    #   table_config = Aws::Record::TableConfig.define do |t|
+    #     t.model_class Model
+    #     t.billing_mode "PAY_PER_REQUEST"
+    #   end
+    #
     # @example Running a conditional migration on a basic model.
     #   table_config = Aws::Record::TableConfig.define do |t|
     #     t.model_class Model
@@ -59,7 +70,9 @@ module Aws
     #       :title,
     #       hash_key:  :forum_uuid,
     #       range_key: :post_title,
-    #       projection_type: "ALL"
+    #       projection: {
+    #         projection_type: "ALL"
+    #       }
     #     )
     #   end
     #
@@ -106,7 +119,12 @@ module Aws
         #   * +#write_capacity_units+ Sets the write capacity units for the
         #     index.
         # * +#ttl_attribute+ Sets the attribute ID to be used as the TTL
-        #     attribute, and if present, TTL will be enabled for the table.
+        #   attribute, and if present, TTL will be enabled for the table.
+        # * +#billing_mode+ Sets the billing mode, with the current supported
+        #   options being "PROVISIONED" and "PAY_PER_REQUEST". If using
+        #   "PAY_PER_REQUEST" you must not set provisioned throughput values,
+        #   and if using "PROVISIONED" you must set provisioned throughput
+        #   values. Default assumption is "PROVISIONED".
         #
         # @example Defining a migration with a GSI.
         #   class Forum
@@ -349,9 +367,27 @@ module Aws
         opts
       end
 
+      def _add_global_secondary_index_throughput(opts, resp_gsis)
+        gsis = resp_gsis.map do |g|
+          g.index_name
+        end
+        gsi_updates = []
+        gsis.each do |index_name|
+          lgsi = @global_secondary_indexes[index_name.to_sym]
+          gsi_updates << {
+            update: {
+              index_name: index_name,
+              provisioned_throughput: lgsi.provisioned_throughput
+            }
+          }
+        end
+        opts[:global_secondary_index_updates] = gsi_updates
+        true
+      end
+
       def _update_throughput_opts(resp)
         if @billing_mode == "PROVISIONED"
-          {
+          opts = {
             table_name: @model_class.table_name,
             billing_mode: "PROVISIONED",
             provisioned_throughput: {
@@ -359,6 +395,15 @@ module Aws
               write_capacity_units: @write_capacity_units
             }
           }
+          # special case: we have global secondary indexes existing, and they
+          # need provisioned capacity to be set within this call
+          if !resp.table.billing_mode_summary.nil? &&
+              resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST" &&
+              resp.table.global_secondary_indexes
+            resp_gsis = resp.table.global_secondary_indexes
+            _add_global_secondary_index_throughput(opts, resp_gsis)
+          end
+          opts
         elsif @billing_mode == "PAY_PER_REQUEST"
           {
             table_name: @model_class.table_name,
@@ -404,14 +449,17 @@ module Aws
             create: gsi
           }
         end
-        update_candidates.each do |index_name|
-          lgsi = @global_secondary_indexes[index_name.to_sym]
-          gsi_updates << {
-            update: {
-              index_name: index_name,
-              provisioned_throughput: lgsi.provisioned_throughput
+        # we don't currently update anything other than throughput
+        if @billing_mode == "PROVISIONED"
+          update_candidates.each do |index_name|
+            lgsi = @global_secondary_indexes[index_name.to_sym]
+            gsi_updates << {
+              update: {
+                index_name: index_name,
+                provisioned_throughput: lgsi.provisioned_throughput
+              }
             }
-          }
+          end
         end
         attribute_definitions = _attribute_definitions
         incremental_attributes = attributes_referenced.map do |attr_name|
@@ -598,6 +646,10 @@ module Aws
         if @billing_mode == "PROVISIONED"
           missing_config << 'read_capacity_units' unless @read_capacity_units
           missing_config << 'write_capacity_units' unless @write_capacity_units
+        else
+          if @read_capacity_units || @write_capacity_units
+            raise ArgumentError.new("Cannot have billing mode #{@billing_mode} with provisioned capacity.")
+          end
         end
         unless missing_config.empty?
           msg = missing_config.join(', ')

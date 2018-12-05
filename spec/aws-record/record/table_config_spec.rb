@@ -2225,7 +2225,209 @@ module Aws
           )
         end
 
+        it 'can transition from ppr to provisioned billing for global secondary indexes' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi2)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                table_status: "ACTIVE",
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_pk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_sk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
+                  write_capacity_units: 2,
+                  number_of_decreases_today: 0
+                },
+                global_secondary_indexes: [
+                  {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      },
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ["a", "b", "c"]
+                    },
+                    item_count: 0,
+                    index_status: "ACTIVE",
+                    backfilling: false,
+                    provisioned_throughput: {
+                      read_capacity_units: 2,
+                      write_capacity_units: 1,
+                      number_of_decreases_today: 0
+                    }
+                  }
+                ]
+              }
+            }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithGsi2",
+            billing_mode: "PAY_PER_REQUEST"
+          )
+        end
+
+        it 'can transition from ppr to provisioned billing for global secondary indexes' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi2)
+            t.read_capacity_units(2)
+            t.write_capacity_units(2)
+            t.global_secondary_index(:gsi) do |i|
+              i.read_capacity_units(2)
+              i.write_capacity_units(2)
+            end
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                table_status: "ACTIVE",
+                billing_mode_summary: {
+                  billing_mode: "PAY_PER_REQUEST"
+                },
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_pk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_sk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 0,
+                  write_capacity_units: 0,
+                  number_of_decreases_today: 0
+                },
+                global_secondary_indexes: [
+                  {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      },
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ["a", "b", "c"]
+                    },
+                    item_count: 0,
+                    index_status: "ACTIVE",
+                    backfilling: false,
+                    provisioned_throughput: {
+                      read_capacity_units: 0,
+                      write_capacity_units: 0,
+                      number_of_decreases_today: 0
+                    }
+                  }
+                ]
+              }
+            }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithGsi2",
+            billing_mode: "PROVISIONED",
+            provisioned_throughput: {
+              read_capacity_units: 2,
+              write_capacity_units: 2
+            },
+            global_secondary_index_updates: [
+              {
+                update: {
+                  index_name: "gsi",
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2
+                  }
+                }
+              }
+            ]
+          )
+        end
+
         it "will raise a validation error if ppr is set with throughput" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(5)
+            t.write_capacity_units(3)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+          )
+          expect { cfg.migrate! }.to raise_error(ArgumentError, "Cannot have billing mode PAY_PER_REQUEST with provisioned capacity.")
         end
       end
 
