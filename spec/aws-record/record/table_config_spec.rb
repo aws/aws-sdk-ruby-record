@@ -141,7 +141,6 @@ module Aws
           cfg.migrate!
           expect(api_requests[1]).to eq(
             table_name: "TestModel",
-            billing_mode: "PROVISIONED",
             provisioned_throughput:
             {
               read_capacity_units: 2,
@@ -402,7 +401,6 @@ module Aws
             cfg.migrate!
             expect(api_requests[1]).to eq(
               table_name: "TestModelWithGsi",
-              billing_mode: "PROVISIONED",
               provisioned_throughput: {
                 read_capacity_units: 2,
                 write_capacity_units: 2

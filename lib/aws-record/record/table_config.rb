@@ -389,7 +389,6 @@ module Aws
         if @billing_mode == "PROVISIONED"
           opts = {
             table_name: @model_class.table_name,
-            billing_mode: "PROVISIONED",
             provisioned_throughput: {
               read_capacity_units: @read_capacity_units,
               write_capacity_units: @write_capacity_units
@@ -398,11 +397,13 @@ module Aws
           # special case: we have global secondary indexes existing, and they
           # need provisioned capacity to be set within this call
           if !resp.table.billing_mode_summary.nil? &&
-              resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST" &&
-              resp.table.global_secondary_indexes
-            resp_gsis = resp.table.global_secondary_indexes
-            _add_global_secondary_index_throughput(opts, resp_gsis)
-          end
+              resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST"
+            opts[:billing_mode] = @billing_mode
+            if resp.table.global_secondary_indexes
+              resp_gsis = resp.table.global_secondary_indexes
+              _add_global_secondary_index_throughput(opts, resp_gsis)
+            end
+          end # else don't include billing mode
           opts
         elsif @billing_mode == "PAY_PER_REQUEST"
           {
