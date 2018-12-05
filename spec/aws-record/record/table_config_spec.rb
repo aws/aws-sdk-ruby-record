@@ -2414,6 +2414,20 @@ module Aws
           )
         end
 
+        it "will raise an argument error when given a nonsense billing mode" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("FREE_LUNCH")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+          )
+          expect { cfg.migrate! }.to raise_error(ArgumentError, "Unsupported billing mode FREE_LUNCH")
+        end
+
         it "will raise a validation error if ppr is set with throughput" do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
