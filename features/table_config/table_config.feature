@@ -202,3 +202,153 @@ Feature: Aws::Record::TableConfig
     And the TableConfig should not be compatible with the remote table
     When we migrate the TableConfig
     Then the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @ppr
+  Scenario: Create a New Table With PPR Billing
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.billing_mode("PAY_PER_REQUEST")
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @ppr @veryslow
+  Scenario: Transition from PPR Billing to Provisioned
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.billing_mode("PAY_PER_REQUEST")
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should be an exact match with the remote table
+    Given a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    Then the TableConfig should not be compatible with the remote table
+    When we migrate the TableConfig
+    Then the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @ppr @veryslow
+  Scenario: Transition from Provisioned Billing to PPR
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And the TableConfig should be an exact match with the remote table
+    Given a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.billing_mode("PAY_PER_REQUEST")
+        t.client_options(region: "us-east-1")
+      end
+      """
+    Then the TableConfig should not be compatible with the remote table
+    When we migrate the TableConfig
+    Then the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @ppr @slow
+  Scenario: Create a New Table With Global Secondary Indexes and PPR
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      string_attr  :gsi_range
+      global_secondary_index(
+        :gsi,
+        hash_key:  :id,
+        range_key: :gsi_range,
+        projection: {
+          projection_type: "ALL"
+        }
+      )
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.billing_mode("PAY_PER_REQUEST")
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    And the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+
+  @ppr @slow
+  Scenario: Update a PPR Table to Add Global Secondary Indexes
+    Given an aws-record model with definition:
+      """
+      string_attr  :id,    hash_key: true
+      integer_attr :count, range_key: true
+      string_attr  :gsi_range
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.billing_mode("PAY_PER_REQUEST")
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    And the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table
+    Given we add a global secondary index to the model with definition:
+      """
+      [
+        :gsi,
+        {
+          hash_key:  :id,
+          range_key: :gsi_range,
+          projection: {
+            projection_type: "ALL"
+          }
+        }
+      ]
+      """
+    Then the TableConfig should not be compatible with the remote table
+    When we migrate the TableConfig
+    Then the TableConfig should be compatible with the remote table
+    And the TableConfig should be an exact match with the remote table

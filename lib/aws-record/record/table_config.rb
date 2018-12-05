@@ -151,6 +151,7 @@ module Aws
       def initialize
         @client_options = {}
         @global_secondary_indexes = {}
+        @billing_mode = "PROVISIONED" # default
       end
 
       # @api private
@@ -195,6 +196,11 @@ module Aws
         end
       end
 
+      # @api private
+      def billing_mode(mode)
+        @billing_mode = mode
+      end
+
       # Performs a migration, if needed, against the remote table. If
       # +#compatible?+ would return true, the remote table already has the same
       # throughput, key schema, attribute definitions, and global secondary
@@ -209,13 +215,7 @@ module Aws
           else
             # Gotcha: You need separate migrations for indexes and throughput
             unless _throughput_equal(resp)
-              @client.update_table(
-                table_name: @model_class.table_name,
-                provisioned_throughput: {
-                  read_capacity_units: @read_capacity_units,
-                  write_capacity_units: @write_capacity_units
-                }
-              )
+              @client.update_table(_update_throughput_opts(resp))
               @client.wait_until(
                 :table_exists,
                 table_name: @model_class.table_name
@@ -327,12 +327,19 @@ module Aws
 
       def _create_table_opts
         opts = {
-          table_name: @model_class.table_name,
-          provisioned_throughput: {
+          table_name: @model_class.table_name
+        }
+        if @billing_mode == "PROVISIONED"
+          opts[:provisioned_throughput] = {
             read_capacity_units: @read_capacity_units,
             write_capacity_units: @write_capacity_units
           }
-        }
+        elsif @billing_mode == "PAY_PER_REQUEST"
+          opts[:billing_mode] = @billing_mode
+        else
+          raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
+        end
+          
         opts[:key_schema] = _key_schema
         opts[:attribute_definitions] = _attribute_definitions
         gsi = _global_secondary_indexes
@@ -340,6 +347,26 @@ module Aws
           opts[:global_secondary_indexes] = gsi 
         end
         opts
+      end
+
+      def _update_throughput_opts(resp)
+        if @billing_mode == "PROVISIONED"
+          {
+            table_name: @model_class.table_name,
+            billing_mode: "PROVISIONED",
+            provisioned_throughput: {
+              read_capacity_units: @read_capacity_units,
+              write_capacity_units: @write_capacity_units
+            }
+          }
+        elsif @billing_mode == "PAY_PER_REQUEST"
+          {
+            table_name: @model_class.table_name,
+            billing_mode: "PAY_PER_REQUEST"
+          }
+        else
+          raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
+        end
       end
 
       def _update_index_opts(resp)
@@ -369,15 +396,15 @@ module Aws
           gsi[:key_schema].each do |k|
             attributes_referenced.add(k[:attribute_name])
           end
-          # This may be a problem, check if I can maintain symbols.
-          lgsi = @global_secondary_indexes[index_name.to_sym]
-          gsi[:provisioned_throughput] = lgsi.provisioned_throughput
+          if @billing_mode == "PROVISIONED"
+            lgsi = @global_secondary_indexes[index_name.to_sym]
+            gsi[:provisioned_throughput] = lgsi.provisioned_throughput
+          end
           gsi_updates << {
             create: gsi
           }
         end
         update_candidates.each do |index_name|
-          # This may be a problem, check if I can maintain symbols.
           lgsi = @global_secondary_indexes[index_name.to_sym]
           gsi_updates << {
             update: {
@@ -438,13 +465,18 @@ module Aws
       end
 
       def _throughput_equal(resp)
-        expected = resp.table.provisioned_throughput.to_h
-        actual = {
-          read_capacity_units: @read_capacity_units,
-          write_capacity_units: @write_capacity_units
-        }
-        actual.all? do |k,v|
-          expected[k] == v
+        if @billing_mode == "PAY_PER_REQUEST"
+          !resp.table.billing_mode_summary.nil? &&
+            resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST"
+        else
+          expected = resp.table.provisioned_throughput.to_h
+          actual = {
+            read_capacity_units: @read_capacity_units,
+            write_capacity_units: @write_capacity_units
+          }
+          actual.all? do |k,v|
+            expected[k] == v
+          end
         end
       end
 
@@ -498,10 +530,17 @@ module Aws
           remote_key_schema = rgsi.key_schema.map { |i| i.to_h }
           ks_match = _array_unsorted_eql(remote_key_schema, lgsi[:key_schema])
 
+          # Throughput Check: Dependent on Billing Mode
           rpt = rgsi.provisioned_throughput.to_h
           lpt = lgsi[:provisioned_throughput]
-          pt_match = lpt.all? do |k,v|
-            rpt[k] == v
+          if @billing_mode == "PROVISIONED"
+            pt_match = lpt.all? do |k,v|
+              rpt[k] == v
+            end
+          elsif @billing_mode == "PAY_PER_REQUEST"
+            pt_match = lpt.nil? ? true : false
+          else
+            raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
           end
 
           rp = rgsi.projection.to_h
@@ -537,10 +576,13 @@ module Aws
         if model_gsis
           model_gsis.each do |mgsi|
             config = gsi_config[mgsi[:index_name]]
-            # Validate throughput exists? Validate each throughput is in model?
-            gsis << mgsi.merge(
-              provisioned_throughput: config.provisioned_throughput
-            )
+            if @billing_mode == "PROVISIONED"
+              gsis << mgsi.merge(
+                provisioned_throughput: config.provisioned_throughput
+              )
+            else
+              gsis << mgsi
+            end
           end
         end
         gsis
@@ -553,8 +595,10 @@ module Aws
       def _validate_required_configuration
         missing_config = []
         missing_config << 'model_class' unless @model_class
-        missing_config << 'read_capacity_units' unless @read_capacity_units
-        missing_config << 'write_capacity_units' unless @write_capacity_units
+        if @billing_mode == "PROVISIONED"
+          missing_config << 'read_capacity_units' unless @read_capacity_units
+          missing_config << 'write_capacity_units' unless @write_capacity_units
+        end
         unless missing_config.empty?
           msg = missing_config.join(', ')
           raise Errors::MissingRequiredConfiguration, 'Missing: ' + msg
