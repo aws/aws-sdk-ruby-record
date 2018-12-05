@@ -1867,6 +1867,582 @@ module Aws
         end
       end
 
+      context "Pay Per Request Capacity" do
+        it "accepts billing mode in table config" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+        end
+
+        it "accepts billing mode in table config with a GSI" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+        end
+
+        it "can create a table with ppr billing" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModel",
+            billing_mode: "PAY_PER_REQUEST",
+            key_schema: [
+              {
+                attribute_name: "hk",
+                key_type: "HASH"
+              },
+              {
+                attribute_name: "rk",
+                key_type: "RANGE"
+              }
+            ],
+            attribute_definitions: [
+              {
+                attribute_name: "hk",
+                attribute_type: "S"
+              },
+              {
+                attribute_name: "rk",
+                attribute_type: "S"
+              }
+            ]
+          )
+        end
+
+        it "confirms compatibility of tables with PPR billing" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                billing_mode_summary: {
+                  billing_mode: "PAY_PER_REQUEST"
+                }
+              }
+            }
+          )
+          expect(cfg.compatible?).to be_truthy
+        end
+
+        it "registers incompatible when remote is provisioned" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                billing_mode_summary: {
+                  billing_mode: "PROVISIONED"
+                },
+                provisioned_throughput: {
+                  read_capacity_units: 1,
+                  write_capacity_units: 1
+                }
+              }
+            }
+          )
+          expect(cfg.compatible?).to be_falsey
+        end
+
+        it "registers incompatible when remote is ppr" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(5)
+            t.write_capacity_units(3)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                billing_mode_summary: {
+                  billing_mode: "PAY_PER_REQUEST"
+                }
+              }
+            }
+          )
+          expect(cfg.compatible?).to be_falsey
+        end
+
+        it "can transition from provisioned to ppr billing" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
+                  write_capacity_units: 2,
+                  number_of_decreases_today: 0
+                },
+                table_status: "ACTIVE"
+              }
+            },
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModel",
+            billing_mode: "PAY_PER_REQUEST"
+          )
+        end
+
+        it "can transition from ppr to provisioned billing" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(1)
+            t.write_capacity_units(1)
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                billing_mode_summary: {
+                  billing_mode: "PAY_PER_REQUEST"
+                },
+                provisioned_throughput: {
+                  read_capacity_units: 0,
+                  write_capacity_units: 0,
+                  number_of_decreases_today: 0
+                },
+                table_status: "ACTIVE"
+              }
+            },
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModel",
+            billing_mode: "PROVISIONED",
+            provisioned_throughput: {
+              read_capacity_units: 1,
+              write_capacity_units: 1
+            }
+          )
+        end
+
+        it "can create ppr global secondary indexes" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+            { table: { table_status: "ACTIVE" } }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithGsi",
+            billing_mode: "PAY_PER_REQUEST",
+            key_schema: [
+              {
+                attribute_name: "hk",
+                key_type: "HASH"
+              },
+              {
+                attribute_name: "rk",
+                key_type: "RANGE"
+              }
+            ],
+            attribute_definitions: [
+              {
+                attribute_name: "hk",
+                attribute_type: "S"
+              },
+              {
+                attribute_name: "rk",
+                attribute_type: "S"
+              },
+              {
+                attribute_name: "gsi_pk",
+                attribute_type: "S"
+              },
+              {
+                attribute_name: "gsi_sk",
+                attribute_type: "S"
+              }
+            ],
+            global_secondary_indexes: [
+              {
+                index_name: "gsi",
+                key_schema: [
+                  {
+                    key_type: "HASH",
+                    attribute_name: "gsi_pk"
+                  },
+                  {
+                    key_type: "RANGE",
+                    attribute_name: "gsi_sk"
+                  }
+                ],
+                projection: {
+                  projection_type: "INCLUDE",
+                  non_key_attributes: ['a','b','c']
+                }
+              }
+            ]
+          )
+        end
+
+        it 'can transition from ppr to provisioned billing for global secondary indexes' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi2)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                table_status: "ACTIVE",
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_pk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_sk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
+                  write_capacity_units: 2,
+                  number_of_decreases_today: 0
+                },
+                global_secondary_indexes: [
+                  {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      },
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ["a", "b", "c"]
+                    },
+                    item_count: 0,
+                    index_status: "ACTIVE",
+                    backfilling: false,
+                    provisioned_throughput: {
+                      read_capacity_units: 2,
+                      write_capacity_units: 1,
+                      number_of_decreases_today: 0
+                    }
+                  }
+                ]
+              }
+            }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithGsi2",
+            billing_mode: "PAY_PER_REQUEST"
+          )
+        end
+
+        it 'can transition from ppr to provisioned billing for global secondary indexes' do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModelWithGsi2)
+            t.read_capacity_units(2)
+            t.write_capacity_units(2)
+            t.global_secondary_index(:gsi) do |i|
+              i.read_capacity_units(2)
+              i.write_capacity_units(2)
+            end
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            {
+              table: {
+                table_status: "ACTIVE",
+                billing_mode_summary: {
+                  billing_mode: "PAY_PER_REQUEST"
+                },
+                attribute_definitions: [
+                  {
+                    attribute_name: "hk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "rk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_pk",
+                    attribute_type: "S"
+                  },
+                  {
+                    attribute_name: "gsi_sk",
+                    attribute_type: "S"
+                  }
+                ],
+                table_name: "TestModel",
+                key_schema: [
+                  {
+                    attribute_name: "hk",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "rk",
+                    key_type: "RANGE"
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 0,
+                  write_capacity_units: 0,
+                  number_of_decreases_today: 0
+                },
+                global_secondary_indexes: [
+                  {
+                    index_name: "gsi",
+                    key_schema: [
+                      {
+                        key_type: "RANGE",
+                        attribute_name: "gsi_sk"
+                      },
+                      {
+                        key_type: "HASH",
+                        attribute_name: "gsi_pk"
+                      }
+                    ],
+                    projection: {
+                      projection_type: "INCLUDE",
+                      non_key_attributes: ["a", "b", "c"]
+                    },
+                    item_count: 0,
+                    index_status: "ACTIVE",
+                    backfilling: false,
+                    provisioned_throughput: {
+                      read_capacity_units: 0,
+                      write_capacity_units: 0,
+                      number_of_decreases_today: 0
+                    }
+                  }
+                ]
+              }
+            }
+          )
+          cfg.migrate!
+          expect(api_requests[1]).to eq(
+            table_name: "TestModelWithGsi2",
+            billing_mode: "PROVISIONED",
+            provisioned_throughput: {
+              read_capacity_units: 2,
+              write_capacity_units: 2
+            },
+            global_secondary_index_updates: [
+              {
+                update: {
+                  index_name: "gsi",
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 2
+                  }
+                }
+              }
+            ]
+          )
+        end
+
+        it "will raise an argument error when given a nonsense billing mode" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.billing_mode("FREE_LUNCH")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+          )
+          expect { cfg.migrate! }.to raise_error(ArgumentError, "Unsupported billing mode FREE_LUNCH")
+        end
+
+        it "will raise a validation error if ppr is set with throughput" do
+          cfg = TableConfig.define do |t|
+            t.model_class(TestModel)
+            t.read_capacity_units(5)
+            t.write_capacity_units(3)
+            t.billing_mode("PAY_PER_REQUEST")
+            t.client_options(stub_responses: true)
+          end
+          stub_client = configure_test_client(cfg.client)
+          stub_client.stub_responses(
+            :describe_table,
+            'ResourceNotFoundException',
+          )
+          expect { cfg.migrate! }.to raise_error(ArgumentError, "Cannot have billing mode PAY_PER_REQUEST with provisioned capacity.")
+        end
+      end
+
     end
   end
 end
