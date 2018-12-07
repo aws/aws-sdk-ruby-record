@@ -62,8 +62,9 @@ Feature: Amazon DynamoDB Transactions
       """
       {
         get_item: [
-          { key: { uuid: "a1" } },
-          { 
+          { model: TableConfigTestModel, key: { uuid: "a1" } },
+          {
+            model: TableConfigTestModel,
             key: { uuid: "b2" },
             projection_expression: "body"
           },
@@ -84,9 +85,9 @@ Feature: Amazon DynamoDB Transactions
       """
       {
         get_item: [
-          { key: { uuid: "a1" } },
-          { key: { uuid: "nope" } },
-          { key: { uuid: "b2" } },
+          { model: TableConfigTestModel, key: { uuid: "a1" } },
+          { model: TableConfigTestModel, key: { uuid: "nope" } },
+          { model: TableConfigTestModel, key: { uuid: "b2" } },
         ]
       }
       """
