@@ -57,7 +57,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
-  Scenario: Get two items in a transaction
+  Scenario: Get two items in a transaction (global)
     When we make a global transact_find call with parameters:
       """
       {
@@ -79,7 +79,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
-  Scenario: Get two items in a transaction plus one missing
+  Scenario: Get two items in a transaction plus one missing (global)
     When we make a global transact_find call with parameters:
       """
       {
@@ -99,7 +99,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
-  Scenario: Get two items in a transaction plus one missing
+  Scenario: Get two items in a transaction plus one missing (class)
     When we run the following code:
       """
       TableConfigTestModel.transact_find(
@@ -119,7 +119,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
-  Scenario: Perform a transactional update
+  Scenario: Perform a transactional update (global)
     When we run the following code:
       """
       item1 = TableConfigTestModel.find(uuid: "a1")
@@ -165,7 +165,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
-  Scenario: Perform a transactional update
+  Scenario: Perform a transactional update (global)
     When we run the following code:
       """
       item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
@@ -173,6 +173,105 @@ Feature: Amazon DynamoDB Transactions
       item2.body = "Updated b2!"
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       Aws::Record::Transactions.transact_write(
+        put: [item1, item3],
+        update: [item2]
+      )
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "a1"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "a1",
+        "body": "Replaced!"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "b2"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "b2",
+        "body": "Updated b2!",
+        "field": "Bar"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "c3"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "c3",
+        "body": "New item!"
+      }
+      """
+
+  Scenario: Perform a transactional update (class)
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.find(uuid: "a1")
+      item1.body = "Updated a1!"
+      item2 = TableConfigTestModel.find(uuid: "b2")
+      item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
+      TableConfigTestModel.transact_write(
+        save: [item1, item3],
+        delete: [item2]
+      )
+      """
+    Then the DynamoDB table should not have an object with key values:
+      """
+      [
+        ["uuid": "b2"]
+      ]
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "a1"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "a1",
+        "body": "Updated a1!",
+        "field": "Foo"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "c3"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "c3",
+        "body": "New item!"
+      }
+      """
+
+  Scenario: Perform a transactional update (class)
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
+      item2 = TableConfigTestModel.find(uuid: "b2")
+      item2.body = "Updated b2!"
+      item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
+      TableConfigTestModel.transact_write(
         put: [item1, item3],
         update: [item2]
       )
