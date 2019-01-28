@@ -58,16 +58,15 @@ Feature: Amazon DynamoDB Transactions
       """
 
   Scenario: Get two items in a transaction
-    When we make a transact_find call with parameters:
+    When we make a global transact_find call with parameters:
       """
       {
-        get_item: [
-          { model: TableConfigTestModel, key: { uuid: "a1" } },
-          {
-            model: TableConfigTestModel,
+        transact_items: [
+          TableConfigTestModel.tfind_opts(key: { uuid: "a1"}),
+          TableConfigTestModel.tfind_opts(
             key: { uuid: "b2" },
             projection_expression: "body"
-          },
+          ),
         ]
         return_consumed_capacity: "NONE"
       }
@@ -81,13 +80,13 @@ Feature: Amazon DynamoDB Transactions
       """
 
   Scenario: Get two items in a transaction plus one missing
-    When we make a transact_find call with parameters:
+    When we make a global transact_find call with parameters:
       """
       {
-        get_item: [
-          { model: TableConfigTestModel, key: { uuid: "a1" } },
-          { model: TableConfigTestModel, key: { uuid: "nope" } },
-          { model: TableConfigTestModel, key: { uuid: "b2" } },
+        transact_items: [
+          TableConfigTestModel.tfind_opts(key: {uuid: "a1"}),
+          TableConfigTestModel.tfind_opts(key: {uuid: "nope"}),
+          TableConfigTestModel.tfind_opts(key: {uuid: "b2"}),
         ]
       }
       """
@@ -98,4 +97,123 @@ Feature: Amazon DynamoDB Transactions
         nil,
         { uuid: "b2", body: "Lorem ipsum.", field: "Bar" },
       ]
+      """
+
+  Scenario: Get two items in a transaction plus one missing
+    When we run the following code:
+      """
+      TableConfigTestModel.transact_find(
+        transact_items: [
+          {key: {uuid: "a1"}},
+          {key: {uuid: "nope"}},
+          {key: {uuid: "b2"}},
+        ]
+      )
+      """
+    Then we expect a transact_find result that includes the following items:
+      """
+      [
+        { uuid: "a1", body: "First item!", field: "Foo" },
+        nil,
+        { uuid: "b2", body: "Lorem ipsum.", field: "Bar" },
+      ]
+      """
+
+  Scenario: Perform a transactional update
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.find(uuid: "a1")
+      item1.body = "Updated a1!"
+      item2 = TableConfigTestModel.find(uuid: "b2")
+      item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
+      Aws::Record::Transactions.transact_write(
+        save: [item1, item3],
+        delete: [item2]
+      )
+      """
+    Then the DynamoDB table should not have an object with key values:
+      """
+      [
+        ["uuid": "b2"]
+      ]
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "a1"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "a1",
+        "body": "Updated a1!",
+        "field": "Foo"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "c3"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "c3",
+        "body": "New item!"
+      }
+      """
+
+  Scenario: Perform a transactional update
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
+      item2 = TableConfigTestModel.find(uuid: "b2")
+      item2.body = "Updated b2!"
+      item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
+      Aws::Record::Transactions.transact_write(
+        put: [item1, item3],
+        update: [item2]
+      )
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "a1"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "a1",
+        "body": "Replaced!"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "b2"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "b2",
+        "body": "Updated b2!",
+        "field": "Bar"
+      }
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "c3"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "c3",
+        "body": "New item!"
+      }
       """
