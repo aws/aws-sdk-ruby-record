@@ -316,3 +316,15 @@ Feature: Amazon DynamoDB Transactions
         "body": "New item!"
       }
       """
+
+  Scenario: Perform a transactional update (class)
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
+      item2 = TableConfigTestModel.new(uuid: "b2", body: "Sneaky replacement!")
+      item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
+      TableConfigTestModel.transact_write(
+        save: [item1, item2, item3]
+      )
+      """
+    Then we expect the code to raise an 'Aws::DynamoDB::Errors::TransactionCanceledException' exception
