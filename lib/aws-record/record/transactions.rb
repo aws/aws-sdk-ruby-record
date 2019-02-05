@@ -24,6 +24,10 @@ module Aws
         #   ) # => results.responses contains nil or marshalled items
         #   results.responses.map { |r| r.class } # [TableOne, TableTwo, TableTwo]
         #
+        # Provides a way to run a transactional find across multiple DynamoDB
+        # items, including transactions which get items across multiple actual
+        # or virtual tables.
+        #
         # @param [Hash] opts Options to pass through to
         #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
         #   with the exception of the :transact_items API, which uses the
@@ -85,7 +89,7 @@ module Aws
       # @param [Hash] opts the options you wish to use to create the client.
       #  Note that if you include the option +:client+, all other options
       #  will be ignored. See the documentation for other options in the
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby V2}.
+      #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby V3}.
       # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
       #  own pre-configured client.
         def configure_client(opts = {})
