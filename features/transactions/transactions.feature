@@ -144,7 +144,7 @@ Feature: Amazon DynamoDB Transactions
     Then the DynamoDB table should not have an object with key values:
       """
       [
-        ["uuid": "b2"]
+        ["uuid", "b2"]
       ]
       """
     When we call the 'find' class method with parameter data:
@@ -188,6 +188,7 @@ Feature: Amazon DynamoDB Transactions
           { put: item1 },
           { put: item3 },
           { update: item2 }
+        ]
       )
       """
     When we call the 'find' class method with parameter data:
@@ -336,14 +337,14 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
-  @transact_write @class_transact_write
-  Scenario: Perform a transactional update (class)
+  @transact_write @global_transact_write
+  Scenario: Perform a transactional update in error (global)
     When we run the following code:
       """
       item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
       item2 = TableConfigTestModel.new(uuid: "b2", body: "Sneaky replacement!")
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
-      TableConfigTestModel.transact_write(
+      Aws::Record::Transactions.transact_write(
         transact_items: [
           { save: item1 },
           { save: item2 },
