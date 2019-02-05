@@ -204,8 +204,8 @@ module Aws
         end
 
         def _transform_check_record(check_record, opts)
-          # check records are more or less a pass-through
-          raise "Transaction operation type :check not yet supported."
+          # check records are a pass-through
+          { condition_check: opts.merge(check_record) }
         end
 
         def _user_agent(custom)

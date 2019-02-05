@@ -175,7 +175,56 @@ module Aws
           ])
         end
 
-        it 'supports manually defined check operations'
+        it 'supports manually defined check operations' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          check_exp = table_one.transact_check_expression(
+            key: { id: 10, range: 'z' },
+            condition_expression: "size(#T) <= :v",
+            expression_attribute_names: {
+              "#T" => "body"
+            },
+            expression_attribute_values: {
+              ":v" => 1024
+            }
+          )
+          put_item = table_one.new(id: 1, range: 'a')
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              { check: check_exp },
+              { put: put_item }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq([
+            {
+              condition_check: {
+                key: {
+                  "id" => {n: '10'},
+                  "range" => {s: 'z'}
+                },
+                table_name: "TableOne",
+                condition_expression: "size(#T) <= :v",
+                expression_attribute_names: {
+                  "#T" => "body"
+                },
+                expression_attribute_values: {
+                  ":v" => {n: '1024'}
+                }
+              }
+            },
+            {
+              put: {
+                table_name: "TableOne",
+                item: {
+                  "has_default"=>{s: "Lorem ipsum."},
+                  "id"=>{n: "1"},
+                  "range"=>{s: "a"}
+                }
+              }
+            }
+          ])
+        end
 
         it 'supports transactional save as an update or safe put'
 

@@ -329,7 +329,28 @@ module Aws
 
       module ItemOperationsClassMethods
 
+        def transact_check_expression(opts)
+          # need to transform the key, and add the table name
+          opts = opts.dup
+          key = opts.delete(:key)
+          check_key = {}
+          @keys.keys.each_value do |attr_sym|
+            unless key[attr_sym]
+              raise Errors::KeyMissing.new(
+                "Missing required key #{attr_sym} in #{key}"
+              )
+            end
+            attr_name = attributes.storage_name_for(attr_sym)
+            check_key[attr_name] = attributes.attribute_for(attr_sym).
+              serialize(key[attr_sym])
+          end
+          opts[:key] = check_key
+          opts[:table_name] = table_name
+          opts
+        end
+
         def tfind_opts(opts)
+          opts = opts.dup
           key = opts.delete(:key)
           request_key = {}
           @keys.keys.each_value do |attr_sym|
