@@ -268,9 +268,161 @@ module Aws
           ])
         end
 
-        it 'supports additional options per transaction'
+        it 'supports additional options per transaction' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          put_item = table_one.new(id: 1, range: 'a')
+          update_item = table_two.new(uuid: "foo")
+          update_item.clean! # like we got it from #find
+          update_item.body = "Content"
+          delete_item = table_one.new(id: 2, range: 'b')
+          delete_item.clean! # like we got it from #find
+          save_item = table_one.new(id: 3, range: 'c')
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              {
+                put: put_item,
+                return_values_on_condition_check_failure: "ALL_OLD"
+              },
+              {
+                update: update_item,
+                return_values_on_condition_check_failure: "ALL_OLD"
+              },
+              {
+                delete: delete_item,
+                return_values_on_condition_check_failure: "ALL_OLD"
+              },
+              {
+                save: save_item,
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq([
+            {
+              put: {
+                table_name: "TableOne",
+                item: {
+                  "has_default"=>{s: "Lorem ipsum."},
+                  "id"=>{n: "1"},
+                  "range"=>{s: "a"}
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            },
+            {
+              update: {
+                table_name: "TableTwo",
+                key: {"uuid"=>{s: "foo"}},
+                update_expression: "SET #UE_A = :ue_a",
+                expression_attribute_names: {"#UE_A" => "body"},
+                expression_attribute_values: {":ue_a" => {s: "Content"}},
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            },
+            {
+              delete: {
+                table_name: "TableOne",
+                key: {
+                  "id" => {n: "2"},
+                  "range"=>{s: "b"}
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            },
+            {
+              put: {
+                table_name: "TableOne",
+                item: {
+                  "has_default"=>{s: "Lorem ipsum."},
+                  "id"=>{n: "3"},
+                  "range"=>{s: "c"}
+                },
+                condition_expression: "attribute_not_exists(#H) and attribute_not_exists(#R)",
+                expression_attribute_names: {
+                  "#H"=>"id",
+                  "#R"=>"range"
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            }
+          ])
+        end
 
-        it 'can combine expression attributes for update'
+        it 'can combine expression attributes for update' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          update_item = table_two.new(uuid: "foo")
+          update_item.clean! # like we got it from #find
+          update_item.body = "Content"
+          save_item = table_two.new(uuid: "bar")
+          save_item.clean! # like we got it from #find
+          save_item.body = "Content"
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              {
+                update: update_item,
+                condition_expression: "size(#T) <= :v",
+                expression_attribute_names: {
+                  "#T" => "body"
+                },
+                expression_attribute_values: {
+                  ":v" => 1024
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              },
+              {
+                save: save_item,
+                condition_expression: "size(#T) <= :v",
+                expression_attribute_names: {
+                  "#T" => "body"
+                },
+                expression_attribute_values: {
+                  ":v" => 1024
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq([
+            {
+              update: {
+                table_name: "TableTwo",
+                key: {"uuid"=>{s: "foo"}},
+                update_expression: "SET #UE_A = :ue_a",
+                condition_expression: "size(#T) <= :v",
+                expression_attribute_names: {
+                  "#UE_A" => "body",
+                  "#T" => "body"
+                },
+                expression_attribute_values: {
+                  ":ue_a" => {s: "Content"},
+                  ":v" => {n: '1024'}
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            },
+            {
+              update: {
+                table_name: "TableTwo",
+                key: {"uuid"=>{s: "bar"}},
+                update_expression: "SET #UE_A = :ue_a",
+                condition_expression: "size(#T) <= :v",
+                expression_attribute_names: {
+                  "#UE_A" => "body",
+                  "#T" => "body"
+                },
+                expression_attribute_values: {
+                  ":ue_a" => {s: "Content"},
+                  ":v" => {n: '1024'}
+                },
+                return_values_on_condition_check_failure: "ALL_OLD"
+              }
+            }
+          ])
+        end
 
         # Still deciding if this makes sense or if we need to design a
         # different out
