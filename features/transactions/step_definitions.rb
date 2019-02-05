@@ -12,7 +12,14 @@ Then("we expect a transact_find result that includes the following items:") do |
       item.to_h
     end
   end
-  expect(@transact_get_result.items).to eq(expected)
+  actual = @transact_get_result.responses.map do |item|
+    if item.nil?
+      nil
+    else
+      item.to_h
+    end
+  end
+  expect(expected).to eq(actual)
 end
 
 When("we run the following code:") do |code|

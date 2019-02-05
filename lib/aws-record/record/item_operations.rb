@@ -329,6 +329,29 @@ module Aws
 
       module ItemOperationsClassMethods
 
+        def tfind_opts(opts)
+          key = opts.delete(:key)
+          request_key = {}
+          @keys.keys.each_value do |attr_sym|
+            unless key[attr_sym]
+              raise Errors::KeyMissing.new(
+                "Missing required key #{attr_sym} in #{key}"
+              )
+            end
+            attr_name = attributes.storage_name_for(attr_sym)
+            request_key[attr_name] = attributes.attribute_for(attr_sym).
+              serialize(key[attr_sym])
+          end
+          # this is a :get item used by #transact_get_items, with the exception
+          # of :model_class which needs to be removed before passing along
+          opts[:key] = request_key
+          opts[:table_name] = table_name
+          {
+            model_class: self,
+            get: opts
+          }
+        end
+
         # @example Usage Example
         #   class MyModel
         #     include Aws::Record

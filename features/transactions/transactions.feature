@@ -57,6 +57,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
+  @global_transact_find
   Scenario: Get two items in a transaction (global)
     When we make a global transact_find call with parameters:
       """
@@ -65,9 +66,12 @@ Feature: Amazon DynamoDB Transactions
           TableConfigTestModel.tfind_opts(key: { uuid: "a1"}),
           TableConfigTestModel.tfind_opts(
             key: { uuid: "b2" },
-            projection_expression: "body"
+            projection_expression: "#H, body",
+            expression_attribute_names: {
+              "#H" => "uuid"
+            }
           ),
-        ]
+        ],
         return_consumed_capacity: "NONE"
       }
       """
@@ -79,6 +83,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
+  @global_transact_find
   Scenario: Get two items in a transaction plus one missing (global)
     When we make a global transact_find call with parameters:
       """

@@ -209,7 +209,7 @@ module Aws
           raise Errors::InvalidModel.new("Table models must include a hash key")
         end
       end
-
+      
       private
       def _user_agent(custom)
         if custom
