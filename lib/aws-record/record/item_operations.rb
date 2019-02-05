@@ -353,6 +353,46 @@ module Aws
         end
 
         # @example Usage Example
+        #   class Table
+        #     include Aws::Record
+        #     string_attr :hk, hash_key: true
+        #     string_attr :rk, range_key: true
+        #   end
+        #   
+        #   results = Table.transact_find(
+        #     transact_items: [
+        #       {key: { hk: "hk1", rk: "rk1"}},
+        #       {key: { hk: "hk2", rk: "rk2"}}
+        #     ]
+        #   ) # => results.responses contains nil or instances of Table
+        #
+        # Provides a way to run a transactional find across multiple DynamoDB
+        # items, including transactions which get items across multiple actual
+        # or virtual tables.
+        #
+        # @param [Hash] opts Options to pass through to
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
+        #   with the exception of the :transact_items API, which uses the
+        #   +#tfind_opts+ operation on your model class to provide extra
+        #   metadata used to marshal your items after retrieval.
+        # @option opts [Array] :transact_items A set of options describing
+        #   instances of the model class to return.
+        # @return [OpenStruct] Structured like the client API response from
+        #   +#transact_get_items+, except that the +responses+ member contains
+        #   +Aws::Record+ items marshaled into the model class used to call
+        #   this method. See the usage example.
+        def transact_find(opts)
+          opts = opts.dup
+          transact_items = opts.delete(:transact_items)
+          global_transact_items = transact_items.map do |topts|
+            tfind_opts(topts)
+          end
+          opts[:transact_items] = global_transact_items
+          opts[:client] = dynamodb_client
+          Transactions.transact_find(opts)
+        end
+
+        # @example Usage Example
         #   class MyModel
         #     include Aws::Record
         #     integer_attr :id,   hash_key: true

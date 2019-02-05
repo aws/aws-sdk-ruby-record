@@ -57,7 +57,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
-  @global_transact_find
+  @transact_find @global_transact_find
   Scenario: Get two items in a transaction (global)
     When we make a global transact_find call with parameters:
       """
@@ -83,7 +83,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
-  @global_transact_find
+  @transact_find @global_transact_find
   Scenario: Get two items in a transaction plus one missing (global)
     When we make a global transact_find call with parameters:
       """
@@ -104,8 +104,9 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
+  @transact_find @class_transact_find
   Scenario: Get two items in a transaction plus one missing (class)
-    When we run the following code:
+    When we run the following transactional find:
       """
       TableConfigTestModel.transact_find(
         transact_items: [

@@ -35,11 +35,15 @@ module Aws
         #   metadata used to marshal your items after retrieval.
         # @option opts [Array] :transact_items A set of +#tfind_opts+ results,
         #   such as those created by the usage example.
+        # @option opts [Aws::DynamoDB::Client] :client Optionally, you can pass
+        #   in your own client to use for the transaction calls.
         # @return [OpenStruct] Structured like the client API response from
         #   +#transact_get_items+, except that the +responses+ member contains
         #   +Aws::Record+ items marshaled into the classes used to call
         #   +#tfind_opts+ in each positional member. See the usage example.
         def transact_find(opts)
+          opts = opts.dup
+          client = opts.delete(:client) || dynamodb_client
           transact_items = opts.delete(:transact_items) # add nil check?
           model_classes = []
           client_transact_items = transact_items.map do |tfind_opts|
@@ -49,7 +53,7 @@ module Aws
           end
           request_opts = opts
           request_opts[:transact_items] = client_transact_items
-          client_resp = dynamodb_client.transact_get_items(
+          client_resp = client.transact_get_items(
             request_opts
           )
           responses = client_resp.responses
@@ -67,8 +71,15 @@ module Aws
               ret.missing_items << missing_data
               nil
             else
-
-              model_classes[index].new(item.item)
+              # need to translate the item keys
+              raw_item = item.item
+              model_class = model_classes[index]
+              new_item_opts = {}
+              raw_item.each do |db_name, value|
+                name = model_class.attributes.db_to_attribute_name(db_name)
+                new_item_opts[name] = value
+              end
+              model_class.new(new_item_opts)
             end
           end
           ret

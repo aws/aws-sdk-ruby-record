@@ -3,6 +3,10 @@ When("we make a global transact_find call with parameters:") do |param_block|
   @transact_get_result = Aws::Record::Transactions.transact_find(params)
 end
 
+When("we run the following transactional find:") do |code|
+  @transact_get_result = eval(code)
+end
+
 Then("we expect a transact_find result that includes the following items:") do |result_block|
   tfind_result = eval(result_block)
   expected = tfind_result.map do |item|
