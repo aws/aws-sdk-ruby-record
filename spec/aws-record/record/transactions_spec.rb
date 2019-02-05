@@ -226,11 +226,55 @@ module Aws
           ])
         end
 
-        it 'supports transactional save as an update or safe put'
+        it 'supports transactional save as an update or safe put' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          put_item = table_one.new(id: 1, range: 'a')
+          update_item = table_two.new(uuid: "foo")
+          update_item.clean! # like we got it from #find
+          update_item.body = "Content"
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              { save: put_item },
+              { save: update_item }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq([
+            {
+              put: {
+                table_name: "TableOne",
+                item: {
+                  "has_default"=>{s: "Lorem ipsum."},
+                  "id"=>{n: "1"},
+                  "range"=>{s: "a"}
+                },
+                condition_expression: "attribute_not_exists(#H) and attribute_not_exists(#R)",
+                expression_attribute_names: {
+                  "#H"=>"id",
+                  "#R"=>"range"
+                }
+              }
+            },
+            {
+              update: {
+                table_name: "TableTwo",
+                key: {"uuid"=>{s: "foo"}},
+                update_expression: "SET #UE_A = :ue_a",
+                expression_attribute_names: {"#UE_A" => "body"},
+                expression_attribute_values: {":ue_a" => {s: "Content"}}
+              }
+            }
+          ])
+        end
 
         it 'supports additional options per transaction'
 
         it 'can combine expression attributes for update'
+
+        # Still deciding if this makes sense or if we need to design a
+        # different out
+        it 'can combine expression attributes for save as safe put'
 
       end
     end

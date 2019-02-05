@@ -161,7 +161,16 @@ module Aws
         def _transform_save_record(save_record, opts)
           # determine if record is considered a new item or not
           # then create a put with conditions, or an update
-          raise "Transaction operation type :save not yet supported."
+          if save_record.send(:expect_new_item?)
+            safety_expression = save_record.send(:prevent_overwrite_expression)
+            # this will get updated in a later unit test, it can smash user
+            # expressions as-is - or we will decide users need to explicitly
+            # bring their own conditional expressions for save items
+            opts = opts.merge(safety_expression)
+            _transform_put_record(save_record, opts)
+          else
+            _transform_update_record(save_record, opts)
+          end
         end
 
         def _transform_put_record(put_record, opts)
