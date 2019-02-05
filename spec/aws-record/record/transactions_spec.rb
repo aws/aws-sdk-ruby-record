@@ -108,6 +108,18 @@ module Aws
             key: {"uuid" => "foo"}
           })
         end
+
+        it 'raises when tfind_opts is missing a key' do
+          expect {
+            Aws::Record::Transactions.transact_find(
+              transact_items: [
+                table_one.tfind_opts(key: {range: "a"}),
+                table_two.tfind_opts(key: {uuid: "foo"}),
+                table_one.tfind_opts(key: {id: 2, range: "b"})
+              ]
+            )
+          }.to raise_error(Aws::Record::Errors::KeyMissing)
+        end
       end
 
       describe "#transact_write" do
