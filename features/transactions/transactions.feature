@@ -125,6 +125,7 @@ Feature: Amazon DynamoDB Transactions
       ]
       """
 
+  @transact_write @global_transact_write
   Scenario: Perform a transactional update (global)
     When we run the following code:
       """
@@ -133,8 +134,11 @@ Feature: Amazon DynamoDB Transactions
       item2 = TableConfigTestModel.find(uuid: "b2")
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       Aws::Record::Transactions.transact_write(
-        save: [item1, item3],
-        delete: [item2]
+        transact_items: [
+          { save: item1 },
+          { save: item3 },
+          { delete: item2 }
+        ]
       )
       """
     Then the DynamoDB table should not have an object with key values:
@@ -171,6 +175,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
+  @transact_write @global_transact_write
   Scenario: Perform a transactional update (global)
     When we run the following code:
       """
@@ -179,8 +184,10 @@ Feature: Amazon DynamoDB Transactions
       item2.body = "Updated b2!"
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       Aws::Record::Transactions.transact_write(
-        put: [item1, item3],
-        update: [item2]
+        transact_items: [
+          { put: item1 },
+          { put: item3 },
+          { update: item2 }
       )
       """
     When we call the 'find' class method with parameter data:
@@ -224,6 +231,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
+  @transact_write @class_transact_write
   Scenario: Perform a transactional update (class)
     When we run the following code:
       """
@@ -232,8 +240,9 @@ Feature: Amazon DynamoDB Transactions
       item2 = TableConfigTestModel.find(uuid: "b2")
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       TableConfigTestModel.transact_write(
-        save: [item1, item3],
-        delete: [item2]
+        { save: item1 },
+        { save: item3 },
+        { delete: item2 }
       )
       """
     Then the DynamoDB table should not have an object with key values:
@@ -270,6 +279,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
+  @transact_write @class_transact_write
   Scenario: Perform a transactional update (class)
     When we run the following code:
       """
@@ -278,8 +288,11 @@ Feature: Amazon DynamoDB Transactions
       item2.body = "Updated b2!"
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       TableConfigTestModel.transact_write(
-        put: [item1, item3],
-        update: [item2]
+        transact_items: [
+          { put: item1 },
+          { put: item3 },
+          { update: item2 }
+        ]
       )
       """
     When we call the 'find' class method with parameter data:
@@ -323,6 +336,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
+  @transact_write @class_transact_write
   Scenario: Perform a transactional update (class)
     When we run the following code:
       """
@@ -330,7 +344,11 @@ Feature: Amazon DynamoDB Transactions
       item2 = TableConfigTestModel.new(uuid: "b2", body: "Sneaky replacement!")
       item3 = TableConfigTestModel.new(uuid: "c3", body: "New item!")
       TableConfigTestModel.transact_write(
-        save: [item1, item2, item3]
+        transact_items: [
+          { save: item1 },
+          { save: item2 },
+          { save: item3 }
+        ]
       )
       """
     Then we expect the code to raise an 'Aws::DynamoDB::Errors::TransactionCanceledException' exception

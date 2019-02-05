@@ -85,6 +85,17 @@ module Aws
           ret
         end
 
+        def transact_write(opts)
+          opts = opts.dup
+          client = opts.delete(:client) || dynamodb_client
+          # fetch abstraction records
+          transact_items = _transform_transact_write_items(
+            opts.delete(:transact_items)
+          )
+          opts[:transact_items] = transact_items
+          client.transact_write_items(opts)
+        end
+
         # Configures the Amazon DynamoDB client used by global transaction
         # operations.
         #
@@ -124,6 +135,79 @@ module Aws
         end
 
         private
+        def _transform_transact_write_items(transact_items)
+          transact_items.map do |item|
+            # this code will assume users only provided one operation, and
+            # will fail down the line if that assumption is wrong
+            if save_record = item.delete(:save)
+              _transform_save_record(save_record, item)
+            elsif put_record = item.delete(:put)
+              _transform_put_record(put_record, item)
+            elsif delete_record = item.delete(:delete)
+              _transform_delete_record(delete_record, item)
+            elsif update_record = item.delete(:update)
+              _transform_update_record(update_record, item)
+            elsif check_record = item.delete(:check)
+              _transform_check_record(check_record, item)
+            else
+              raise ArgumentError.new(
+                "Invalid transact write item, must include an operation of "\
+                  "type :save, :update, :delete, :update, or :check - #{item}"
+              )
+            end
+          end
+        end
+
+        def _transform_save_record(save_record, opts)
+          # determine if record is considered a new item or not
+          # then create a put with conditions, or an update
+          raise "Transaction operation type :save not yet supported."
+        end
+
+        def _transform_put_record(put_record, opts)
+          # convert to a straight put
+          opts[:table_name] = put_record.class.table_name
+          opts[:item] = put_record.send(:_build_item_for_save)
+          { put: opts }
+        end
+
+        def _transform_delete_record(delete_record, opts)
+          # extract the key from each record to perform a deletion
+          opts[:table_name] = delete_record.class.table_name
+          opts[:key] = delete_record.send(:key_values)
+          { delete: opts }
+        end
+
+        def _transform_update_record(update_record, opts)
+          # extract dirty attribute changes to perform an update
+          opts[:table_name] = update_record.class.table_name
+          dirty_changes = update_record.send(:_dirty_changes_for_update)
+          update_tuple = update_record.class.send(
+            :_build_update_expression,
+            dirty_changes
+          )
+          uex, exp_attr_names, exp_attr_values = update_tuple
+          opts[:key] = update_record.send(:key_values)
+          opts[:update_expression] = uex
+          # need to combine expression attribute names and values
+          if names = opts[:expression_attribute_names]
+            opts[:expression_attribute_names] = exp_attr_names.merge(names)
+          else
+            opts[:expression_attribute_names] = exp_attr_names
+          end
+          if values = opts[:expression_attribute_values]
+            opts[:expression_attribute_values] = exp_attr_values.merge(values)
+          else
+            opts[:expression_attribute_values] = exp_attr_values
+          end
+          { update: opts }
+        end
+
+        def _transform_check_record(check_record, opts)
+          # check records are more or less a pass-through
+          raise "Transaction operation type :check not yet supported."
+        end
+
         def _user_agent(custom)
           if custom
             custom

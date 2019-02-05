@@ -27,6 +27,7 @@ module Aws
           integer_attr(:id, hash_key: true)
           string_attr(:range, range_key: true)
           string_attr(:body)
+          string_attr(:has_default, default_value: "Lorem ipsum.")
         end
       end
 
@@ -36,6 +37,7 @@ module Aws
           set_table_name("TableTwo")
           string_attr(:uuid, hash_key: true)
           string_attr(:body)
+          string_attr(:has_default, default_value: "Lorem ipsum.")
         end
       end
 
@@ -123,7 +125,64 @@ module Aws
       end
 
       describe "#transact_write" do
-        
+
+        it 'supports the basic update transaction types' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          put_item = table_one.new(id: 1, range: 'a')
+          update_item = table_two.new(uuid: "foo")
+          update_item.clean! # like we got it from #find
+          update_item.body = "Content"
+          delete_item = table_one.new(id: 2, range: 'b')
+          delete_item.clean! # like we got it from #find
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              { put: put_item },
+              { update: update_item },
+              { delete: delete_item }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq([
+            {
+              put: {
+                table_name: "TableOne",
+                item: {
+                  "has_default"=>{s: "Lorem ipsum."},
+                  "id"=>{n: "1"},
+                  "range"=>{s: "a"}
+                }
+              }
+            },
+            {
+              update: {
+                table_name: "TableTwo",
+                key: {"uuid"=>{s: "foo"}},
+                update_expression: "SET #UE_A = :ue_a",
+                expression_attribute_names: {"#UE_A" => "body"},
+                expression_attribute_values: {":ue_a" => {s: "Content"}}
+              }
+            },
+            {
+              delete: {
+                table_name: "TableOne",
+                key: {
+                  "id" => {n: "2"},
+                  "range"=>{s: "b"}
+                }
+              }
+            }
+          ])
+        end
+
+        it 'supports manually defined check operations'
+
+        it 'supports transactional save as an update or safe put'
+
+        it 'supports additional options per transaction'
+
+        it 'can combine expression attributes for update'
+
       end
     end
   end
