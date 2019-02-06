@@ -163,11 +163,21 @@ module Aws
           # then create a put with conditions, or an update
           if save_record.send(:expect_new_item?)
             safety_expression = save_record.send(:prevent_overwrite_expression)
-            # this will get updated in a later unit test, it can smash user
-            # expressions as-is - or we will decide users need to explicitly
-            # bring their own conditional expressions for save items
-            opts = opts.merge(safety_expression)
-            _transform_put_record(save_record, opts)
+            if opts.include?(:condition_expression)
+              raise Errors::TransactionalSaveConditionCollision.new(
+                "Transactional write includes a :save operation that would "\
+                  "result in a 'safe put' for the given item, yet a "\
+                  "condition expression was also provided. This is not "\
+                  "currently supported. You should rewrite this case to use "\
+                  "a :put transaction, adding the existence check to your "\
+                  "own condition expression if desired.\n"\
+                  "\tItem: #{JSON.pretty_unparse(save_record.to_h)}\n"\
+                  "\tExtra Options: #{JSON.pretty_unparse(opts)}"
+              )
+            else
+              opts = opts.merge(safety_expression)
+              _transform_put_record(save_record, opts)
+            end
           else
             _transform_update_record(save_record, opts)
           end

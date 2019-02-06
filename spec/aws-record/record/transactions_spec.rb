@@ -424,9 +424,28 @@ module Aws
           ])
         end
 
-        # Still deciding if this makes sense or if we need to design a
-        # different out
-        it 'can combine expression attributes for save as safe put'
+        it 'raises a validation exception when safe put collides with a condition expression' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          save_item = table_two.new(uuid: "bar", body: "Content")
+          expect {
+            Aws::Record::Transactions.transact_write(
+              transact_items: [
+                {
+                  save: save_item,
+                  condition_expression: "size(#T) <= :v",
+                  expression_attribute_names: {
+                    "#T" => "body"
+                  },
+                  expression_attribute_values: {
+                    ":v" => 1024
+                  }
+                }
+              ]
+            )
+          }.to raise_error(
+            Aws::Record::Errors::TransactionalSaveConditionCollision
+          )
+        end
 
       end
     end

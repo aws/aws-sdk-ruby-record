@@ -54,6 +54,14 @@ module Aws
       class TableDoesNotExist < RuntimeError; end
 
       class MissingRequiredConfiguration < RuntimeError; end
+
+      # Raised when you attempt to combine your own condition expression with
+      # the auto-generated condition expression from a "safe put" from saving
+      # a new item in a transactional write operation. The path forward until
+      # this case is supported is to use a plain "put" call, and to include
+      # the key existance check yourself in your condition expression if you
+      # wish to do so.
+      class TransactionalSaveConditionCollision < RuntimeError; end
     end
   end
 end
