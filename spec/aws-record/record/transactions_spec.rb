@@ -134,6 +134,9 @@ module Aws
           update_item.body = "Content"
           delete_item = table_one.new(id: 2, range: 'b')
           delete_item.clean! # like we got it from #find
+          expect(put_item.dirty?).to be_truthy
+          expect(update_item.dirty?).to be_truthy
+          expect(delete_item.destroyed?).to be_falsey
           Aws::Record::Transactions.transact_write(
             transact_items: [
               { put: put_item },
@@ -141,6 +144,9 @@ module Aws
               { delete: delete_item }
             ]
           )
+          expect(put_item.dirty?).to be_falsey
+          expect(update_item.dirty?).to be_falsey
+          expect(delete_item.destroyed?).to be_truthy
           expect(stub_client.api_requests.size).to eq(1)
           request_params = stub_client.api_requests.first[:params]
           expect(request_params[:transact_items]).to eq([
@@ -232,12 +238,16 @@ module Aws
           update_item = table_two.new(uuid: "foo")
           update_item.clean! # like we got it from #find
           update_item.body = "Content"
+          expect(put_item.dirty?).to be_truthy
+          expect(update_item.dirty?).to be_truthy
           Aws::Record::Transactions.transact_write(
             transact_items: [
               { save: put_item },
               { save: update_item }
             ]
           )
+          expect(put_item.dirty?).to be_falsey
+          expect(update_item.dirty?).to be_falsey
           expect(stub_client.api_requests.size).to eq(1)
           request_params = stub_client.api_requests.first[:params]
           expect(request_params[:transact_items]).to eq([
@@ -427,6 +437,7 @@ module Aws
         it 'raises a validation exception when safe put collides with a condition expression' do
           Aws::Record::Transactions.configure_client(client: stub_client)
           save_item = table_two.new(uuid: "bar", body: "Content")
+          expect(save_item.dirty?).to be_truthy
           expect {
             Aws::Record::Transactions.transact_write(
               transact_items: [
@@ -445,6 +456,36 @@ module Aws
           }.to raise_error(
             Aws::Record::Errors::TransactionalSaveConditionCollision
           )
+          expect(save_item.dirty?).to be_truthy
+        end
+
+        it 'does not clean items when the transaction fails' do
+          stub_client.stub_responses(
+            :transact_write_items,
+            'TransactionCanceledException'
+          )
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          put_item = table_one.new(id: 1, range: 'a')
+          update_item = table_two.new(uuid: "foo")
+          update_item.clean! # like we got it from #find
+          update_item.body = "Content"
+          delete_item = table_one.new(id: 2, range: 'b')
+          delete_item.clean! # life we got it from #find
+          expect(put_item.dirty?).to be_truthy
+          expect(update_item.dirty?).to be_truthy
+          expect(delete_item.destroyed?).to be_falsey
+          expect {
+            Aws::Record::Transactions.transact_write(
+              transact_items: [
+                { save: put_item },
+                { save: update_item },
+                { delete: delete_item }
+              ]
+            )
+          }.to raise_error(Aws::DynamoDB::Errors::TransactionCanceledException)
+          expect(put_item.dirty?).to be_truthy
+          expect(update_item.dirty?).to be_truthy
+          expect(delete_item.destroyed?).to be_falsey
         end
 
       end

@@ -165,12 +165,20 @@ module Aws
         def transact_write(opts)
           opts = opts.dup
           client = opts.delete(:client) || dynamodb_client
+          dirty_items = []
+          delete_items = []
           # fetch abstraction records
           transact_items = _transform_transact_write_items(
-            opts.delete(:transact_items)
+            opts.delete(:transact_items),
+            dirty_items,
+            delete_items
           )
           opts[:transact_items] = transact_items
-          client.transact_write_items(opts)
+          resp = client.transact_write_items(opts)
+          # mark all items clean/destroyed as needed if we didn't raise an exception
+          dirty_items.each { |i| i.clean! }
+          delete_items.each { |i| i.instance_variable_get("@data").destroyed = true }
+          resp
         end
 
         # Configures the Amazon DynamoDB client used by global transaction
@@ -212,17 +220,21 @@ module Aws
         end
 
         private
-        def _transform_transact_write_items(transact_items)
+        def _transform_transact_write_items(transact_items, dirty_items, delete_items)
           transact_items.map do |item|
             # this code will assume users only provided one operation, and
             # will fail down the line if that assumption is wrong
             if save_record = item.delete(:save)
+              dirty_items << save_record
               _transform_save_record(save_record, item)
             elsif put_record = item.delete(:put)
+              dirty_items << put_record
               _transform_put_record(put_record, item)
             elsif delete_record = item.delete(:delete)
+              delete_items << delete_record
               _transform_delete_record(delete_record, item)
             elsif update_record = item.delete(:update)
+              dirty_items << update_record
               _transform_update_record(update_record, item)
             elsif check_record = item.delete(:check)
               _transform_check_record(check_record, item)
