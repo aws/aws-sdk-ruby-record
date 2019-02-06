@@ -329,6 +329,28 @@ module Aws
 
       module ItemOperationsClassMethods
 
+        # @example Usage Example
+        #   check_exp = Model.transact_check_expression(
+        #     key: { uuid: "foo" },
+        #     condition_expression: "size(#T) <= :v",
+        #     expression_attribute_names: {
+        #       "#T" => "body"
+        #     },
+        #     expression_attribute_values: {
+        #       ":v" => 1024
+        #     }
+        #   )
+        # 
+        # Allows you to build a "check" expression for use in transactional
+        # write operations.
+        #
+        # @param [Hash] opts Options matching the :condition_check contents in
+        #   the
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}
+        #   API, with the exception that keys will be marshalled for you, and
+        #   the table name will be provided for you by the operation.
+        # @return [Hash] Options suitable to be used as a check expression when
+        #   calling the +#transact_write+ operation.
         def transact_check_expression(opts)
           # need to transform the key, and add the table name
           opts = opts.dup
@@ -393,7 +415,7 @@ module Aws
         #
         # @param [Hash] opts Options to pass through to
         #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
-        #   with the exception of the :transact_items API, which uses the
+        #   with the exception of the :transact_items array, which uses the
         #   +#tfind_opts+ operation on your model class to provide extra
         #   metadata used to marshal your items after retrieval.
         # @option opts [Array] :transact_items A set of options describing

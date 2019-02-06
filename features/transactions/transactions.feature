@@ -176,7 +176,7 @@ Feature: Amazon DynamoDB Transactions
       """
 
   @transact_write @global_transact_write
-  Scenario: Perform a transactional update (global)
+  Scenario: Perform a transactional set of puts and updates (global)
     When we run the following code:
       """
       item1 = TableConfigTestModel.new(uuid: "a1", body: "Replaced!")
@@ -229,6 +229,44 @@ Feature: Amazon DynamoDB Transactions
       {
         "uuid": "c3",
         "body": "New item!"
+      }
+      """
+
+  @transact_write @global_transact_write @wip
+  Scenario: Perform a transactional update with check (global)
+    When we run the following code:
+      """
+      item1 = TableConfigTestModel.find(uuid: "a1")
+      item1.body = "Passing the check!"
+      check_exp = TableConfigTestModel.transact_check_expression(
+        key: { uuid: "b2" },
+        condition_expression: "size(#T) <= :v",
+        expression_attribute_names: {
+          "#T" => "body"
+        },
+        expression_attribute_values: {
+          ":v" => 1024
+        }
+      )
+      Aws::Record::Transactions.transact_write(
+        transact_items: [
+          { save: item1 },
+          { check: check_exp }
+        ]
+      )
+      """
+    When we call the 'find' class method with parameter data:
+      """
+      {
+        "uuid": "a1"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "uuid": "a1",
+        "body": "Passing the check!",
+        "field": "Foo"
       }
       """
 
