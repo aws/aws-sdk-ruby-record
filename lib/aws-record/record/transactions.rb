@@ -79,7 +79,9 @@ module Aws
                 name = model_class.attributes.db_to_attribute_name(db_name)
                 new_item_opts[name] = value
               end
-              model_class.new(new_item_opts)
+              item = model_class.new(new_item_opts)
+              item.clean!
+              item
             end
           end
           ret

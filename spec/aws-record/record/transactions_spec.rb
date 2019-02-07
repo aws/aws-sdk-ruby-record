@@ -70,6 +70,9 @@ module Aws
           expect(items.responses[0].class).to eq(table_one)
           expect(items.responses[1].class).to eq(table_two)
           expect(items.responses[2].class).to eq(table_one)
+          expect(items.responses[0].dirty?).to be_falsey
+          expect(items.responses[1].dirty?).to be_falsey
+          expect(items.responses[2].dirty?).to be_falsey
           expect(items.responses[0].body).to eq('One')
           expect(items.responses[1].body).to eq('Two')
           expect(items.responses[2].body).to eq('Three')
