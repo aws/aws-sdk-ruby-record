@@ -330,6 +330,112 @@ module Aws
       module ItemOperationsClassMethods
 
         # @example Usage Example
+        #   check_exp = Model.transact_check_expression(
+        #     key: { uuid: "foo" },
+        #     condition_expression: "size(#T) <= :v",
+        #     expression_attribute_names: {
+        #       "#T" => "body"
+        #     },
+        #     expression_attribute_values: {
+        #       ":v" => 1024
+        #     }
+        #   )
+        # 
+        # Allows you to build a "check" expression for use in transactional
+        # write operations.
+        #
+        # @param [Hash] opts Options matching the :condition_check contents in
+        #   the
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}
+        #   API, with the exception that keys will be marshalled for you, and
+        #   the table name will be provided for you by the operation.
+        # @return [Hash] Options suitable to be used as a check expression when
+        #   calling the +#transact_write+ operation.
+        def transact_check_expression(opts)
+          # need to transform the key, and add the table name
+          opts = opts.dup
+          key = opts.delete(:key)
+          check_key = {}
+          @keys.keys.each_value do |attr_sym|
+            unless key[attr_sym]
+              raise Errors::KeyMissing.new(
+                "Missing required key #{attr_sym} in #{key}"
+              )
+            end
+            attr_name = attributes.storage_name_for(attr_sym)
+            check_key[attr_name] = attributes.attribute_for(attr_sym).
+              serialize(key[attr_sym])
+          end
+          opts[:key] = check_key
+          opts[:table_name] = table_name
+          opts
+        end
+
+        def tfind_opts(opts)
+          opts = opts.dup
+          key = opts.delete(:key)
+          request_key = {}
+          @keys.keys.each_value do |attr_sym|
+            unless key[attr_sym]
+              raise Errors::KeyMissing.new(
+                "Missing required key #{attr_sym} in #{key}"
+              )
+            end
+            attr_name = attributes.storage_name_for(attr_sym)
+            request_key[attr_name] = attributes.attribute_for(attr_sym).
+              serialize(key[attr_sym])
+          end
+          # this is a :get item used by #transact_get_items, with the exception
+          # of :model_class which needs to be removed before passing along
+          opts[:key] = request_key
+          opts[:table_name] = table_name
+          {
+            model_class: self,
+            get: opts
+          }
+        end
+
+        # @example Usage Example
+        #   class Table
+        #     include Aws::Record
+        #     string_attr :hk, hash_key: true
+        #     string_attr :rk, range_key: true
+        #   end
+        #   
+        #   results = Table.transact_find(
+        #     transact_items: [
+        #       {key: { hk: "hk1", rk: "rk1"}},
+        #       {key: { hk: "hk2", rk: "rk2"}}
+        #     ]
+        #   ) # => results.responses contains nil or instances of Table
+        #
+        # Provides a way to run a transactional find across multiple DynamoDB
+        # items, including transactions which get items across multiple actual
+        # or virtual tables.
+        #
+        # @param [Hash] opts Options to pass through to
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
+        #   with the exception of the :transact_items array, which uses the
+        #   +#tfind_opts+ operation on your model class to provide extra
+        #   metadata used to marshal your items after retrieval.
+        # @option opts [Array] :transact_items A set of options describing
+        #   instances of the model class to return.
+        # @return [OpenStruct] Structured like the client API response from
+        #   +#transact_get_items+, except that the +responses+ member contains
+        #   +Aws::Record+ items marshaled into the model class used to call
+        #   this method. See the usage example.
+        def transact_find(opts)
+          opts = opts.dup
+          transact_items = opts.delete(:transact_items)
+          global_transact_items = transact_items.map do |topts|
+            tfind_opts(topts)
+          end
+          opts[:transact_items] = global_transact_items
+          opts[:client] = dynamodb_client
+          Transactions.transact_find(opts)
+        end
+
+        # @example Usage Example
         #   class MyModel
         #     include Aws::Record
         #     integer_attr :id,   hash_key: true

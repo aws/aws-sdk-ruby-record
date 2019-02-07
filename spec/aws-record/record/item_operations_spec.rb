@@ -615,6 +615,106 @@ module Aws
         end
       end
 
+      describe "Transactional APIs" do
+        let(:client_stub) do
+          Aws::DynamoDB::Client.new(stub_responses: true)
+        end
+
+        describe "#transact_find" do
+          it 'can directly call #transact_find' do
+            client_stub.stub_responses(:transact_get_items,
+              responses: [
+                {item: {
+                  'id' => 1, 'MyDate' => '2015-12-14', 'body' => 'One'
+                }},
+                {item: nil},
+                {item: {
+                  'id' => 2, 'MyDate' => '2018-11-29', 'body' => 'Three'
+                }}
+              ]
+            )
+            klass.configure_client(client: client_stub)
+            items = klass.transact_find(
+              transact_items: [
+                {key: {id: 1, date: "2015-12-14"}},
+                {key: {id: 7, date: "2019-07-14"}},
+                {key: {id: 2, date: "2018-11-29"}},
+              ]
+            )
+            # request
+            expect(client_stub.api_requests.size).to eq(1)
+            request_params = client_stub.api_requests.first[:params]
+            expect(request_params[:transact_items]).to eq([
+              {
+                get: {
+                  key: {
+                    "id"=>{n: "1"}, "MyDate"=>{s: "2015-12-14"}
+                  },
+                  table_name: "TestTable"
+                }
+              },
+              {
+                get: {
+                  key: {
+                    "id"=>{n: "7"}, "MyDate"=>{s: "2019-07-14"}
+                  },
+                  table_name: "TestTable"
+                }
+              },
+              {
+                get: {
+                  key: {
+                    "id"=>{n: "2"}, "MyDate"=>{s: "2018-11-29"}
+                  },
+                  table_name: "TestTable"
+                }
+              }
+            ])
+            # response
+            expect(items.responses.size).to eq(3)
+            expect(items.responses[1]).to be_nil
+            expect(items.responses[0].class).to eq(klass)
+            expect(items.responses[2].class).to eq(klass)
+            expect(items.responses[0].body).to eq('One')
+            expect(items.responses[2].body).to eq('Three')
+            expect(items.missing_items.size).to eq(1)
+            expect(items.missing_items[0]).to eq({
+              model_class: klass,
+              key: {"id" => 7, "MyDate" => "2019-07-14"}
+            })
+          end
+        end
+      end
+
+      describe "#transact_check_expression" do
+        it 'can create a valid check expression' do
+          expression = klass.transact_check_expression(
+            key: { id: 10, date: '2018-11-29' },
+            condition_expression: "size(#T) <= :v",
+            expression_attribute_names: {
+              "#T" => "body"
+            },
+            expression_attribute_values: {
+              ":v" => 1024
+            }
+          )
+          expect(expression).to eq(
+            key: {
+              'id' => 10,
+              'MyDate' => "2018-11-29"
+            },
+            table_name: "TestTable",
+            condition_expression: "size(#T) <= :v",
+            expression_attribute_names: {
+              "#T" => "body"
+            },
+            expression_attribute_values: {
+              ":v" => 1024
+            }
+          )
+        end
+      end
+
     end
   end
 end
