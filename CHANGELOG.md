@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::Transactions - Adds support for transactional find and transactional get requests. You can learn more about these new APIs in the [documentation](https://docs.aws.amazon.com/awssdkrubyrecord/api/Aws/Record/Transactions.html).
+
 2.2.0 (2018-12-05)
 ------------------
 
