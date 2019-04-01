@@ -21,6 +21,7 @@ reported the issue. Please try to include as much information as you can. Detail
 
 
 ## Contributing via Pull Requests
+
 Contributions via pull requests are much appreciated. Before sending us a pull request, please ensure that:
 
 1. You are working against the latest source on the *master* branch.
@@ -39,20 +40,30 @@ To send us a pull request, please:
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and 
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
+### Setting Up a Development Environment
+
+You can install the development dependencies necessary to run unit tests with `bundle install`. To run integration tests, you will need to set up AWS credentials on your machine. In practice, this means a shared credential file or environment variables with your credentials. These tests may have some AWS costs associated with running them since AWS resources are created and destroyed within these tests. Integration tests are not run unless you set the environment variable `AWS_INTEGRATION`.
+
+### General Contribution Standards
+
+* Documentation improvements are always welcome. If adding a specific code example, consider also if that example would be appropriate to add as a unit or integration test.
+* For bug fixes or refactors, please ensure that code coverage remains the same or improves if at all possible. Especially for bug fixes, please include the unit and/or integration tests that reproduce the failure case.
+* For new features, at minimum include full unit test coverage, and ideally include integrations tests for the top-line behavior. Documentation is also required.
+    * If you need help with integration testing or with writing documentation for a feature, let us know. We're happy to review a prototype of a feature ahead of development of full documentation/integration testing.
 
 ## Finding contributions to work on
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels ((enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any ['help wanted'](https://github.com/aws/aws-sdk-ruby-record/labels/help%20wanted) issues is a great place to start. 
 
+Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels ((enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any ['help wanted'](https://github.com/aws/aws-sdk-ruby-record/labels/help%20wanted) issues is a great place to start.
 
 ## Code of Conduct
+
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct). 
 For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact 
 opensource-codeofconduct@amazon.com with any additional questions or comments.
 
-
 ## Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
 
+If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
 
 ## Licensing
 
