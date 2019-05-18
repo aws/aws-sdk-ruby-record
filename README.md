@@ -29,7 +29,7 @@ gem install 'aws-record'
 ```
 
 ```ruby
-gem 'aws-record', '~> 1.0'
+gem 'aws-record', '~> 2.0'
 ```
 
 This automatically includes a dependency on the `aws-sdk-resources` gem, major
@@ -39,8 +39,8 @@ Gemfile if you need to lock to a specific version, like so:
 ```ruby
 # Gemfile
 
-gem 'aws-record', '~> 1.0'
-gem 'aws-sdk-resources', '~> 2.5'
+gem 'aws-record', '~> 2.0'
+gem 'aws-sdk-resources', '~> 3.0'
 ```
 
 ## Usage
