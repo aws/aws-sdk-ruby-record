@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Aws::Record::BuildableSearch - Adds support for query and scan builders using substitution expressions. This allows for streamlined and expressive queries and scans using aws-record.
+
 2.3.0 (2019-02-08)
 ------------------
 
