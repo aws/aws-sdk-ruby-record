@@ -103,6 +103,21 @@ module Aws
           ItemCollection.new(:scan, scan_opts, self, dynamodb_client)
         end
 
+        # This method allows you to build a query using the {Aws::Record::BuildableSearch} DSL.
+        #
+        # @example Building a simple query:
+        #   # Example model class
+        #   class ExampleTable
+        #     include Aws::Record
+        #     string_attr  :uuid, hash_key: true
+        #     integer_attr :id,   range_key: true
+        #     string_attr  :body
+        #   end
+        #
+        #   q = ExampleTable.build_query.key_expr(
+        #         ":uuid = ? AND :id > ?", "smpl-uuid", 100
+        #       ).scan_ascending(false).complete!
+        #   q.to_a # You can use this like any other query result in aws-record
         def build_query
           BuildableSearch.new(
             operation: :query,
@@ -110,6 +125,25 @@ module Aws
           )
         end
 
+        # This method allows you to build a scan using the {Aws::Record::BuildableSearch} DSL.
+        #
+        # @example Building a simple scan:
+        #   # Example model class
+        #   class ExampleTable
+        #     include Aws::Record
+        #     string_attr  :uuid, hash_key: true
+        #     integer_attr :id,   range_key: true
+        #     string_attr  :body
+        #   end
+        #
+        #   segment_2_scan = ExampleTable.build_scan.filter_expr(
+        #     "contains(:body, ?)",
+        #     "bacon"
+        #   ).scan_ascending(false).parallel_scan(
+        #     total_segments: 5,
+        #     segment: 2
+        #   ).complete!
+        #   segment_2_scan.to_a # You can use this like any other query result in aws-record
         def build_scan
           BuildableSearch.new(
             operation: :scan,

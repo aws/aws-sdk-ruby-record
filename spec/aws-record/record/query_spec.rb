@@ -158,6 +158,7 @@ module Aws
           klass.build_scan.
             consistent_read(false).
             filter_expr(":body = ?", "foo").
+            parallel_scan(total_segments: 5, segment: 2).
             exclusive_start_key(id: 5, date: "2019-01-01").complete!.to_a
           expect(api_requests).to eq([{
             table_name: "TestTable",
@@ -167,6 +168,8 @@ module Aws
               "id" => { n: '5' },
               "date" => { s: "2019-01-01" }
             },
+            segment: 2,
+            total_segments: 5,
             expression_attribute_names: {
               "#BUILDERA" => "body"
             },
