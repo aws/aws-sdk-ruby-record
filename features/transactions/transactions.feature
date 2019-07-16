@@ -232,7 +232,7 @@ Feature: Amazon DynamoDB Transactions
       }
       """
 
-  @transact_write @global_transact_write @wip
+  @transact_write @global_transact_write
   Scenario: Perform a transactional update with check (global)
     When we run the following code:
       """

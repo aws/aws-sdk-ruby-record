@@ -102,6 +102,20 @@ module Aws
           scan_opts = opts.merge(table_name: table_name)
           ItemCollection.new(:scan, scan_opts, self, dynamodb_client)
         end
+
+        def build_query
+          BuildableSearch.new(
+            operation: :query,
+            model: self
+          )
+        end
+
+        def build_scan
+          BuildableSearch.new(
+            operation: :scan,
+            model: self
+          )
+        end
       end
 
     end
