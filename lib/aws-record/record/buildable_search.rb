@@ -20,7 +20,28 @@ module Aws
         self
       end
 
+      def consistent_read(b)
+        @params[:consistent_read] = b
+        self
+      end
+
+      def scan_ascending_order(b)
+        unless @operation == :query
+          raise ArgumentError.new("scan_ascending_order is only supported for queries.")
+        end
+        @params[:scan_index_forward] = b
+        self
+      end
+
+      def exclusive_start_key(key)
+        @params[:exclusive_start_key] = key
+        self
+      end
+
       def key_expr(statement_str, *subs)
+        unless @operation == :query
+          raise ArgumentError.new("key_expr is only supported for queries.")
+        end
         names = @params[:expression_attribute_names]
         if names.nil?
           @params[:expression_attribute_names] = {}
@@ -54,12 +75,23 @@ module Aws
         self
       end
 
+      def projection_expr(statement_str)
+        names = @params[:expression_attribute_names]
+        if names.nil?
+          @params[:expression_attribute_names] = {}
+          names = @params[:expression_attribute_names]
+        end
+        _key_pass(statement_str, names)
+        @params[:projection_expression] = statement_str
+        self
+      end
+
       def limit(size)
         @params[:limit] = size
         self
       end
 
-      def run!
+      def complete!
         @model.send(@operation, @params)
       end
 
