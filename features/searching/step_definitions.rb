@@ -58,3 +58,8 @@ end
 When(/^we call the 'scan' class method using the page's pagination token$/) do
   @collection = @model.scan(exclusive_start_key: @last_evaluated_key)
 end
+
+When("we run the following search:") do |code|
+  SearchTestModel = @model
+  @collection = eval(code)
+end

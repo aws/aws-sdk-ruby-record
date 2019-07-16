@@ -189,3 +189,42 @@ Feature: Amazon DynamoDB Querying and Scanning
         }
       ]
       """
+
+  @smart_query
+  Scenario: Build a Smart Scan
+    When we run the following search:
+      """
+      SearchTestModel.build_scan.filter_expr(':body = ?', 'Third item.').complete!
+      """
+    Then we should receive an aws-record collection with members:
+      """
+      [
+        {
+          "id": "1",
+          "count": 15,
+          "body": "Third item."
+        }
+      ]
+      """
+
+  @smart_query
+  Scenario: Build a Smart Query
+    When we run the following search:
+      """
+      SearchTestModel.build_query.key_expr(':id = ? AND :count > ?', '1', 7).complete!
+      """
+    Then we should receive an aws-record collection with members:
+      """
+      [
+        {
+          "id": "1",
+          "count": 10,
+          "body": "Second item."
+        },
+        {
+          "id": "1",
+          "count": 15,
+          "body": "Third item."
+        }
+      ]
+      """
