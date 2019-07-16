@@ -5,7 +5,9 @@ module Aws
 
       # This should never be called directly, rather it is called by the
       # #build_query or #build_scan methods of your aws-record model class.
-      def initialize(operation:, model:)
+      def initialize(opts)
+        operation = opts[:operation]
+        model = opts[:model]
         if SUPPORTED_OPERATIONS.include?(operation)
           @operation = operation
         else
