@@ -24,6 +24,15 @@ module Aws
           integer_attr(:id, hash_key: true)
           date_attr(:date, range_key: true)
           string_attr(:body)
+
+          global_secondary_index(
+            :reverse,
+            hash_key: :date,
+            range_key: :id,
+            projection: {
+              projection_type: "ALL"
+            }
+          )
         end
       end
 
@@ -115,6 +124,70 @@ module Aws
         end
       end
 
+      describe "#build_query" do
+        it 'can build and run a query' do
+          klass.configure_client(client: stub_client)
+          q = klass.build_query.on_index(:reverse).
+            key_expr(":date = ?", "2019-07-15").
+            scan_ascending(false).
+            projection_expr(":body").
+            limit(10).
+            complete!
+          q.to_a
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            index_name: "reverse",
+            key_condition_expression: "#BUILDERA = :buildera",
+            projection_expression: "#BUILDERB",
+            limit: 10,
+            scan_index_forward: false,
+            expression_attribute_names: {
+              "#BUILDERA" => "date",
+              "#BUILDERB" => "body"
+            },
+            expression_attribute_values: {
+              ":buildera" => { s: "2019-07-15" }
+            }
+          }])
+        end
+      end
+
+      describe "#build_scan" do
+        it 'can build and run a scan' do
+          klass.configure_client(client: stub_client)
+          klass.build_scan.
+            consistent_read(false).
+            filter_expr(":body = ?", "foo").
+            exclusive_start_key(id: 5, date: "2019-01-01").complete!.to_a
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            consistent_read: false,
+            filter_expression: "#BUILDERA = :buildera",
+            exclusive_start_key: {
+              "id" => { n: '5' },
+              "date" => { s: "2019-01-01" }
+            },
+            expression_attribute_names: {
+              "#BUILDERA" => "body"
+            },
+            expression_attribute_values: {
+              ":buildera" => { s: "foo" }
+            }
+          }])
+        end
+
+        it 'does not support key expressions' do
+          expect {
+            klass.build_scan.key_expr(":fail = ?", true)
+          }.to raise_error(ArgumentError)
+        end
+
+        it 'does not support ascending scan settings' do
+          expect {
+            klass.build_scan.scan_ascending(false)
+          }.to raise_error(ArgumentError)
+        end
+      end
     end
   end
 end

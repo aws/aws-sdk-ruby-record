@@ -25,9 +25,9 @@ module Aws
         self
       end
 
-      def scan_ascending_order(b)
+      def scan_ascending(b)
         unless @operation == :query
-          raise ArgumentError.new("scan_ascending_order is only supported for queries.")
+          raise ArgumentError.new("scan_ascending is only supported for queries.")
         end
         @params[:scan_index_forward] = b
         self
