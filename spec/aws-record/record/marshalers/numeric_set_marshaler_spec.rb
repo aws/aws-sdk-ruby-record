@@ -46,7 +46,7 @@ module Aws
 
             it 'attempts to cast as numeric all contents of a set' do
               input = Set.new([1,'2.0', '3'])
-              expected = Set.new([1, BigDecimal.new('2.0'), BigDecimal.new('3')])
+              expected = Set.new([1, BigDecimal('2.0'), BigDecimal('3')])
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 

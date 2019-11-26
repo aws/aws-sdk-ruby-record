@@ -44,7 +44,7 @@ module Aws
 
             it 'converts BigDecimal objects to Time' do
               expected = Time.at(1531173732)
-              input = BigDecimal.new(1531173732)
+              input = BigDecimal(1531173732)
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
