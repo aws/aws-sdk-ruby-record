@@ -584,7 +584,7 @@ module Aws
 
       describe "validations with ActiveModel::Validations" do
         let(:klass_amv) do
-          ::TestTable = Class.new do
+          ::TestTable ||= Class.new do
             include(Aws::Record)
             include(ActiveModel::Validations)
             set_table_name("TestTable")

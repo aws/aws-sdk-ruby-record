@@ -58,7 +58,7 @@ module Aws
             if item.is_a?(Numeric)
               item
             else
-              BigDecimal.new(item.to_s)
+              BigDecimal(item.to_s)
             end
           end
         end
