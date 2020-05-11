@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ["lib"]
   spec.files = Dir['lib/**/*.rb']
+  spec.files << 'VERSION'
 
   spec.add_dependency('aws-sdk-dynamodb', '~> 1.18')
 end

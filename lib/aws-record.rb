@@ -44,5 +44,8 @@ require_relative 'aws-record/record/marshalers/numeric_set_marshaler'
 
 module Aws
   module Record
+    GEM_VERSION = File.read(File.expand_path('../../VERSION', __FILE__)).strip
+    ENV['AWS_SDK_1P_LIBRARIES'] = [ENV['AWS_SDK_1P_LIBRARIES'],
+                                   "aws-record/#{GEM_VERSION}"].join(' ')
   end
 end
