@@ -26,3 +26,6 @@ matrix:
   exclude:
     - rvm: 2.4.0
       env: OLD_RAILS=1
+git:
+  submodules: false
+
