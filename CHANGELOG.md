@@ -1,3 +1,8 @@
+Unreleased Changes
+------------------
+
+* Issue - Allow symbols for database_attribute_name
+
 2.4.0 (2019-07-16)
 ------------------
 
