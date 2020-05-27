@@ -48,7 +48,7 @@ module Aws
       #   item is nil or not set at persistence time.
       def initialize(name, options = {})
         @name = name
-        @database_name = options[:database_attribute_name] || name.to_s
+        @database_name = (options[:database_attribute_name]  || name).to_s
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
         @persist_nil = options[:persist_nil]

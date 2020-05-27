@@ -24,6 +24,12 @@ module Aws
           expect(a.database_name).to eq("bar")
         end
 
+        it 'can accept a symbol as a custom DB name' do
+          a = Attribute.new(:foo, database_attribute_name: :bar)
+          expect(a.name).to eq(:foo)
+          expect(a.database_name).to eq("bar")
+        end
+
         it 'uses the attribute name by default for the DB name' do
           a = Attribute.new(:foo)
           expect(a.name).to eq(:foo)
