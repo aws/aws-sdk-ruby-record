@@ -122,9 +122,9 @@ module Aws
 
       def populate_default_values
         @model_attributes.attributes.each do |name, attribute|
-          unless attribute.default_value.nil?
+          unless (default_value = attribute.default_value).nil?
             if @data[name].nil? && @data[name].nil?
-              @data[name] = attribute.default_value
+              @data[name] = default_value
             end
           end
         end

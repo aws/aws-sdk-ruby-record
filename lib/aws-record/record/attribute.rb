@@ -53,7 +53,9 @@ module Aws
         @marshaler = options[:marshaler] || DefaultMarshaler
         @persist_nil = options[:persist_nil]
         dv = options[:default_value]
-        @default_value_or_lambda = type_cast(dv) unless dv.nil?
+        unless dv.nil?
+          @default_value_or_lambda = _is_lambda?(dv) ? dv : type_cast(dv)
+        end
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call
@@ -92,8 +94,8 @@ module Aws
 
       # @api private
       def default_value
-        if @default_value_or_lambda.respond_to?(:call)
-          @default_value_or_lambda.call
+        if _is_lambda?(@default_value_or_lambda)
+          type_cast(@default_value_or_lambda.call)
         else
           _deep_copy(@default_value_or_lambda)
         end
@@ -102,6 +104,10 @@ module Aws
       private
       def _deep_copy(obj)
         Marshal.load(Marshal.dump(obj))
+      end
+
+      def _is_lambda?(obj)
+        obj.respond_to?(:call)
       end
 
     end

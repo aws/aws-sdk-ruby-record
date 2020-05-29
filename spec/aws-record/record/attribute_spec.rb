@@ -43,6 +43,19 @@ module Aws
           expect(a.default_value).to eq(5)
         end
 
+        it 'does not type_cast lambdas' do
+          m = Marshalers::DateTimeMarshaler.new
+          a = Attribute.new(:foo, marshaler: m, default_value: -> { Time.now })
+          dv = a.instance_variable_get("@default_value_or_lambda")
+          expect(dv.respond_to?(:call)).to eq(true)
+        end
+
+        it 'type casts result of calling a default_value lambda' do
+          m = Marshalers::StringMarshaler.new
+          a = Attribute.new(:foo, marshaler: m, default_value: -> { :huzzah })
+          expect(a.default_value).to be_a(String)
+        end
+
         it 'uses a deep copy' do
           a = Attribute.new(:foo, default_value: {})
           a.default_value['greeting'] = 'hi'
