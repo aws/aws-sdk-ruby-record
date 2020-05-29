@@ -2,6 +2,7 @@ Unreleased Changes
 ------------------
 
 * Issue - Allow symbols for database_attribute_name
+* Issue - Correctly allow lambda/proc for default_value
 
 2.4.0 (2019-07-16)
 ------------------
