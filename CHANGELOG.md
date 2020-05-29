@@ -1,4 +1,4 @@
-Unreleased Changes
+2.4.1 (2020-05-29)
 ------------------
 
 * Issue - Allow symbols for database_attribute_name
