@@ -32,16 +32,11 @@ gem install 'aws-record'
 gem 'aws-record', '~> 2.0'
 ```
 
-This automatically includes a dependency on the `aws-sdk-resources` gem, major
-version 2. Be sure to include the `aws-sdk` or `aws-sdk-resources` gem in your
-Gemfile if you need to lock to a specific version, like so:
-
-```ruby
-# Gemfile
-
-gem 'aws-record', '~> 2.0'
-gem 'aws-sdk-resources', '~> 3.0'
-```
+This automatically includes a dependency on the `aws-sdk-dynamodb` gem (part of the modular version-3 of 
+the [AWS SDK for Ruby](https://aws.amazon.com/sdk-for-ruby/). If you need to pin to a specific version, 
+you can add [aws-sdk-dynamodb](https://rubygems.org/gems/aws-sdk-dynamodb) 
+or [aws-sdk-core](https://rubygems.org/gems/aws-sdk-core) gem in your
+Gemfile.
 
 ## Usage
 
