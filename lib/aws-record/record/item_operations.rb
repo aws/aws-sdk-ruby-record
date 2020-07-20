@@ -82,8 +82,7 @@ module Aws
       end
 
 
-      # Deletes the item instance that matches the key values of this item
-      # instance in Amazon DynamoDB.
+      # Assigns the attributes provided onto the model.
       #
       # @example Usage Example
       #   class MyModel
