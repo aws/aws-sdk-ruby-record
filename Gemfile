@@ -10,8 +10,6 @@ group :test do
   gem 'cucumber'
   
   gem 'simplecov', require: false
-  # for simplecov on ruby 1.9
-  gem 'json', '2.1.0'
 
   if ENV["NEW_RAILS"]
     gem 'activemodel'
