@@ -6,10 +6,9 @@ gemspec
 gem 'rake', require: false
 
 group :test do
-  gem 'rspec', '~> 3'
+  gem 'rspec'
   gem 'cucumber'
   gem 'simplecov', require: false
-  gem 'coveralls', require: false if RUBY_VERSION > '1.9.3'
 
   if ENV["NEW_RAILS"]
     gem 'activemodel'

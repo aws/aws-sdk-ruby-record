@@ -17,15 +17,15 @@ require 'aws-record'
 
 def cleanup_table
   begin
-    puts "Cleaning Up Table: #{@table_name}"
+    log "Cleaning Up Table: #{@table_name}"
     @client.delete_table(table_name: @table_name)
-    puts "Cleaned up table: #{@table_name}"
+    log "Cleaned up table: #{@table_name}"
     @table_name = nil
   rescue Aws::DynamoDB::Errors::ResourceNotFoundException
-    puts "Cleanup: Table #{@table_name} doesn't exist, continuing."
+    log "Cleanup: Table #{@table_name} doesn't exist, continuing."
     @table_name = nil
   rescue Aws::DynamoDB::Errors::ResourceInUseException => e
-    puts "Failed to delete table, waiting to retry."
+    log "Failed to delete table, waiting to retry."
     @client.wait_until(:table_exists, table_name: @table_name)
     sleep(10)
     retry
