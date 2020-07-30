@@ -1,28 +1,32 @@
 language: ruby
 
 rvm:
-  - 2.0.0
+  - 2.0
   - 2.1
   - 2.2
-  - 2.3.0
-  - 2.4.0
-  - 2.5.3
-  - 2.6.0
-  - jruby
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - jruby-9.1
+  - jruby-9.2
 
 sudo: false
 
 env:
+  - NEW_RAILS=1
   - OLD_RAILS=1
 
-script: bundle exec rake
+script: bundle exec rake test
 
 bundler_args: --without docs release repl
 
 matrix:
-  include:
-    - rvm: 2.4.0
-      env: NEW_RAILS=1
   exclude:
-    - rvm: 2.4.0
-      env: OLD_RAILS=1
+    - rvm: 2.0
+      env: NEW_RAILS=1
+    - rvm: 2.1
+      env: NEW_RAILS=1
+    - rvm: 2.2
+      env: NEW_RAILS=1
