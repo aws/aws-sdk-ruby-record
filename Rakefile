@@ -20,9 +20,3 @@ task :default => :test
 Dir.glob('**/*.rake').each do |task_file|
   load task_file
 end
-
-begin
-  require 'coveralls/rake/task'
-  Coveralls::RakeTask.new
-rescue LoadError
-end
