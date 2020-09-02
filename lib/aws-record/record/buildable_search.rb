@@ -178,6 +178,13 @@ module Aws
         self
       end
 
+      # Docs TBD
+      def multi_model_filter(&block)
+        puts "\n Creating a Query that uses model detection!"
+        @params[:model_proc] = block
+        self
+      end
+
       # You must call this method at the end of any query or scan you build.
       #
       # @return [Aws::Record::ItemCollection] The item collection lazy
