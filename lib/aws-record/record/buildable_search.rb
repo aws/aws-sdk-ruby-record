@@ -179,9 +179,8 @@ module Aws
       end
 
       # Docs TBD
-      def multi_model_filter(&block)
-        puts "\n Creating a Query that uses model detection!"
-        @params[:model_proc] = block
+      def multi_model_filter(proc = nil, &block)
+        @params[:model_filter] = proc || block
         self
       end
 

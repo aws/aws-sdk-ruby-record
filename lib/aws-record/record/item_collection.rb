@@ -19,7 +19,7 @@ module Aws
       def initialize(search_method, search_params, model, client)
         @search_method = search_method
         @search_params = search_params
-        @model_proc = @search_params.delete(:model_proc)
+        @model_filter = @search_params.delete(:model_filter)
         @model = model
         @client = client
       end
@@ -93,8 +93,8 @@ module Aws
         ret = []
         items.each do |item|
           model_class = model
-          if @model_proc
-            model_class = @model_proc.call(item)
+          if @model_filter
+            model_class = @model_filter.call(item)
             next unless model_class # skip nils
             record = model_class.new
           else
