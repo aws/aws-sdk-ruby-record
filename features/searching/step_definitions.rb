@@ -63,3 +63,21 @@ When("we run the following search:") do |code|
   SearchTestModel = @model
   @collection = eval(code)
 end
+
+When(/^we run a heterogeneous query$/) do
+  @model_1 = @model.dup
+  @model_2 = @model.dup
+  scan = @model.build_scan.multi_model_filter do |raw_item_attributes|
+    if raw_item_attributes['id'] == "1"
+      @model_1
+    elsif raw_item_attributes['id'] == "2"
+      @model_2
+    end
+  end
+  @collection = scan.complete!
+end
+
+Then(/^we should receive an aws-record collection with multiple model classes/) do
+  result_classes = @collection.map(&:class)
+  expect(result_classes).to include(@model_1, @model_2)
+end

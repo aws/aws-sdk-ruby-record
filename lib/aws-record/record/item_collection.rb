@@ -92,14 +92,9 @@ module Aws
       def _build_items_from_response(items, model)
         ret = []
         items.each do |item|
-          model_class = model
-          if @model_filter
-            model_class = @model_filter.call(item)
-            next unless model_class # skip nils
-            record = model_class.new
-          else
-            record = model.new
-          end
+          model_class = @model_filter ? @model_filter.call(item) : model
+          next unless model_class
+          record = model_class.new
           data = record.instance_variable_get("@data")
           model_class.attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(item))
