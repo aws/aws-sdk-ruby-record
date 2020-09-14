@@ -178,7 +178,45 @@ module Aws
         self
       end
 
-      # Docs TBD
+      # Allows you to define a callback that will determine the model class
+      # to be used for each item, allowing queries to return an ItemCollection
+      # with mixed models.  The provided block must return the model class based on
+      # any logic on the raw item attributes or `nil` if no model applies and
+      # the item should be skipped.  Note: The block only has access to raw item
+      # data so attributes must be accessed using their names as defined in the
+      # table, not as the symbols defined in the model class(s).
+      #
+      # @example Scan with heterogeneous results:
+      #   # Example model classes
+      #   class Model_A
+      #     include Aws::Record
+      #     set_table_name(TABLE_NAME)
+      #
+      #     string_attr :uuid, hash_key: true
+      #     string_attr :class_name, range_key: true
+      #
+      #     string_attr :attr_a
+      #   end
+      #
+      #   class Model_B
+      #     include Aws::Record
+      #     set_table_name(TABLE_NAME)
+      #
+      #     string_attr :uuid, hash_key: true
+      #     string_attr :class_name, range_key: true
+      #
+      #     string_attr :attr_b
+      #   end
+      #
+      #   # use multi_model_filter to create a query on TABLE_NAME
+      #   items = Model_A.build_scan.multi_model_filter do |raw_item_attributes|
+      #     case raw_item_attributes['class_name']
+      #     when "A" then Model_A
+      #     when "B" then Model_B
+      #     else
+      #       nil
+      #     end
+      #   end.complete!
       def multi_model_filter(proc = nil, &block)
         @params[:model_filter] = proc || block
         self
