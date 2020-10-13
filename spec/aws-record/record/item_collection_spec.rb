@@ -214,6 +214,80 @@ module Aws
           expect(actual).to eq(expected)
           expect(api_requests.size).to eq(1)
         end
+
+        context 'model_filter is set' do
+
+          let(:model_a) do
+            Class.new do
+              include(Aws::Record)
+              set_table_name("TestTable")
+              integer_attr(:id, hash_key: true)
+              string_attr(:class_name)
+              string_attr(:attr_a)
+            end
+          end
+
+          let(:model_b) do
+            Class.new do
+              include(Aws::Record)
+              set_table_name("TestTable")
+              integer_attr(:id, hash_key: true)
+              string_attr(:class_name)
+              string_attr(:attr_b)
+            end
+          end
+
+          let(:resp) do
+            {
+              items: [
+                { 'id' => 1, 'class_name' => 'A', 'attr_a' => 'a' },
+                { 'id' => 2, 'class_name' => 'B', 'attr_b' => 'b' },
+                { 'id' => 3 }
+              ],
+              count: 3
+            }
+          end
+
+          let(:model_filter) do
+            Proc.new do |raw_item_attributes|
+              case raw_item_attributes['class_name']
+              when "A" then model_a
+              when "B" then model_b
+              else
+                nil
+              end
+            end
+          end
+
+          before { stub_client.stub_responses(:scan, resp) }
+
+          let(:c) do
+            ItemCollection.new(
+              :scan,
+              {table_name: "TestTable", model_filter: model_filter },
+              model_a,
+              stub_client
+            )
+          end
+
+          it 'uses the model proc to determine the returned model classes' do
+            expected = [model_a, model_b]
+            actual = c.map { |item| item.class }
+            expect(actual).to eq(expected)
+          end
+
+          it 'maps class specific attributes' do
+            actual = c.page
+            expect(actual[0].attr_a).to eq('a')
+            expect(actual[1].attr_b).to eq('b')
+          end
+
+          it 'skips items when model_filter returns nil' do
+            actual = c.page
+            expect(actual.size).to eq(2)
+          end
+        end
+
       end
 
       describe "#empty?" do

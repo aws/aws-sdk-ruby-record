@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - `Aws::Record::BuildableSearch` - Support queries yielding heterogeneous results using `multi_model_filter` (#107)
+
 2.4.1 (2020-05-29)
 ------------------
 

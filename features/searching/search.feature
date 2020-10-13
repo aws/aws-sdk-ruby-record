@@ -190,6 +190,10 @@ Feature: Amazon DynamoDB Querying and Scanning
       ]
       """
 
+  Scenario: Heterogeneous query
+    When we run a heterogeneous query
+    Then we should receive an aws-record collection with multiple model classes
+
   @smart_query
   Scenario: Build a Smart Scan
     When we run the following search:

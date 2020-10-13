@@ -19,6 +19,7 @@ module Aws
       def initialize(search_method, search_params, model, client)
         @search_method = search_method
         @search_params = search_params
+        @model_filter = @search_params.delete(:model_filter)
         @model = model
         @client = client
       end
@@ -91,9 +92,11 @@ module Aws
       def _build_items_from_response(items, model)
         ret = []
         items.each do |item|
-          record = model.new
+          model_class = @model_filter ? @model_filter.call(item) : model
+          next unless model_class
+          record = model_class.new
           data = record.instance_variable_get("@data")
-          model.attributes.attributes.each do |name, attr|
+          model_class.attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(item))
           end
           data.clean!
