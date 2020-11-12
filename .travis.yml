@@ -18,7 +18,7 @@ env:
   - NEW_RAILS=1
   - OLD_RAILS=1
 
-script: bundle exec rake test
+script: bundle exec rake release:test
 
 bundler_args: --without docs release repl
 
