@@ -1,4 +1,4 @@
-Unreleased Changes
+2.6.0 (2021-05-13)
 ------------------
 
 * Feature - Add support for on-demand-billing for table migrations (#94)
