@@ -1,10 +1,7 @@
 Unreleased Changes
 ------------------
 
-2.5.1 (2021-05-12)
-------------------
-
-* Issue - Add missing support for on-demand-billing for table migrations (#94)
+* Feature - Add support for on-demand-billing for table migrations (#94)
 
 2.5.0 (2020-10-13)
 ------------------
