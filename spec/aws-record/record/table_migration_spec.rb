@@ -122,6 +122,135 @@ module Aws
             }])
           end
 
+          it 'allows specifying on-demand billing instead of provisioned'\
+             ' througput' do
+            create_opts = { billing_mode: 'PAY_PER_REQUEST' }
+            migration.client = stub_client
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "datekey",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "datekey",
+                  key_type: "RANGE"
+                }
+              ],
+              billing_mode: 'PAY_PER_REQUEST'
+            }])
+          end
+
+          it 'accepts a value of PROVISIONED for billing_mode if'\
+               ' provisioned throughput is also specified' do
+            create_opts = {
+              billing_mode: 'PROVISIONED',
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            migration.client = stub_client
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "datekey",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "datekey",
+                  key_type: "RANGE"
+                }
+              ],
+              billing_mode: 'PROVISIONED',
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }])
+          end
+
+          it 'requires billing_mode be PROVISIONED if specified'\
+               ' and provisioned throughput is provided' do
+            create_opts = {
+              billing_mode: 'INVALID',
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            migration.client = stub_client
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError,
+              /billing_mode.*one of.*PAY_PER_REQUEST.*PROVISIONED.*INVALID/
+            )
+            expect(api_requests).to eq([])
+          end
+
+          it 'requires billing_mode be PAY_PER_REQUEST if specified'\
+               ' and no provisioned throughput is provided' do
+            create_opts = { billing_mode: 'INVALID' }
+            migration.client = stub_client
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError,
+              /billing_mode.*one of.*PAY_PER_REQUEST.*PROVISIONED.*INVALID/
+            )
+            expect(api_requests).to eq([])
+          end
+
+          it 'requires billing_mode be specified and have value PAY_PER_REQUEST'\
+               ' if no provisioned throughput is provided' do
+            create_opts = {}
+            migration.client = stub_client
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError,
+              /provisioned_throughput.*not specified.*billing_mode.*PAY_PER_REQUEST/
+            )
+            expect(api_requests).to eq([])
+          end
+
+          it 'requires only one capacity specification, either provisioned ' \
+             'throughput or on-demand' do
+            create_opts = {
+              billing_mode: 'PAY_PER_REQUEST',
+              provisioned_throughput: {
+                read_capacity_units: 5,
+                write_capacity_units: 2
+              }
+            }
+            migration.client = stub_client
+
+            expect { migration.create!(create_opts) }.to raise_error(
+              ArgumentError,
+              /provisioned_throughput.*billing_mode.*unspecified.*PROVISIONED/
+            )
+            expect(api_requests).to eq([])
+          end
+
           it 'accepts models with a local secondary index' do
             create_opts = {
               provisioned_throughput: {
@@ -267,13 +396,9 @@ module Aws
             }])
           end
 
-          it 'required global secondary index throughput to be provided' do
-            create_opts = {
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              }
-            }
+          it 'does not require global secondary index throughput to be ' \
+             'provided if the table is configured to use on-demand billing' do
+            create_opts = { billing_mode: 'PAY_PER_REQUEST' }
             klass.global_secondary_index(
               :test_gsi,
               hash_key: :gsi_partition,
@@ -283,46 +408,116 @@ module Aws
               }
             )
             migration.client = stub_client
-            expect { migration.create!(create_opts) }.to raise_error(
-              ArgumentError
-            )
-            expect(api_requests).to eq([])
+            migration.create!(create_opts)
+            expect(api_requests).to eq([{
+              table_name: "TestTable",
+              attribute_definitions: [
+                {
+                  attribute_name: "id",
+                  attribute_type: "N"
+                },
+                {
+                  attribute_name: "datekey",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_partition",
+                  attribute_type: "S"
+                },
+                {
+                  attribute_name: "gsi_sort",
+                  attribute_type: "S"
+                }
+              ],
+              key_schema: [
+                {
+                  attribute_name: "id",
+                  key_type: "HASH"
+                },
+                {
+                  attribute_name: "datekey",
+                  key_type: "RANGE"
+                }
+              ],
+              global_secondary_indexes: [{
+                index_name: "test_gsi",
+                key_schema: [
+                  {
+                    attribute_name: "gsi_partition",
+                    key_type: "HASH"
+                  },
+                  {
+                    attribute_name: "gsi_sort",
+                    key_type: "RANGE"
+                  }
+                ],
+                projection: {
+                  projection_type: "ALL"
+                }
+              }],
+              billing_mode: 'PAY_PER_REQUEST'
+            }])
           end
 
-          it 'requires global secondary index throughput to be defined for each index' do
-            create_opts = {
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              },
-              global_secondary_index_throughput: {
-                test_gsi: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+          context 'when the table is not configured to use on-demand billing' do
+            let(:throughput_opts) do
+              {
+                provisioned_throughput: {
+                  read_capacity_units: 5,
+                  write_capacity_units: 2
                 }
               }
-            }
-            klass.global_secondary_index(
-              :test_gsi,
-              hash_key: :gsi_partition,
-              range_key: :gsi_sort,
-              projection: {
-                projection_type: "ALL"
-              }
-            )
-            klass.global_secondary_index(
-              :fail_on,
-              hash_key: :gsi_partition,
-              range_key: :gsi_sort,
-              projection: {
-                projection_type: "ALL"
-              }
-            )
-            migration.client = stub_client
-            expect { migration.create!(create_opts) }.to raise_error(
-              ArgumentError
-            )
-            expect(api_requests).to eq([])
+            end
+
+            it 'requires global secondary index throughput to be provided' do
+              create_opts = throughput_opts
+              klass.global_secondary_index(
+                :test_gsi,
+                hash_key: :gsi_partition,
+                range_key: :gsi_sort,
+                projection: {
+                  projection_type: "ALL"
+                }
+              )
+              migration.client = stub_client
+              expect { migration.create!(create_opts) }.to raise_error(
+                ArgumentError, /define.*:global_secondary_index_throughput/
+              )
+              expect(api_requests).to eq([])
+            end
+
+            it 'requires global secondary index throughput to be defined for each index' do
+              create_opts = throughput_opts.merge(
+                global_secondary_index_throughput: {
+                  test_gsi: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1
+                  }
+                }
+              )
+              klass.global_secondary_index(
+                :test_gsi,
+                hash_key: :gsi_partition,
+                range_key: :gsi_sort,
+                projection: {
+                  projection_type: "ALL"
+                }
+              )
+              klass.global_secondary_index(
+                :fail_on,
+                hash_key: :gsi_partition,
+                range_key: :gsi_sort,
+                projection: {
+                  projection_type: "ALL"
+                }
+              )
+              migration.client = stub_client
+              expect { migration.create!(create_opts) }.to raise_error(
+                ArgumentError,
+                /Missing.*throughput.*for the following.*indexes.*fail_on/
+              )
+              expect(api_requests).to eq([])
+            end
           end
         end
 

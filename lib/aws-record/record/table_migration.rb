@@ -56,15 +56,24 @@ module Aws
       # @param [Hash] opts options to pass on to the client call to
       #  +#create_table+. See the documentation above in the AWS SDK for Ruby
       #  V2.
-      # @option opts [Hash] :provisioned_throughput This is a required argument,
-      #  in which you must specify the +:read_capacity_units+ and
+      # @option opts [Hash] :billing_mode Accepts values 'PAY_PER_REQUEST' or
+      #  'PROVISIONED'. If :provisioned_throughput option is specified, this
+      #  option is not required, as 'PROVISIONED' is assumed. If
+      #  :provisioned_throughput is not specified, this option is required
+      #  and must be set to 'PAY_PER_REQUEST'.
+      # @option opts [Hash] :provisioned_throughput Unless :billing_mode is
+      #  set to 'PAY_PER_REQUEST', this is a required argument, in which
+      #  you must specify the +:read_capacity_units+ and
       #  +:write_capacity_units+ of your new table.
       # @option opts [Hash] :global_secondary_index_throughput This argument is
-      #  required if you define any global secondary indexes. It should map your
+      #  required if you define any global secondary indexes, unless
+      #  :billing_mode is set to 'PAY_PER_REQUEST'. It should map your
       #  global secondary index names to their provisioned throughput, similar
       #  to how you define the provisioned throughput for the table in general.
       def create!(opts)
         gsit = opts.delete(:global_secondary_index_throughput)
+        _validate_billing(opts)
+
         create_opts = opts.merge({
           table_name: @model.table_name,
           attribute_definitions: _attribute_definitions,
@@ -75,14 +84,19 @@ module Aws
           _append_to_attribute_definitions(lsis, create_opts)
         end
         if gsis = @model.global_secondary_indexes_for_migration
-          unless gsit
+          unless gsit || opts[:billing_mode] == 'PAY_PER_REQUEST'
             raise ArgumentError.new(
-              "If you define global secondary indexes, you must also define"\
-                " :global_secondary_index_throughput on table creation."
+              'If you define global secondary indexes, you must also define'\
+                ' :global_secondary_index_throughput on table creation,'\
+                " unless :billing_mode is set to 'PAY_PER_REQUEST'."
             )
           end
-          gsis_with_throughput = _add_throughout_to_gsis(gsis, gsit)
-          create_opts[:global_secondary_indexes] = gsis_with_throughput
+          gsis_opts = if opts[:billing_mode] == 'PAY_PER_REQUEST'
+                        gsis
+                      else
+                        _add_throughput_to_gsis(gsis, gsit)
+                      end
+          create_opts[:global_secondary_indexes] = gsis_opts
           _append_to_attribute_definitions(gsis, create_opts)
         end
         @client.create_table(create_opts)
@@ -142,6 +156,33 @@ module Aws
         end
       end
 
+      def _validate_billing(opts)
+        valid_modes = %w[PAY_PER_REQUEST PROVISIONED]
+        if opts.key?(:billing_mode)
+          unless valid_modes.include?(opts[:billing_mode])
+            raise ArgumentError.new(
+              ":billing_mode option must be one of #{valid_modes.join(', ')}"\
+                " current value is: #{opts[:billing_mode]}"
+            )
+          end
+        end
+        if opts.key?(:provisioned_throughput)
+          if opts[:billing_mode] == 'PAY_PER_REQUEST'
+            raise ArgumentError.new(
+              'when :provisioned_throughput option is specified, :billing_mode'\
+                " must either be unspecified or have a value of 'PROVISIONED'"
+            )
+          end
+        else
+          if opts[:billing_mode] != 'PAY_PER_REQUEST'
+            raise ArgumentError.new(
+              'when :provisioned_throughput option is not specified,'\
+                " :billing_mode must be set to 'PAY_PER_REQUEST'"
+            )
+          end
+        end
+      end
+
       def _attribute_definitions
         _keys.map do |type, attr|
           {
@@ -173,7 +214,7 @@ module Aws
         create_opts[:attribute_definitions] = attr_def
       end
 
-      def _add_throughout_to_gsis(global_secondary_indexes, gsi_throughput)
+      def _add_throughput_to_gsis(global_secondary_indexes, gsi_throughput)
         missing_throughput = []
         ret = global_secondary_indexes.map do |params|
           name = params[:index_name]
