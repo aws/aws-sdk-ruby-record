@@ -50,7 +50,6 @@ module Aws
     #     # Attribute definitions go here...
     #   end
     def self.included(sub_class)
-      @track_mutations = true
       sub_class.send(:extend, RecordClassMethods)
       sub_class.send(:include, Attributes)
       sub_class.send(:include, ItemOperations)
@@ -201,7 +200,11 @@ module Aws
       # @return [Boolean] true if mutation tracking is enabled at the model
       # level, false otherwise.
       def mutation_tracking_enabled?
-        @track_mutations == false ? false : true
+        if defined?(@track_mutations)
+          @track_mutations
+        else
+          @track_mutations = true
+        end
       end
 
       def model_valid?
