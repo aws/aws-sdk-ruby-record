@@ -138,6 +138,10 @@ module Aws
         end
       }
 
+      it 'is on by default' do
+        expect(model.mutation_tracking_enabled?).to be_truthy
+      end
+
       it 'can turn off mutation tracking globally for a model' do
         model.disable_mutation_tracking
         expect(model.mutation_tracking_enabled?).to be_falsy
