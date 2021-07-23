@@ -125,6 +125,37 @@ module Aws
       end
 
       describe "#build_query" do
+        it 'accepts frozen strings as the key expression (#115)' do
+          klass.configure_client(client: stub_client)
+          q = klass
+            .build_query
+            .key_expr(
+              ":id = ? AND begins_with(date, ?)".freeze,
+              "my-id",
+              "2019-07-15"
+            )
+            .scan_ascending(false)
+            .projection_expr(":body")
+            .limit(10)
+            .complete!
+          q.to_a
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key_condition_expression: "#BUILDERA = :buildera AND begins_with(date, :builderb)",
+            projection_expression: "#BUILDERB",
+            limit: 10,
+            scan_index_forward: false,
+            expression_attribute_names: {
+              "#BUILDERA" => "id",
+              "#BUILDERB" => "body"
+            },
+            expression_attribute_values: {
+              ":buildera" => { s: "my-id" },
+              ":builderb" => { s: "2019-07-15" }
+            }
+          }])
+        end
+
         it 'can build and run a query' do
           klass.configure_client(client: stub_client)
           q = klass.build_query.on_index(:reverse).

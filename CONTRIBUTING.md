@@ -1,9 +1,9 @@
 # Contributing Guidelines
 
-Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional 
+Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
 documentation, we greatly value feedback and contributions from our community.
 
-Please read through this document before submitting any issues or pull requests to ensure we have all the necessary 
+Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
 
@@ -11,7 +11,7 @@ information to effectively respond to your bug report or contribution.
 
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.
 
-When filing an issue, please check [existing open](https://github.com/aws/aws-sdk-ruby-record/issues), or [recently closed](https://github.com/aws/aws-sdk-ruby-record/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20), issues to make sure somebody else hasn't already 
+When filing an issue, please check [existing open](https://github.com/aws/aws-sdk-ruby-record/issues), or [recently closed](https://github.com/aws/aws-sdk-ruby-record/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20), issues to make sure somebody else hasn't already
 reported the issue. Please try to include as much information as you can. Details like these are incredibly useful:
 
 * A reproducible test case or series of steps
@@ -37,7 +37,7 @@ To send us a pull request, please:
 5. Send us a pull request, answering any default questions in the pull request interface.
 6. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 
-GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and 
+GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 ### Setting Up a Development Environment
@@ -49,7 +49,7 @@ You can install the development dependencies necessary to run unit tests with `b
 * Documentation improvements are always welcome. If adding a specific code example, consider also if that example would be appropriate to add as a unit or integration test.
 * For bug fixes or refactors, please ensure that code coverage remains the same or improves if at all possible. Especially for bug fixes, please include the unit and/or integration tests that reproduce the failure case.
 * For new features, at minimum include full unit test coverage, and ideally include integrations tests for the top-line behavior. Documentation is also required.
-    * If you need help with integration testing or with writing documentation for a feature, let us know. We're happy to review a prototype of a feature ahead of development of full documentation/integration testing.
+* If you need help with integration testing or with writing documentation for a feature, let us know. We're happy to review a prototype of a feature ahead of development of full documentation/integration testing.
 
 ## Finding contributions to work on
 
@@ -57,8 +57,8 @@ Looking at the existing issues is a great way to find something to contribute on
 
 ## Code of Conduct
 
-This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct). 
-For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact 
+This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
+For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
 opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 ## Security issue notifications
