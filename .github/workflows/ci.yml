@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main     
+
+  pull_request:
+    branches:
+      - main     
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, '3.0', jruby-9.1, jruby-9.2]
+        env: [NEW_RAILS, OLD_RAILS]
+        exclude:
+          - ruby: 2.0      
+            env: NEW_RAILS   
+          - ruby: 2.1      
+            env: NEW_RAILS   
+          - ruby: 2.2 
+            env: NEW_RAILS 
+
+    steps:
+      - name: Setup     
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - uses: actions/checkout@v2
+
+      - name: Environment 
+        run: echo "${{ matrix.env }}=1" >> $GITHUB_ENV
+
+      - name: Install     
+        run: |
+          echo NEW_RAIS=$NEW_RAILS OLD_RAILS=$OLD_RAILS   
+          bundle install --without docs     
+      - name: Build
+        run: bundle exec rake build
+
+      - name: Test 
+        run: bundle exec rake release:test
