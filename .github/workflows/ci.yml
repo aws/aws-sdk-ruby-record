@@ -40,8 +40,6 @@ jobs:
         run: |
           echo NEW_RAIS=$NEW_RAILS OLD_RAILS=$OLD_RAILS   
           bundle install --without docs     
-      - name: Build
-        run: bundle exec rake build
 
       - name: Test 
         run: bundle exec rake release:test
