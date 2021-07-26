@@ -10,6 +10,10 @@ group :test do
   
   gem 'simplecov', require: false
 
+  if RUBY_VERSION >= '3.0'
+    gem 'rexml'
+  end
+
   if ENV["NEW_RAILS"]
     gem 'activemodel'
   else
