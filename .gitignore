@@ -3,3 +3,5 @@
 Gemfile.lock
 doc
 coverage/
+vendor/bundle
+.bundle

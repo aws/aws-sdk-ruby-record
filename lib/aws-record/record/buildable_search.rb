@@ -101,9 +101,9 @@ module Aws
           @params[:expression_attribute_values] = {}
           values = @params[:expression_attribute_values]
         end
-        _key_pass(statement_str, names)
-        _apply_values(statement_str, subs, values)
-        @params[:key_condition_expression] = statement_str
+        prepared = _key_pass(statement_str, names)
+        statement = _apply_values(prepared, subs, values)
+        @params[:key_condition_expression] = statement
         self
       end
 
@@ -123,7 +123,7 @@ module Aws
       #     "contains(:body, ?)",
       #     "bacon"
       #   ).complete!
-      # 
+      #
       def filter_expr(statement_str, *subs)
         names = @params[:expression_attribute_names]
         if names.nil?
@@ -135,9 +135,9 @@ module Aws
           @params[:expression_attribute_values] = {}
           values = @params[:expression_attribute_values]
         end
-        _key_pass(statement_str, names)
-        _apply_values(statement_str, subs, values)
-        @params[:filter_expression] = statement_str
+        prepared = _key_pass(statement_str, names)
+        statement = _apply_values(prepared, subs, values)
+        @params[:filter_expression] = statement
         self
       end
 
@@ -167,8 +167,8 @@ module Aws
           @params[:expression_attribute_names] = {}
           names = @params[:expression_attribute_names]
         end
-        _key_pass(statement_str, names)
-        @params[:projection_expression] = statement_str
+        prepared = _key_pass(statement_str, names)
+        @params[:projection_expression] = prepared
         self
       end
 
@@ -232,8 +232,8 @@ module Aws
 
       private
       def _key_pass(statement, names)
-        statement.gsub!(/:(\w+)/) do |match|
-          key = match.gsub!(':','').to_sym 
+        statement.gsub(/:(\w+)/) do |match|
+          key = match.gsub(':','').to_sym
           key_name = @model.attributes.storage_name_for(key)
           if key_name
             sub_name = _next_name
@@ -248,15 +248,16 @@ module Aws
 
       def _apply_values(statement, subs, values)
         count = 0
-        statement.gsub!(/[?]/) do |match|
+        statement.gsub(/[?]/) do |match|
           sub_value = _next_value
           raise "Substitution collision!" if values[sub_value]
           values[sub_value] = subs[count]
           count += 1
           sub_value
-        end
-        unless count == subs.size
-          raise "Expected #{count} values in the substitution set, but found #{subs.size}"
+        end.tap do
+          unless count == subs.size
+            raise "Expected #{count} values in the substitution set, but found #{subs.size}"
+          end
         end
       end
 
