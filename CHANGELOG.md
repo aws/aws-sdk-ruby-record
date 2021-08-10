@@ -1,4 +1,4 @@
-Unreleased Changes
+2.6.1 (2021-08-10)
 ------------------
 
 * Issue - Fix FrozenError on BuildableSearch (#115)
