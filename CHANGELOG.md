@@ -1,3 +1,8 @@
+Unreleased Changes
+------------------
+
+* Issue - Fix FrozenError on BuildableSearch (#115)
+
 2.6.0 (2021-05-13)
 ------------------
 
