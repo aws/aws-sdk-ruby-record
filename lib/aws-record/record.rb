@@ -75,12 +75,12 @@ module Aws
       #   class MyTable
       #     include Aws::Record
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
@@ -99,12 +99,12 @@ module Aws
       #     include Aws::Record
       #     set_table_name "prod_MyTable"
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def set_table_name(name)
