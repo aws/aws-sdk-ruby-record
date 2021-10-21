@@ -14,11 +14,9 @@
 module Aws
   module Record
     class BatchWrite
-      attr_accessor(:client)
-
       # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
-      def initialize(client)
-        self.client = client
+      def initialize(client:)
+        @client = client
       end
 
       # Append a +PutItem+ operation to a batch write request.
@@ -44,17 +42,17 @@ module Aws
       # @return [Aws::Record::BatchWrite] an instance that provides access to
       #   unprocessed items and allows for retries.
       def execute!
-        result = client.batch_write_item(request_items: operations)
+        result = @client.batch_write_item(request_items: operations)
         @operations = result.unprocessed_items
         self
       end
 
-      # Indicates if any items exist that have not yet been processed.
+      # Indicates if all items have been processed.
       #
-      # @return [Boolean] +true+ if +unprocessed_items+ are present, +false+
+      # @return [Boolean] +true+ if +unprocessed_items+ is empty, +false+
       #   otherwise
-      def retryable?
-        unprocessed_items.values.any?
+      def complete?
+        unprocessed_items.values.none?
       end
 
       # Returns all +DeleteItem+ and +PutItem+ operations that have not yet been

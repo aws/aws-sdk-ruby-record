@@ -13,22 +13,22 @@
 
 Planet = Class.new do
   include(Aws::Record)
-  include(Aws::Record::Batch)
   integer_attr(:id, hash_key: true)
   string_attr(:name, range_key: true)
 end
 
 describe Aws::Record::Batch do
   let(:client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+  subject { described_class.new(client: client) }
 
   before(:each) do
     Planet.configure_client(client: client)
   end
 
-  describe '#batch_write' do
+  describe '#write' do
     let(:pluto) { Planet.find(id: 9, name: 'pluto') }
     let(:result) do
-      Planet.batch_write do |db|
+      subject.write do |db|
         db.put(Planet.new(id: 1, name: 'mercury'))
         db.put(Planet.new(id: 2, name: 'venus'))
         db.put(Planet.new(id: 3, name: 'earth'))
@@ -63,8 +63,8 @@ describe Aws::Record::Batch do
         expect(result).to be_an(Aws::Record::BatchWrite)
       end
 
-      it 'is not retryable' do
-        expect(result).not_to be_retryable
+      it 'is complete' do
+        expect(result).to be_complete
       end
     end
 
@@ -85,8 +85,8 @@ describe Aws::Record::Batch do
         expect(result.unprocessed_items['planet'].size).to eq(2)
       end
 
-      it 'is retryable' do
-        expect(result).to be_retryable
+      it 'is not complete' do
+        expect(result).to_not be_complete
       end
     end
   end
