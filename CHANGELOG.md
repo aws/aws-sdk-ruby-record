@@ -1,3 +1,36 @@
+2.7.0 (master)
+------------------
+
+* Feature - Implement the `BatchWriteItem` operation (#119)
+
+#### BatchWriteItem Example
+
+```ruby
+class Breakfast
+  include Aws::Record
+  integer_attr :id, hash_key: true
+  string_attr :name, range_key: true
+  string_attr :body
+end
+
+# save something to DynamoDB so we can delete in a batch request
+eggs = Breakfast.new(id: 1, name: "eggs").save!
+# we're going to create the following items in a batch request
+waffles = Breakfast.new(id: 2, name: "waffles")
+pancakes = Breakfast.new(id: 3, name: "pancakes")
+
+# perform a batch operation
+operation = Aws::Record::Batch.write(client: Breakfast.dynamodb_client) do |db|
+  db.put(waffles)
+  db.delete(eggs)
+  db.put(pancakes)
+end
+
+# (optional) - unprocessed items can be retried
+# note: it's a good idea to implement a custom/exponential backoff strategy
+operation.execute! unless operation.complete?
+```
+
 2.6.1 (2021-08-10)
 ------------------
 
@@ -51,7 +84,7 @@
 
 * Feature - Aws::Record - Add the `persisted?`, `new_record?`, and `destroyed?` methods to `Aws::Record`, which supports use cases where you'd like to see if a record has just been newly initialized, or has been deleted or was a preexisting record retrieved from DynamoDB. Note that these methods are present in `ActiveModel::Model` so you should require that module before `Aws::Record`
 
-* Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that a `ValidationError` is thrown on an invalid update 
+* Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that a `ValidationError` is thrown on an invalid update
 
 * Upgrading - If you already include `ActiveModel::Model` on your models the new `persisted?`, `new_record?` and `destroyed?` methods will not function properly unless you include `ActiveModel::Model` before `Aws::Record`. Additionally, new methods could lead to collisions if you happened to have attributes such as `:update` or `:assign_attributes`. In such a case, you would want to version lock below `2.1.0`, or use the `:database_attribute_name` property and change your attribute name in code.
 
@@ -149,21 +182,21 @@
   support for tracking mutations of attribute value objects. This feature is on
   by default for the "collection" types: `:list_attr`, `:map_attr`,
   `:string_set_attr`, and `:numeric_set_attr`.
-  
+
   Before this feature, the `#save` method's default behavior of running an
   update call for dirty attributes only could cause problems for users of
   collection attributes. As many of them are commonly manipulated using mutable
   state, the underlying "clean" version of the objects would be modified and the
   updated object would not be recognized as dirty, and therefore would not be
   updated at all unless explicitly marked as dirty or through a force put.
-  
+
   ```ruby
   class Model
     include Aws::Record
     string_attr :uuid, hash_key: true
     list_attr :collection
   end
-  
+
   item = Model.new(uuid: SecureRandom.uuid, collection: [1,2,3])
   item.clean! # As if loaded from the database, to demonstrate the new tracking.
   item.dirty? # => false
@@ -171,12 +204,12 @@
   item.dirty? # => true (Previous versions would not recognize this as dirty.
   item.save # Would call Aws::DynamoDB::Client#update_item for :collection only.
   ```
-  
+
   Note that this feature is implemented using deep copies of collection objects
   in memory, so there is a potential memory/performance hit in exchange for the
   added accuracy. As such, mutation tracking can be explicitly turned off at the
   attribute level or at the full model level, if desired.
-  
+
   ```ruby
   # Note that the disabling of mutation tracking is redundant in this example,
   # for illustration purposes.
@@ -204,7 +237,7 @@
   resume raising exceptions on client errors. However, `#save` and `#save!`
   will attempt to call `#valid?` if defined on the model, and will return false
   or raise as appropriate if that method is defined and returns false.
-  
+
   As a part of this change, we've removed the built in `#valid?` and `#errors`
   methods. If you were a user of those, consider bringing your own validation
   library such as `ActiveModel::Validations`.
@@ -227,29 +260,29 @@
 * Upgrading - Aws::Record - The conditional put/update logic added to `#save`
   and `#save!` is not backwards compatible in some cases. For example, the
   following code would work in previous versions, but not in this version:
-  
+
   ```ruby
   item = Model.new # Assume :id is the hash key, there is no range key.
   item.id = 1
   item.content = "First write."
   item.save
-  
+
   smash = Model.new
   smash.id = 1
   smash.content = "Second write."
   smash.save # false, and populates the errors array.
   smash.save(force: true) # This will skip the conditional check and work.
-  
+
   updatable = Model.find(id: 1)
   updatable.content = "Update write."
   updatable.save # This works and uses an update client call.
   ```
-  
+
   If you want to maintain previous behavior of unconditional puts, add the
   `force: true` option to your `#save` calls. However, this risks overwriting
   unmodeled attributes, or attributes excluded from your projection. But, the
   option is available for you to use.
-  
+
 * Upgrading - Aws::Record - The split of the `#save` method into `#save` and
   `#save!` breaks when your code is expecting `#save` to raise exceptions.
   `#save` will return false on a failed write and populate an `errors` array.

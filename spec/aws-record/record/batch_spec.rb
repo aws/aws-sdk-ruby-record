@@ -19,16 +19,15 @@ end
 
 describe Aws::Record::Batch do
   let(:client) { Aws::DynamoDB::Client.new(stub_responses: true) }
-  subject { described_class.new(client: client) }
 
   before(:each) do
     Planet.configure_client(client: client)
   end
 
-  describe '#write' do
+  describe '.write' do
     let(:pluto) { Planet.find(id: 9, name: 'pluto') }
     let(:result) do
-      subject.write do |db|
+      described_class.write(client: client) do |db|
         db.put(Planet.new(id: 1, name: 'mercury'))
         db.put(Planet.new(id: 2, name: 'venus'))
         db.put(Planet.new(id: 3, name: 'earth'))

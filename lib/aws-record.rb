@@ -12,6 +12,7 @@
 # and limitations under the License.
 
 require 'aws-sdk-dynamodb'
+require_relative 'aws-record/record/client_configuration'
 require_relative 'aws-record/record'
 require_relative 'aws-record/record/attribute'
 require_relative 'aws-record/record/attributes'
