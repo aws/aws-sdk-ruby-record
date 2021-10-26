@@ -281,15 +281,6 @@ module Aws
           # check records are a pass-through
           { condition_check: opts.merge(check_record) }
         end
-
-        def _user_agent(custom)
-          if custom
-            custom
-          else
-            " aws-record/#{VERSION}"
-          end
-        end
-
       end
     end
   end

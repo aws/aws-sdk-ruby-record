@@ -13,7 +13,7 @@ class Breakfast
   string_attr :body
 end
 
-# save something to DynamoDB so we can delete in a batch request
+# save something to DynamoDB so we can delete it later in a batch request
 eggs = Breakfast.new(id: 1, name: "eggs").save!
 # we're going to create the following items in a batch request
 waffles = Breakfast.new(id: 2, name: "waffles")

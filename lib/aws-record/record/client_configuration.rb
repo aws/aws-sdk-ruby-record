@@ -33,8 +33,7 @@ module Aws
       # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
       #  own pre-configured client.
       def configure_client(opts = {})
-        client = _build_client(opts)
-        @dynamodb_client = client
+        @dynamodb_client = _build_client(opts)
       end
 
       # Gets the

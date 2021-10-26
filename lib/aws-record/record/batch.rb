@@ -58,7 +58,6 @@ module Aws
         # the +Aws::Record::BatchWrite#complete?+ method - which returns +true+
         # when all operations have been completed.
         #
-        #
         # Please see
         # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations Batch Operations and Error Handling}
         # in the DynamoDB Developer Guide for more details.
