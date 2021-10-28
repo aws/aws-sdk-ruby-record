@@ -1,6 +1,8 @@
 module Aws
   module Record
     module Transactions
+      extend ClientConfiguration
+
       class << self
 
         # @example Usage Example
@@ -8,13 +10,13 @@ module Aws
         #     include Aws::Record
         #     string_attr :uuid, hash_key: true
         #   end
-        #   
+        #
         #   class TableTwo
         #     include Aws::Record
         #     string_attr :hk, hash_key: true
         #     string_attr :rk, range_key: true
         #   end
-        #   
+        #
         #   results = Aws::Record::Transactions.transact_find(
         #     transact_items: [
         #       TableOne.tfind_opts(key: { uuid: "uuid1234" }),
@@ -93,14 +95,14 @@ module Aws
         #     string_attr :uuid, hash_key: true
         #     string_attr :body
         #   end
-        #   
+        #
         #   class TableTwo
         #     include Aws::Record
         #     string_attr :hk, hash_key: true
         #     string_attr :rk, range_key: true
         #     string_attr :body
         #   end
-        #   
+        #
         #   check_exp = TableOne.transact_check_expression(
         #     key: { uuid: "foo" },
         #     condition_expression: "size(#T) <= :v",
@@ -118,7 +120,7 @@ module Aws
         #   update_item_2 = TableTwo.find(hk: "hk2", rk: "rk2")
         #   update_item_2.body = "Update!"
         #   delete_item = TableOne.find(uuid: "to_be_deleted")
-        #   
+        #
         #   Aws::Record::Transactions.transact_write(
         #     transact_items: [
         #       { check: check_exp },
@@ -181,44 +183,6 @@ module Aws
           dirty_items.each { |i| i.clean! }
           delete_items.each { |i| i.instance_variable_get("@data").destroyed = true }
           resp
-        end
-
-        # Configures the Amazon DynamoDB client used by global transaction
-        # operations.
-        #
-        # Please note that this method is also called internally when you first
-        # attempt to perform an operation against the remote end, if you have
-        # not already configured a client. As such, please read and understand
-        # the documentation in the AWS SDK for Ruby V3 around
-        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/#Configuration configuration}
-        # to ensure you understand how default configuration behavior works.
-        # When in doubt, call this method to ensure your client is configured
-        # the way you want it to be configured.
-        #
-        # @param [Hash] opts the options you wish to use to create the client.
-        #  Note that if you include the option +:client+, all other options
-        #  will be ignored. See the documentation for other options in the
-        #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby V3}.
-        # @option opts [Aws::DynamoDB::Client] :client allows you to pass in
-        #  your own pre-configured client.
-        def configure_client(opts = {})
-          provided_client = opts.delete(:client)
-          opts[:user_agent_suffix] = _user_agent(
-            opts.delete(:user_agent_suffix)
-          )
-          client = provided_client || Aws::DynamoDB::Client.new(opts)
-          @@dynamodb_client = client
-        end
-
-        # Gets the
-        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html}
-        # instance that Transactions use. When called for the first time, if
-        # {#configure_client} has not yet been called, will configure a new
-        # client for you with default parameters.
-      #
-      # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
-        def dynamodb_client
-          @@dynamodb_client ||= configure_client
         end
 
         private
@@ -317,15 +281,6 @@ module Aws
           # check records are a pass-through
           { condition_check: opts.merge(check_record) }
         end
-
-        def _user_agent(custom)
-          if custom
-            custom
-          else
-            " aws-record/#{VERSION}"
-          end
-        end
-
       end
     end
   end

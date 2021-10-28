@@ -97,13 +97,13 @@ module Aws
       #   model.age    # => 4
       #   model.height # => 70.5
       #   model.save
-      #   model.dirty? # => false  
-      # 
+      #   model.dirty? # => false
+      #
       #   model.assign_attributes(age: 5, height: 150.75)
       #   model.age    # => 5
       #   model.height # => 150.75
       #   model.dirty? # => true
-      #   
+      #
       #
       # @param [Hash] opts
       def assign_attributes(opts)
@@ -137,14 +137,14 @@ module Aws
       #   model.age    # => 4
       #   model.height # => 70.5
       #   model.save
-      #   model.dirty? # => false  
-      # 
+      #   model.dirty? # => false
+      #
       #   model.update(age: 5, height: 150.75)
       #   model.age    # => 5
       #   model.height # => 150.75
       #   model.dirty? # => false
       #
-      # 
+      #
       # @param [Hash] new_param, contains the new parameters for the model
       #
       # @param [Hash] opts
@@ -167,7 +167,7 @@ module Aws
       # Note that aws-record allows you to change your model's key values,
       # but this will be interpreted as persisting a new item to your DynamoDB
       # table
-      # 
+      #
       # @param [Hash] new_param, contains the new parameters for the model
       #
       # @param [Hash] opts
@@ -193,6 +193,28 @@ module Aws
           key: key_values
         )
         self.instance_variable_get("@data").destroyed = true
+      end
+
+      # Validates and generates the key values necessary for API operations such as the
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
+      # operation.
+      def key_values
+        validate_key_values
+        attributes = self.class.attributes
+        self.class.keys.values.each_with_object({}) do |attr_name, hash|
+          db_name = attributes.storage_name_for(attr_name)
+          hash[db_name] = attributes
+            .attribute_for(attr_name)
+            .serialize(@data.raw_value(attr_name))
+        end
+      end
+
+      # Validates key values and returns a hash consisting of the parameters
+      # to save the record using the
+      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
+      # operation.
+      def save_values
+        _build_item_for_save
       end
 
       private
@@ -265,17 +287,6 @@ module Aws
         @data.build_save_hash
       end
 
-      def key_values
-        validate_key_values
-        attributes = self.class.attributes
-        self.class.keys.inject({}) do |acc, (_, attr_name)|
-          db_name = attributes.storage_name_for(attr_name)
-          acc[db_name] = attributes.attribute_for(attr_name).
-            serialize(@data.raw_value(attr_name))
-          acc
-        end
-      end
-
       def validate_key_values
         missing = missing_key_values
         unless missing.empty?
@@ -339,7 +350,7 @@ module Aws
         #       ":v" => 1024
         #     }
         #   )
-        # 
+        #
         # Allows you to build a "check" expression for use in transactional
         # write operations.
         #
@@ -400,7 +411,7 @@ module Aws
         #     string_attr :hk, hash_key: true
         #     string_attr :rk, range_key: true
         #   end
-        #   
+        #
         #   results = Table.transact_find(
         #     transact_items: [
         #       {key: { hk: "hk1", rk: "rk1"}},

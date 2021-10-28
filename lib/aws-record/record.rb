@@ -50,6 +50,7 @@ module Aws
     #     # Attribute definitions go here...
     #   end
     def self.included(sub_class)
+      sub_class.send(:extend, ClientConfiguration)
       sub_class.send(:extend, RecordClassMethods)
       sub_class.send(:include, Attributes)
       sub_class.send(:include, ItemOperations)
@@ -75,12 +76,12 @@ module Aws
       #   class MyTable
       #     include Aws::Record
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
@@ -99,12 +100,12 @@ module Aws
       #     include Aws::Record
       #     set_table_name "prod_MyTable"
       #   end
-      #   
+      #
       #   class MyTableTest
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
-      #   
+      #
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def set_table_name(name)
@@ -147,42 +148,6 @@ module Aws
         end
       end
 
-      # Configures the Amazon DynamoDB client used by this class and all
-      # instances of this class.
-      #
-      # Please note that this method is also called internally when you first
-      # attempt to perform an operation against the remote end, if you have not
-      # already configured a client. As such, please read and understand the
-      # documentation in the AWS SDK for Ruby V2 around
-      # {http://docs.aws.amazon.com/sdkforruby/api/index.html#Configuration configuration}
-      # to ensure you understand how default configuration behavior works. When
-      # in doubt, call this method to ensure your client is configured the way
-      # you want it to be configured.
-      #
-      # @param [Hash] opts the options you wish to use to create the client.
-      #  Note that if you include the option +:client+, all other options
-      #  will be ignored. See the documentation for other options in the
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby V2}.
-      # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
-      #  own pre-configured client.
-      def configure_client(opts = {})
-        provided_client = opts.delete(:client)
-        opts[:user_agent_suffix] = _user_agent(opts.delete(:user_agent_suffix))
-        client = provided_client || Aws::DynamoDB::Client.new(opts)
-        @dynamodb_client = client
-      end
-
-      # Gets the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
-      # instance that this model uses. When called for the first time, if
-      # {#configure_client} has not yet been called, will configure a new client
-      # for you with default parameters.
-      #
-      # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
-      def dynamodb_client
-        @dynamodb_client ||= configure_client
-      end
-
       # Turns off mutation tracking for all attributes in the model.
       def disable_mutation_tracking
         @track_mutations = false
@@ -210,15 +175,6 @@ module Aws
       def model_valid?
         if @keys.hash_key.nil?
           raise Errors::InvalidModel.new("Table models must include a hash key")
-        end
-      end
-
-      private
-      def _user_agent(custom)
-        if custom
-          custom
-        else
-          " aws-record/#{VERSION}"
         end
       end
     end

@@ -12,6 +12,7 @@
 # and limitations under the License.
 
 require 'aws-sdk-dynamodb'
+require_relative 'aws-record/record/client_configuration'
 require_relative 'aws-record/record'
 require_relative 'aws-record/record/attribute'
 require_relative 'aws-record/record/attributes'
@@ -29,6 +30,8 @@ require_relative 'aws-record/record/table_migration'
 require_relative 'aws-record/record/version'
 require_relative 'aws-record/record/transactions'
 require_relative 'aws-record/record/buildable_search'
+require_relative 'aws-record/record/batch_write'
+require_relative 'aws-record/record/batch'
 require_relative 'aws-record/record/marshalers/string_marshaler'
 require_relative 'aws-record/record/marshalers/boolean_marshaler'
 require_relative 'aws-record/record/marshalers/integer_marshaler'
