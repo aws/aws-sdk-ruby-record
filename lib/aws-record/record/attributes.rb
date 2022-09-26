@@ -382,6 +382,12 @@ module Aws
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
+        # Define an atomic counter attribute for your model.
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        # is safe to use as a method.
+        def atomic_counter(name, default_value = 0)
+        end
+
         # @return [Symbol,nil] The symbolic name of the table's hash key.
         def hash_key
           @keys.hash_key
