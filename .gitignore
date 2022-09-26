@@ -5,3 +5,5 @@ doc
 coverage/
 vendor/bundle
 .bundle
+.idea
+.DS_Store
