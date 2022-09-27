@@ -152,6 +152,9 @@ module Aws
         end
       end
 
+      describe '#atomic_counter' do
+        end
+
     end
   end
 end
