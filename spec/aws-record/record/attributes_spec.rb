@@ -153,8 +153,25 @@ module Aws
       end
 
       describe '#atomic_counter' do
+        context 'given a default value set in class attribute' do
+          it 'should override the existing default value' do
+            klass.string_attr(:id, hash_key: true)
+            klass.atomic_counter(:counter, default_value: 5)
+            item = klass.new(id: "MyId")
+            expect(item.counter).to eq(5)
+          end
         end
 
+        context 'since no default value set in class attribute' do
+          it 'should be the existing default value' do
+            klass.string_attr(:id, hash_key: true)
+            klass.atomic_counter(:counter)
+            item = klass.new(id: "MyId")
+            # noted as unable to find but still able to find??
+            expect(item.counter).to eq(0)
+          end
+        end
+      end
     end
   end
 end
