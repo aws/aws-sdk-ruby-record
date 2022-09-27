@@ -385,7 +385,12 @@ module Aws
         # Define an atomic counter attribute for your model.
         # @param [Symbol] name Name of this attribute.  It should be a name that
         # is safe to use as a method.
-        def atomic_counter(name, default_value = 0)
+        def atomic_counter(name, opts = {})
+          opts[:dynamodb_type] = "N"
+          # do i need to set the default value to 0 from the start?
+          # or does leaving it out and setting to nil the same as setting to 0?
+          # I might have to define it since nil is considered to be no value?
+          attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
         end
 
         # @return [Symbol,nil] The symbolic name of the table's hash key.
