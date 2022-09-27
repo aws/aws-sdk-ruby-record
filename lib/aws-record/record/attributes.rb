@@ -386,10 +386,8 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         # is safe to use as a method.
         def atomic_counter(name, opts = {})
-          opts[:dynamodb_type] = "N"
-          # do i need to set the default value to 0 from the start?
-          # or does leaving it out and setting to nil the same as setting to 0?
-          # I might have to define it since nil is considered to be no value?
+          opts[:dynamodb_type] = "N" # setting the dynamoDB type to 'N' which is integer
+          opts[:default_value] ||= 0 # if user does not define default_value in their model, default is 0
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
         end
 
