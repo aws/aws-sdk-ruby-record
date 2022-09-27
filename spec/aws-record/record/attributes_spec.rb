@@ -171,6 +171,14 @@ module Aws
             expect(item.counter).to eq(0)
           end
         end
+
+        it 'should be able to reassign default value after creation' do
+          klass.string_attr(:id, hash_key: true)
+          klass.atomic_counter(:counter, default_value: 5)
+          item = klass.new(id: "MyId")
+          item.counter = 10
+          expect(item.counter).to eq(10)
+        end
       end
     end
   end
