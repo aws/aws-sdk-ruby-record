@@ -417,6 +417,7 @@ module Aws
               return_values: "UPDATED_NEW"
             })
             assign_attributes(resp[:attributes])
+            save
           end
 
 
