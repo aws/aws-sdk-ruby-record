@@ -391,7 +391,7 @@ module Aws
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
           # increment method with no args
-          define_method("increment_#{name}!") do
+          define_method("increment_#{name}!") do |arg=1|
             puts "Increasing #{name}!"
 
             # need to discuss how I can update
@@ -403,12 +403,12 @@ module Aws
             end
 
             # will successfully update the
-            # atomic_counter by 1
+            # atomic_counter by 1 by default
             resp = dynamodb_client.update_item({
               table_name: self.class.table_name,
               key: key_values,
               expression_attribute_values: {
-                ":i" => 1
+                ":i" => arg
               },
               expression_attribute_names: {
                 "#n" => name
