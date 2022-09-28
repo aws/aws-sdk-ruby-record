@@ -413,6 +413,7 @@ module Aws
               update_expression: "SET #n = #n + :i",
               return_values: "UPDATED_NEW"
             })
+            assign_attributes(resp[:attributes])
           end
         end
 
