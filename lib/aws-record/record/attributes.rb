@@ -394,13 +394,16 @@ module Aws
           define_method("increment_#{name}!") do
             puts "Increasing #{name}!"
 
-            # need to pass in table name // self.class.table.name
-            # need to pass in keys (hash) // key_values
-            # expression attribute names // #n = name
-            # expression attribute values // :i = 1 (default value)
-            # update expression // SET #n = #n + :i
-            # return_values // UPDATED_NEW
+            # need to discuss how I can update
+            # this to today's standards
+            if dirty?
+              raise Errors::RecordError.new(
+                "Time to Take a Bath"
+              )
+            end
 
+            # will successfully update the
+            # atomic_counter by 1
             resp = dynamodb_client.update_item({
               table_name: self.class.table_name,
               key: key_values,
@@ -415,6 +418,11 @@ module Aws
             })
             assign_attributes(resp[:attributes])
           end
+
+
+
+
+
         end
 
         # @return [Symbol,nil] The symbolic name of the table's hash key.
