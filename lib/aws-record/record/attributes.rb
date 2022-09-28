@@ -391,7 +391,7 @@ module Aws
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
           # increment method with no args
-          define_method("increment_#{name}!") do |arg=1|
+          define_method("increment_#{name}!") do |increment=1|
             puts "Increasing #{name}!"
 
             # need to discuss how I can update
@@ -408,7 +408,7 @@ module Aws
               table_name: self.class.table_name,
               key: key_values,
               expression_attribute_values: {
-                ":i" => arg
+                ":i" => increment
               },
               expression_attribute_names: {
                 "#n" => name
@@ -417,6 +417,8 @@ module Aws
               return_values: "UPDATED_NEW"
             })
             assign_attributes(resp[:attributes])
+            # returns true when completed
+            # do we want something else to be returned at end
             save
           end
 
