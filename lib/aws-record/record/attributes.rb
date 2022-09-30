@@ -402,6 +402,13 @@ module Aws
               )
             end
 
+            # check if passed-in arg is an integer
+            # if it is not, need to raise Error
+            if !increment.is_a?(Integer)
+              msg = "expected an Integer value, got #{increment.class}"
+              raise ArgumentError, msg
+            end
+
             # will successfully update the
             # atomic_counter by 1 by default
             resp = dynamodb_client.update_item({
