@@ -397,13 +397,13 @@ module Aws
             # this to today's ruby standards
             # also - would this be considered to be a RecordError?
             if dirty?
-              msg = "Attributes need to be saved before proceeding"
+              msg = "Attributes need to be saved before atomic counter can be incremented"
               raise Errors::RecordError, msg
             end
 
             # check if passed-in arg is an integer
             # if it is not, need to raise Error
-            if !increment.is_a?(Integer)
+            unless increment.is_a?(Integer) # look into unless keyword
               msg = "expected an Integer value, got #{increment.class}"
               raise ArgumentError, msg
             end
@@ -425,7 +425,9 @@ module Aws
             assign_attributes(resp[:attributes])
             # returns true when completed
             # do we want something else to be returned at end
-            save
+            @data.clean!
+
+            # return the current value of the counter
           end
 
 
