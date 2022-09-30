@@ -390,16 +390,15 @@ module Aws
           opts[:default_value] ||= 0 # if user does not define default_value in their model, default is 0
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
-          # increment method with no args
           define_method("increment_#{name}!") do |increment=1|
             puts "Increasing #{name}!"
 
             # need to discuss how I can update
-            # this to today's standards
+            # this to today's ruby standards
+            # also - would this be considered to be a RecordError?
             if dirty?
-              raise Errors::RecordError.new(
-                "Time to Take a Bath"
-              )
+              msg = "Attributes need to be saved before proceeding"
+              raise Errors::RecordError, msg
             end
 
             # check if passed-in arg is an integer
