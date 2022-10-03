@@ -391,25 +391,17 @@ module Aws
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
           define_method("increment_#{name}!") do |increment=1|
-            puts "Increasing #{name}!"
 
-            # need to discuss how I can update
-            # this to today's ruby standards
-            # also - would this be considered to be a RecordError?
             if dirty?
               msg = "Attributes need to be saved before atomic counter can be incremented"
               raise Errors::RecordError, msg
             end
 
-            # check if passed-in arg is an integer
-            # if it is not, need to raise Error
-            unless increment.is_a?(Integer) # look into unless keyword
+            unless increment.is_a?(Integer)
               msg = "expected an Integer value, got #{increment.class}"
               raise ArgumentError, msg
             end
 
-            # will successfully update the
-            # atomic_counter by 1 by default
             resp = dynamodb_client.update_item({
               table_name: self.class.table_name,
               key: key_values,
@@ -423,17 +415,14 @@ module Aws
               return_values: "UPDATED_NEW"
             })
             assign_attributes(resp[:attributes])
-            # returns true when completed
-            # do we want something else to be returned at end
+
             @data.clean!
 
-            # return the current value of the counter
+            # after discussion with Alex, we agreed that the
+            # return value should be the current value of the atomic_counter
+            @data.get_attribute(name)
+
           end
-
-
-
-
-
         end
 
         # @return [Symbol,nil] The symbolic name of the table's hash key.
