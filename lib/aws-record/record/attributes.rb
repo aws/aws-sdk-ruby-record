@@ -415,12 +415,10 @@ module Aws
               return_values: "UPDATED_NEW"
             })
             assign_attributes(resp[:attributes])
-
             @data.clean!
-
             @data.get_attribute(name)
-
           end
+
         end
 
         # @return [Symbol,nil] The symbolic name of the table's hash key.
