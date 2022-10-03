@@ -386,8 +386,8 @@ module Aws
         # @param [Symbol] name Name of this attribute.  It should be a name that
         # is safe to use as a method.
         def atomic_counter(name, opts = {})
-          opts[:dynamodb_type] = "N" # setting the dynamoDB type to 'N' which is integer
-          opts[:default_value] ||= 0 # if user does not define default_value in their model, default is 0
+          opts[:dynamodb_type] = "N"
+          opts[:default_value] ||= 0
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
           define_method("increment_#{name}!") do |increment=1|
@@ -418,8 +418,6 @@ module Aws
 
             @data.clean!
 
-            # after discussion with Alex, we agreed that the
-            # return value should be the current value of the atomic_counter
             @data.get_attribute(name)
 
           end
