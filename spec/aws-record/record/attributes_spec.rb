@@ -256,6 +256,11 @@ module Aws
              update_expression:"SET #n = #n + :i"
            })
           end
+
+          it 'will raise when incrementing on a dirty item' do
+            item = klass.new(id: 1)
+            expect { item.increment_counter! }.to raise_error(Errors::RecordError)
+          end
         end
       end
 
