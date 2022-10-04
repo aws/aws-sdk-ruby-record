@@ -261,6 +261,14 @@ module Aws
             item = klass.new(id: 1)
             expect { item.increment_counter! }.to raise_error(Errors::RecordError)
           end
+
+          it 'will raise when arg is not an integer' do
+            klass.configure_client(client: stub_client)
+            item = klass.new(id: 1)
+            item.save!
+            increment = "wow"
+            expect {item.increment_counter!(increment)}.to raise_error(ArgumentError)
+          end
         end
       end
 
