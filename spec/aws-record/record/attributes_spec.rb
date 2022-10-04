@@ -228,6 +228,34 @@ module Aws
               update_expression:"SET #n = #n + :i"
             })
           end
+
+          it 'should increment the atomic counter by a custom value' do
+            # set up
+            stub_client.stub_responses(:update_item,
+               {
+                 attributes:
+                   {
+                     'counter' => 2
+                   }
+               })
+            klass.configure_client(client: stub_client)
+
+            # action
+            item = klass.new(id: 1)
+            item.save!
+            item.increment_counter!(2)
+
+            # result
+            expect(item.counter).to eq(2)
+            expect(api_requests[1]). to eq({
+             expression_attribute_names: {"#n"=>"counter"},
+             expression_attribute_values: {":i"=>{:n=>"2"}},
+             key: {"id"=>{:n=>"1"}},
+             return_values: "UPDATED_NEW",
+             table_name: "TestTable",
+             update_expression:"SET #n = #n + :i"
+           })
+          end
         end
       end
 
