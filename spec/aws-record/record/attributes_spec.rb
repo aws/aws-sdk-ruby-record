@@ -174,7 +174,63 @@ module Aws
           item.counter = 10
           expect(item.counter).to eq(10)
         end
+
+        describe '#incrementing_<attr>!' do
+
+          let(:klass) do
+            Class.new do
+              include(Aws::Record)
+              set_table_name("TestTable")
+              integer_attr(:id, hash_key: true)
+              atomic_counter(:counter)
+            end
+          end
+
+          let(:api_requests) { [] }
+
+          let(:stub_client) do
+            requests = api_requests
+            client = Aws::DynamoDB::Client.new(stub_responses: true)
+            client.handle do |context|
+              requests << context.params
+              @handler.call(context)
+            end
+            client
+          end
+
+          it 'should increment atomic counter by default value' do
+            # set up
+            stub_client.stub_responses(:update_item,
+               {
+                 attributes:
+                   {
+                     'counter' => 1
+                   }
+               })
+            klass.configure_client(client: stub_client) # connecting to the class?
+            # left some comments here to show Alex some issues i'm running into
+            # klass.integer_attr(:id, hash_key: true)
+            # klass.atomic_counter(:counter)
+
+            # action
+            item = klass.new(id: 1)
+            item.save!
+            item.increment_counter!
+
+            # result
+            expect(item.counter).to eq(1)
+            expect(api_requests[1]). to eq({
+              expression_attribute_names: {"#n"=>"counter"},
+              expression_attribute_values: {":i"=>{:n=>"1"}},
+              key: {"id"=>{:n=>"1"}},
+              return_values: "UPDATED_NEW",
+              table_name: "TestTable",
+              update_expression:"SET #n = #n + :i"
+            })
+          end
+        end
       end
+
     end
   end
 end
