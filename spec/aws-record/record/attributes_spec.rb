@@ -266,8 +266,7 @@ module Aws
             klass.configure_client(client: stub_client)
             item = klass.new(id: 1)
             item.save!
-            increment = "wow"
-            expect {item.increment_counter!(increment)}.to raise_error(ArgumentError)
+            expect {item.increment_counter!("foo")}.to raise_error(ArgumentError)
           end
         end
       end
