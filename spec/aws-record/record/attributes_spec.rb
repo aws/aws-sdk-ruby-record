@@ -177,6 +177,10 @@ module Aws
 
         describe '#incrementing_<attr>!' do
 
+          before(:each) do
+            klass.configure_client(client: stub_client)
+          end
+
           let(:klass) do
             Class.new do
               include(Aws::Record)
@@ -199,7 +203,6 @@ module Aws
           end
 
           it 'should increment atomic counter by default value' do
-            # set up
             stub_client.stub_responses(:update_item,
                {
                  attributes:
@@ -207,17 +210,11 @@ module Aws
                      'counter' => 1
                    }
                })
-            klass.configure_client(client: stub_client) # connecting to the class?
-            # left some comments here to show Alex some issues i'm running into
-            # klass.integer_attr(:id, hash_key: true)
-            # klass.atomic_counter(:counter)
 
-            # action
             item = klass.new(id: 1)
             item.save!
             item.increment_counter!
 
-            # result
             expect(item.counter).to eq(1)
             expect(api_requests[1]). to eq({
               expression_attribute_names: {"#n"=>"counter"},
@@ -230,7 +227,6 @@ module Aws
           end
 
           it 'should increment the atomic counter by a custom value' do
-            # set up
             stub_client.stub_responses(:update_item,
                {
                  attributes:
@@ -238,14 +234,11 @@ module Aws
                      'counter' => 2
                    }
                })
-            klass.configure_client(client: stub_client)
 
-            # action
             item = klass.new(id: 1)
             item.save!
             item.increment_counter!(2)
 
-            # result
             expect(item.counter).to eq(2)
             expect(api_requests[1]). to eq({
              expression_attribute_names: {"#n"=>"counter"},
@@ -263,7 +256,6 @@ module Aws
           end
 
           it 'will raise when arg is not an integer' do
-            klass.configure_client(client: stub_client)
             item = klass.new(id: 1)
             item.save!
             expect {item.increment_counter!("foo")}.to raise_error(ArgumentError)
