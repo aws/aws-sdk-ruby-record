@@ -73,3 +73,11 @@ Then(/^the attribute "([^"]*)" on the item should match:$/) do |attribute, value
   actual = @instance.send(:"#{attribute}")
   expect(actual).to eq(expected)
 end
+
+
+When(/^we call 'increment_counter!' on aws\-record item instance with parameter data:$/) do |string|
+  data = JSON.parse(string, symbolize_names: true)
+  puts data
+
+
+end

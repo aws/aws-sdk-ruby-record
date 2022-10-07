@@ -382,6 +382,10 @@ module Aws
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
+        # what atomic counter is, how it works write here
+        # let them know all the to-dos before working with method
+        #
+
         # Define an atomic counter attribute for your model.
         # @param [Symbol] name Name of this attribute.  It should be a name that
         # is safe to use as a method.
