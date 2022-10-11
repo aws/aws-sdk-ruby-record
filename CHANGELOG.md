@@ -1,3 +1,8 @@
+Unreleased Changes
+------------------
+
+* Feature - Add support for atomic counter (#144)
+
 2.7.0 (master)
 ------------------
 
