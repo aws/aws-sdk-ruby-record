@@ -412,7 +412,7 @@ module Aws
         #     atomic_counter :counter
         #   end
         #
-        #   record = MyRecord.new(id: 1)
+        #   record = MyRecord.find(id: 1)
         #   record.counter #=> 0
         #   record.increment_counter! #=> 1
         #   record.increment_counter!(2) #=> 3
