@@ -1,4 +1,4 @@
-Unreleased Changes
+2.8.0 (2022-10-12)
 ------------------
 
 * Feature - Add support for atomic counter (#144)
