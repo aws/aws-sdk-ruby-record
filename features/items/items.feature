@@ -138,7 +138,7 @@ Feature: Amazon DynamoDB Items
       }
       """
 
-  Scenario:  Increment Atomic Counter Attribute with a Custom Value
+  Scenario:  Increment Atomic Counter Attribute
     Given an aws-record model with data:
       """
       [
@@ -162,7 +162,7 @@ Feature: Amazon DynamoDB Items
         "rk": 6
       }
       """
-    When we call "increment_counter!" on aws-record item instance with a value of "1"
+    When we call "increment_counter!" on aws-record item instance
     And we call the 'find' class method with parameter data:
       """
       {
@@ -176,5 +176,21 @@ Feature: Amazon DynamoDB Items
         "id": "5",
         "rk": 6,
         "counter": 1
+      }
+      """
+    When we call "increment_counter!" on aws-record item instance with an integer value of "5"
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "5",
+        "rk": 6
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": "5",
+        "rk": 6,
+        "counter": 6
       }
       """
