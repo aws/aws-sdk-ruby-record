@@ -73,3 +73,11 @@ Then(/^the attribute "([^"]*)" on the item should match:$/) do |attribute, value
   actual = @instance.send(:"#{attribute}")
   expect(actual).to eq(expected)
 end
+
+When(/^we call "([^"]*)" on aws\-record item instance(?: with an integer value of "(-?\d+)")?$/) do |method, value|
+  if value
+    @instance.send(method, value)
+  else
+    @instance.send(method)
+  end
+end

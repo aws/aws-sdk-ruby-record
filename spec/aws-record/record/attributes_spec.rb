@@ -152,6 +152,117 @@ module Aws
         end
       end
 
+      describe '#atomic_counter' do
+        it 'should override the existing default value' do
+          klass.string_attr(:id, hash_key: true)
+          klass.atomic_counter(:counter, default_value: 5)
+          item = klass.new(id: "MyId")
+          expect(item.counter).to eq(5)
+        end
+
+        it 'should be the existing default value' do
+          klass.string_attr(:id, hash_key: true)
+          klass.atomic_counter(:counter)
+          item = klass.new(id: "MyId")
+          expect(item.counter).to eq(0)
+        end
+
+        it 'should be able to reassign default value after creation' do
+          klass.string_attr(:id, hash_key: true)
+          klass.atomic_counter(:counter, default_value: 5)
+          item = klass.new(id: "MyId")
+          item.counter = 10
+          expect(item.counter).to eq(10)
+        end
+
+        describe '#incrementing_<attr>!' do
+
+          before(:each) do
+            klass.configure_client(client: stub_client)
+          end
+
+          let(:klass) do
+            Class.new do
+              include(Aws::Record)
+              set_table_name("TestTable")
+              integer_attr(:id, hash_key: true)
+              atomic_counter(:counter)
+            end
+          end
+
+          let(:api_requests) { [] }
+
+          let(:stub_client) do
+            requests = api_requests
+            client = Aws::DynamoDB::Client.new(stub_responses: true)
+            client.handle do |context|
+              requests << context.params
+              @handler.call(context)
+            end
+            client
+          end
+
+          it 'should increment atomic counter by default value' do
+            stub_client.stub_responses(:update_item,
+               {
+                 attributes:
+                   {
+                     'counter' => 1
+                   }
+               })
+
+            item = klass.new(id: 1)
+            item.save!
+            item.increment_counter!
+
+            expect(item.counter).to eq(1)
+            expect(api_requests[1]). to eq({
+              expression_attribute_names: {"#n"=>"counter"},
+              expression_attribute_values: {":i"=>{:n=>"1"}},
+              key: {"id"=>{:n=>"1"}},
+              return_values: "UPDATED_NEW",
+              table_name: "TestTable",
+              update_expression:"SET #n = #n + :i"
+            })
+          end
+
+          it 'should increment the atomic counter by a custom value' do
+            stub_client.stub_responses(:update_item,
+               {
+                 attributes:
+                   {
+                     'counter' => 2
+                   }
+               })
+
+            item = klass.new(id: 1)
+            item.save!
+            item.increment_counter!(2)
+
+            expect(item.counter).to eq(2)
+            expect(api_requests[1]). to eq({
+             expression_attribute_names: {"#n"=>"counter"},
+             expression_attribute_values: {":i"=>{:n=>"2"}},
+             key: {"id"=>{:n=>"1"}},
+             return_values: "UPDATED_NEW",
+             table_name: "TestTable",
+             update_expression:"SET #n = #n + :i"
+           })
+          end
+
+          it 'will raise when incrementing on a dirty item' do
+            item = klass.new(id: 1)
+            expect { item.increment_counter! }.to raise_error(Errors::RecordError)
+          end
+
+          it 'will raise when arg is not an integer' do
+            item = klass.new(id: 1)
+            item.save!
+            expect {item.increment_counter!("foo")}.to raise_error(ArgumentError)
+          end
+        end
+      end
+
     end
   end
 end

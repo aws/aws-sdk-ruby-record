@@ -382,6 +382,77 @@ module Aws
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
+        # Define an atomic counter attribute for your model.
+        #
+        # Atomic counter are an integer-type attribute that is incremented,
+        # unconditionally, without interfering with other write requests.
+        # The numeric value increments each time you call +increment_<attr>!+.
+        # If a specific numeric value are passed in the call, the attribute will
+        # increment by that value.
+        #
+        # To use +increment_<attr>!+ method, the following condition must be true:
+        # * None of the attributes have dirty changes.
+        # * If there is a value passed in, it must be an integer.
+        # For more information, see
+        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters Atomic counter}
+        # in the Amazon DynamoDB Developer Guide.
+        #
+        # @param [Symbol] name Name of this attribute.  It should be a name that
+        #   is safe to use as a method.
+        # @param [Hash] opts
+        # @option opts [Object] :default_value Optional attribute used to
+        #   define a "default value" to be used if the attribute's value on an
+        #   item is nil or not set at persistence time. The "default value" of
+        #   the attribute starts at 0.
+        #
+        # @example Usage Example
+        #   class MyRecord
+        #     include Aws::Record
+        #     integer_attr :id, hash_key: true
+        #     atomic_counter :counter
+        #   end
+        #
+        #   record = MyRecord.find(id: 1)
+        #   record.counter #=> 0
+        #   record.increment_counter! #=> 1
+        #   record.increment_counter!(2) #=> 3
+        # @see #attr #attr method for additional hash options.
+        def atomic_counter(name, opts = {})
+          opts[:dynamodb_type] = "N"
+          opts[:default_value] ||= 0
+          attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
+
+          define_method("increment_#{name}!") do |increment=1|
+
+            if dirty?
+              msg = "Attributes need to be saved before atomic counter can be incremented"
+              raise Errors::RecordError, msg
+            end
+
+            unless increment.is_a?(Integer)
+              msg = "expected an Integer value, got #{increment.class}"
+              raise ArgumentError, msg
+            end
+
+            resp = dynamodb_client.update_item({
+              table_name: self.class.table_name,
+              key: key_values,
+              expression_attribute_values: {
+                ":i" => increment
+              },
+              expression_attribute_names: {
+                "#n" => name
+              },
+              update_expression: "SET #n = #n + :i",
+              return_values: "UPDATED_NEW"
+            })
+            assign_attributes(resp[:attributes])
+            @data.clean!
+            @data.get_attribute(name)
+          end
+
+        end
+
         # @return [Symbol,nil] The symbolic name of the table's hash key.
         def hash_key
           @keys.hash_key

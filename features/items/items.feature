@@ -27,14 +27,14 @@ Feature: Amazon DynamoDB Items
       """
       [
         { "attribute_name": "id", "attribute_type": "S", "key_type": "HASH" },
-        { "attribute_name": "count", "attribute_type": "N", "key_type": "RANGE" }
+        { "attribute_name": "rk", "attribute_type": "N", "key_type": "RANGE" }
       ]
       """
     And an aws-record model with data:
       """
       [
         { "method": "string_attr", "name": "id", "hash_key": true },
-        { "method": "integer_attr", "name": "count", "range_key": true },
+        { "method": "integer_attr", "name": "rk", "range_key": true },
         { "method": "string_attr", "name": "body", "database_name": "content" }
       ]
       """
@@ -44,7 +44,7 @@ Feature: Amazon DynamoDB Items
       """
       [
         ["id", 1],
-        ["count", 1],
+        ["rk", 1],
         ["body", "Hello!"]
       ]
       """
@@ -53,7 +53,7 @@ Feature: Amazon DynamoDB Items
       """
       [
         ["id", "1"],
-        ["count", 1]
+        ["rk", 1]
       ]
       """
 
@@ -62,7 +62,7 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "2",
-        "count": 10,
+        "rk": 10,
         "content": "Aliased column names!"
       }
       """
@@ -70,14 +70,14 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "2",
-        "count": 10
+        "rk": 10
       }
       """
     Then we should receive an aws-record item with attribute data:
       """
       {
         "id": "2",
-        "count": 10,
+        "rk": 10,
         "body": "Aliased column names!"
       }
       """
@@ -87,7 +87,7 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "3",
-        "count": 5,
+        "rk": 5,
         "content": "Body content."
       }
       """
@@ -95,7 +95,7 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "3",
-        "count": 5
+        "rk": 5
       }
       """
     And we call 'delete!' on the aws-record item instance
@@ -103,7 +103,7 @@ Feature: Amazon DynamoDB Items
       """
       [
         ["id", "3"],
-        ["count", 5]
+        ["rk", 5]
       ]
       """
 
@@ -112,7 +112,7 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "4",
-        "count": 5,
+        "rk": 5,
         "content": "Body content."
       }
       """
@@ -120,7 +120,7 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "4",
-        "count": 5
+        "rk": 5
       }
       """
     And we call 'update' on the aws-record item instance with parameter data:
@@ -133,7 +133,64 @@ Feature: Amazon DynamoDB Items
       """
       {
         "id": "4",
-        "count": 5,
+        "rk": 5,
         "body": "Updated Body Content."
+      }
+      """
+
+  Scenario:  Increment Atomic Counter Attribute
+    Given an aws-record model with data:
+      """
+      [
+        { "method": "string_attr", "name": "id", "hash_key": true },
+        { "method": "integer_attr", "name": "rk", "range_key": true },
+        { "method": "atomic_counter", "name": "counter" }
+      ]
+      """
+    And an item exists in the DynamoDB table with item data:
+      """
+      {
+        "id": "5",
+        "rk": 6,
+        "counter": 0
+      }
+      """
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "5",
+        "rk": 6
+      }
+      """
+    When we call "increment_counter!" on aws-record item instance
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "5",
+        "rk": 6
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": "5",
+        "rk": 6,
+        "counter": 1
+      }
+      """
+    When we call "increment_counter!" on aws-record item instance with an integer value of "5"
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "id": "5",
+        "rk": 6
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": "5",
+        "rk": 6,
+        "counter": 6
       }
       """
