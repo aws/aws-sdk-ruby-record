@@ -3,38 +3,10 @@
 
 * Feature - Add support for atomic counter (#144)
 
-2.7.0 (master)
+2.7.0 (2021-10-28)
 ------------------
 
 * Feature - Implement the `BatchWriteItem` operation (#119)
-
-#### BatchWriteItem Example
-
-```ruby
-class Breakfast
-  include Aws::Record
-  integer_attr :id, hash_key: true
-  string_attr :name, range_key: true
-  string_attr :body
-end
-
-# save something to DynamoDB so we can delete it later in a batch request
-eggs = Breakfast.new(id: 1, name: "eggs").save!
-# we're going to create the following items in a batch request
-waffles = Breakfast.new(id: 2, name: "waffles")
-pancakes = Breakfast.new(id: 3, name: "pancakes")
-
-# perform a batch operation
-operation = Aws::Record::Batch.write(client: Breakfast.dynamodb_client) do |db|
-  db.put(waffles)
-  db.delete(eggs)
-  db.put(pancakes)
-end
-
-# (optional) - unprocessed items can be retried
-# note: it's a good idea to implement a custom/exponential backoff strategy
-operation.execute! unless operation.complete?
-```
 
 2.6.1 (2021-08-10)
 ------------------
