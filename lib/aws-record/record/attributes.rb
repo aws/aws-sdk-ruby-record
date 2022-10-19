@@ -505,16 +505,6 @@ module Aws
           end
         end
 
-        def _define_parent_attr_methods(name)
-          define_method(name) do
-            @data.get_attribute(name)
-          end
-
-          define_method("#{name}=") do |value|
-            @data.set_attribute(name, value)
-          end
-        end
-
         def _key_attributes(id, opts)
           if opts[:hash_key] == true && opts[:range_key] == true
             raise ArgumentError.new(
