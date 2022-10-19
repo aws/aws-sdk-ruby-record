@@ -263,6 +263,26 @@ module Aws
         end
       end
 
+      # Did not want to interfere with other existing blocks above
+      # so created a separate block to test inheritance between classes
+      describe 'inheritance support' do
+        let(:parent_class) do
+          Class.new do
+            include(Aws::Record)
+            integer_attr(:id, hash_key: true)
+            date_attr(:date, range_key: true)
+            list_attr(:list)
+          end
+        end
+
+        let(:child_class) do
+          Class.new(parent_class) do
+            include(Aws::Record)
+            string_attr(:body)
+          end
+        end
+
+      end
     end
   end
 end
