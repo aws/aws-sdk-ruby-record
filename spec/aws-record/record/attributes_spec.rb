@@ -282,6 +282,22 @@ module Aws
           end
         end
 
+        it 'should have instances of child classes with parent attributes' do
+        end
+
+        it 'should have instances of parent class with its own attributes' do
+        end
+
+        it 'should let child class override attribute keys' do
+        end
+
+        it 'correctly passes default values to child class' do
+        end
+
+        it 'lets parent class maintain its own attributes after changes' do
+        end
+
+
       end
     end
   end
