@@ -282,6 +282,13 @@ module Aws
           end
         end
 
+        let(:child_class2) do
+          Class.new(parent_class) do
+            include(Aws::Record)
+            string_attr(:body2)
+          end
+        end
+
         it 'should have instances of child classes with parent attributes' do
         end
 
