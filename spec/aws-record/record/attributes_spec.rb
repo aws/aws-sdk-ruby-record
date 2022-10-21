@@ -324,6 +324,10 @@ module Aws
         end
 
         it 'correctly passes default values to child class' do
+          parent_class.string_attr(:test, default_value: -> { 'test' })
+          child_item = child_class.new(id: 1, date: '2022-10-21', list:[1, 2, 3], body:'foo')
+
+          expect(child_item.test).to eq('test')
         end
 
         it 'lets parent class maintain its own attributes after changes' do
