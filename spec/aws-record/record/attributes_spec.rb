@@ -291,8 +291,8 @@ module Aws
 
         it 'should have instances of child classes with parent attributes and an instance of parent class with its own attributes' do
           parent_item = parent_class.new(id: 1, date: '2022-10-10', list: [])
-          child_item = child_class.new(id: 2, date: '2022-10-21', list:[1, 2, 3], body:'Hello')
-          child_item2 = child_class2.new(id: 3, date: '2022-10-31', list:[4, 5, 6], body2: 'World')
+          child_item = child_class.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')
+          child_item2 = child_class2.new(id: 3, date: '2022-10-31', list: [4, 5, 6], body2: 'World')
 
           expect(parent_item.id).to eq(1)
           expect(parent_item.date).to eq(Date.parse('2022-10-10'))
@@ -311,12 +311,11 @@ module Aws
           expect(child_item2.list).to eq([4, 5, 6])
           expect(child_item2.body2).to eq('World')
           expect { child_item2.body }.to raise_error(NoMethodError)
-
         end
 
         it 'should let child class override attribute keys' do
           child_class.integer_attr(:rk, range_key: true)
-          child_item = child_class.new(id: 1, rk: 1, date: '2022-10-21', list:[1, 2, 3], body:'foo')
+          child_item = child_class.new(id: 1, rk: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
 
           expect(child_item.id).to eq(1)
           expect(child_item.rk).to eq(1)
@@ -325,13 +324,13 @@ module Aws
 
         it 'correctly passes default values to child class' do
           parent_class.string_attr(:test, default_value: -> { 'test' })
-          child_item = child_class.new(id: 1, date: '2022-10-21', list:[1, 2, 3], body:'foo')
+          child_item = child_class.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
 
           expect(child_item.test).to eq('test')
         end
 
         it 'lets parent class maintain its own attributes after changes' do
-          child_item = child_class.new(id: 1, date: '2022-10-21', list:[1, 2, 3], body:'foo')
+          child_item = child_class.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
           parent_class.string_attr(:new_attr)
           parent_item = parent_class.new(id: 1, date: '2022-10-10', list: [], new_attr: 'test')
 
