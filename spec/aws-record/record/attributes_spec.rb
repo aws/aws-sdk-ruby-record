@@ -290,6 +290,20 @@ module Aws
         end
 
         it 'should have instances of child classes with parent attributes' do
+          child_item = child_class.new(id: 1, date: '2022-10-21', list:[1, 2, 3], body:'Hello')
+          child_item2 = child_class2.new(id: 2, date: '2022-10-31', list:[4, 5, 6], body2: 'World')
+
+          expect(child_item.id).to eq(1)
+          expect(child_item.date).to eq(Date.parse('2022-10-21'))
+          expect(child_item.list).to eq([1, 2, 3])
+          expect(child_item.body).to eq('Hello')
+          expect { child_item.body2 }.to raise_error(NoMethodError)
+
+          expect(child_item2.id).to eq(2)
+          expect(child_item2.date).to eq(Date.parse('2022-10-31'))
+          expect(child_item2.list).to eq([4, 5, 6])
+          expect(child_item2.body2).to eq('World')
+          expect { child_item2.body }.to raise_error(NoMethodError)
         end
 
         it 'should have instances of parent class with its own attributes' do
