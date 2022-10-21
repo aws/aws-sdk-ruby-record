@@ -315,6 +315,12 @@ module Aws
         end
 
         it 'should let child class override attribute keys' do
+          child_class.integer_attr(:rk, range_key: true)
+          child_item = child_class.new(id: 1, rk: 1, date: '2022-10-21', list:[1, 2, 3], body:'foo')
+
+          expect(child_item.id).to eq(1)
+          expect(child_item.rk).to eq(1)
+          expect(child_item.key_values).to eq({"id"=>1, "rk"=>1})
         end
 
         it 'correctly passes default values to child class' do
