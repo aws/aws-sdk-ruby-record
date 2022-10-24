@@ -57,6 +57,10 @@ module Aws
       sub_class.send(:include, DirtyTracking)
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
+      if sub_class.superclass.include?(Aws::Record)
+        superclass_track_mutations = sub_class.superclass.instance_variable_get("@track_mutations")
+        sub_class.instance_variable_set("@track_mutations", superclass_track_mutations)
+      end
     end
 
     private
