@@ -23,19 +23,15 @@ Feature: Amazon DynamoDB Item Inheritance
   are created and destroyed within these tests.
 
   Background:
-    Given a DynamoDB table named 'Animal' with data:
-    """
-    [
-      { "attribute_name": "name", "attribute_type": "S", "key_type": "HASH" },
-      { "attribute_name": "age", "attribute_type": "N", "key_type": "RANGE" },
-    ]
-    """
-    And an aws-record model with data:
-    """
-    [
-      { "method": "string_attr", "name": "name", "hash_key": true },
-      { "method": "integer_attr", "name": "age", "range_key": true },
-      { "method": "string_attr", "name": "size", "default_value": "None" }
-    ]
-    """
+    Given an aws-record parent model named 'Animal' with data:
+      """
+      [
+        { "method": "string_attr", "name": "name", "hash_key": true },
+        { "method": "integer_attr", "name": "age", "range_key": true },
+        { "method": "string_attr", "name": "size", "default_value": "None" }
+      ]
+      """
 
+    Scenario: Child Classes inherits parent class attributes
+
+    Scenario: Child Class overrides parent class key attributes
