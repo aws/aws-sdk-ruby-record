@@ -114,7 +114,6 @@ module Aws
         else
           @table_name = name
         end
-
       end
 
       # Fetches the table's provisioned throughput from the associated Amazon
