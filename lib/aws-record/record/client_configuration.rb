@@ -35,8 +35,7 @@ module Aws
       def configure_client(opts = {})
         if self.superclass.include?(Aws::Record) && opts.empty?
           if self.superclass.instance_variable_get('@dynamodb_client').nil?
-            self.superclass.configure_client
-            @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
+            @dynamodb_client = _build_client(opts)
           else
             @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
           end
