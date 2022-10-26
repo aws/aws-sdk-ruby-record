@@ -91,6 +91,12 @@ module Aws
       def table_name
         if @table_name
           @table_name
+        elsif self.superclass.include?(Aws::Record)
+          if self.superclass.name != self.superclass.table_name
+            @table_name = self.superclass.instance_variable_get('@table_name')
+          else
+            @table_name = self.name.split("::").join("_")
+          end
         else
           @table_name = self.name.split("::").join("_")
         end
@@ -113,11 +119,7 @@ module Aws
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def set_table_name(name)
-        if name == superclass
-          @table_name = self.superclass.table_name
-        else
           @table_name = name
-        end
       end
 
       # Fetches the table's provisioned throughput from the associated Amazon
