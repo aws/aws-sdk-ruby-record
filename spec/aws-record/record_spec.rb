@@ -164,5 +164,21 @@ module Aws
       end
     end
 
+    describe 'inheritance support' do
+
+      it 'should have child class inherit table name from parent class'  do
+      end
+
+      it 'should have child class maintain its own table name if defined in class' do
+      end
+
+      it 'should have child class inherit track mutations from parent class' do
+      end
+
+      it 'should have child class maintain its own track mutations if defined in class' do
+      end
+
+    end
+
   end
 end
