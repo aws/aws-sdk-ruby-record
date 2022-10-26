@@ -289,7 +289,8 @@ module Aws
           end
         end
 
-        it 'should have instances of child classes with parent attributes and an instance of parent class with its own attributes' do
+        it 'should have instances of child classes with parent attributes '\
+           'and an instance of parent class with its own attributes' do
           parent_item = parent_class.new(id: 1, date: '2022-10-10', list: [])
           child_item = child_class.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')
           child_item2 = child_class2.new(id: 3, date: '2022-10-31', list: [4, 5, 6], body2: 'World')
