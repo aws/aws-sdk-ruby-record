@@ -119,7 +119,7 @@ module Aws
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def set_table_name(name)
-          @table_name = name
+        @table_name = name
       end
 
       # Fetches the table's provisioned throughput from the associated Amazon
