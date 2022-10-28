@@ -180,30 +180,44 @@ module Aws
         end
       end
 
-      let(:child_class2) do
-        Class.new(parent_class) do
-          include(Aws::Record)
-          set_table_name('ChildTable')
-          string_attr(:bar)
-        end
-      end
-
       it 'should have child class inherit table name from parent class'  do
+        expect(parent_class.table_name).to eq('ParentTable')
+        expect(child_class.table_name).to eq('ParentTable')
       end
 
       it 'should have child class maintain its own table name if defined in class' do
+        child_class.set_table_name('ChildTable')
+        expect(parent_class.table_name).to eq('ParentTable')
+        expect(child_class.table_name).to eq('ChildTable')
       end
-
     end
 
     describe 'inheritance support for track mutations' do
+      let(:parent_class) do
+        Class.new do
+          include(Aws::Record)
+          integer_attr(:id, hash_key: true)
+        end
+      end
+
+      let(:child_class) do
+        Class.new(parent_class) do
+          include(Aws::Record)
+          string_attr(:foo)
+        end
+      end
 
       it 'should have child class inherit track mutations from parent class' do
+        parent_class.disable_mutation_tracking
+        expect(parent_class.mutation_tracking_enabled?).to be_falsy
+        expect(child_class.mutation_tracking_enabled?). to be_falsy
       end
 
       it 'should have child class maintain its own track mutations if defined in class' do
+        child_class.disable_mutation_tracking
+        expect(parent_class.mutation_tracking_enabled?).to be_truthy
+        expect(child_class.mutation_tracking_enabled?). to be_falsy
       end
-
     end
 
   end
