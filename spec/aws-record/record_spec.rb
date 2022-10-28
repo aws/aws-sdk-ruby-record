@@ -164,13 +164,39 @@ module Aws
       end
     end
 
-    describe 'inheritance support' do
+    describe 'inheritance support for table name' do
+      let(:parent_class) do
+        Class.new do
+          include(Aws::Record)
+          set_table_name('ParentTable')
+          integer_attr(:id, hash_key: true)
+        end
+      end
+
+      let(:child_class) do
+        Class.new(parent_class) do
+          include(Aws::Record)
+          string_attr(:foo)
+        end
+      end
+
+      let(:child_class2) do
+        Class.new(parent_class) do
+          include(Aws::Record)
+          set_table_name('ChildTable')
+          string_attr(:bar)
+        end
+      end
 
       it 'should have child class inherit table name from parent class'  do
       end
 
       it 'should have child class maintain its own table name if defined in class' do
       end
+
+    end
+
+    describe 'inheritance support for track mutations' do
 
       it 'should have child class inherit track mutations from parent class' do
       end
