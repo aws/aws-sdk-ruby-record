@@ -45,7 +45,8 @@ module Aws
         end
 
         it 'should have child class maintain its own dynamodb client if defined in class' do
-          child_class.configure_client(client: stub_client)
+          parent_class.configure_client(client: stub_client)
+          child_class.configure_client(client: Aws::DynamoDB::Client.new(stub_responses: true))
           expect(child_class.dynamodb_client).not_to eql(parent_class.dynamodb_client)
         end
       end
