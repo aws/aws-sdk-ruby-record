@@ -34,8 +34,12 @@ module Aws
 
         let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
 
+        # two things mock can do:
+        # expect calls to test behavior
+        # setting up tests effectively in mocking behavior
+
         it 'should have child class inherit dynamodb client from parent class' do
-          parent_class.dynamodb_client
+          parent_class.configure_client(client: stub_client)
           child_class.dynamodb_client
           expect(parent_class.dynamodb_client).to eq(child_class.dynamodb_client)
         end
