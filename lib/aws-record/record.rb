@@ -89,16 +89,13 @@ module Aws
       #   MyTable.table_name      # => "MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
-        if @table_name
-          @table_name
-        elsif self.superclass.include?(Aws::Record)
-          if self.superclass.name != self.superclass.table_name
-            @table_name = self.superclass.instance_variable_get('@table_name')
+        @table_name ||= begin
+          if self.superclass.include?(Aws::Record) &&
+              default_table_name(self.superclass) != self.superclass.table_name
+            self.superclass.instance_variable_get('@table_name')
           else
-            @table_name = self.name.split("::").join("_")
+            default_table_name(self)
           end
-        else
-          @table_name = self.name.split("::").join("_")
         end
       end
 
@@ -187,6 +184,13 @@ module Aws
           raise Errors::InvalidModel.new("Table models must include a hash key")
         end
       end
+
+      private
+      def default_table_name(klass)
+        return unless klass.name
+        klass.name.split("::").join("_")
+      end
+
     end
   end
 end
