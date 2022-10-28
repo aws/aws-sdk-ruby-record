@@ -180,7 +180,7 @@ module Aws
         end
       end
 
-      it 'should have child class inherit table name from parent class'  do
+      it 'should have child class inherit table name from parent class if it is defined in parent class'  do
         expect(parent_class.table_name).to eq('ParentTable')
         expect(child_class.table_name).to eq('ParentTable')
       end
