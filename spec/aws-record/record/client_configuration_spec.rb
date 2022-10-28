@@ -17,7 +17,7 @@ module Aws
   module Record
     describe 'ClientConfiguration' do
 
-      describe 'inheritance support for dynamodb client' do
+      context 'inheritance support for dynamodb client' do
         let(:parent_class) do
           Class.new do
             include(Aws::Record)
@@ -34,10 +34,6 @@ module Aws
 
         let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
 
-        # two things mock can do:
-        # expect calls to test behavior
-        # setting up tests effectively in mocking behavior
-
         it 'should have child class inherit dynamodb client from parent class' do
           parent_class.configure_client(client: stub_client)
           child_class.dynamodb_client
@@ -46,7 +42,7 @@ module Aws
 
         it 'should have child class maintain its own dynamodb client if defined in class' do
           parent_class.configure_client(client: stub_client)
-          child_class.configure_client(client: Aws::DynamoDB::Client.new(stub_responses: true))
+          child_class.configure_client(client: stub_client.dup)
           expect(child_class.dynamodb_client).not_to eql(parent_class.dynamodb_client)
         end
       end
