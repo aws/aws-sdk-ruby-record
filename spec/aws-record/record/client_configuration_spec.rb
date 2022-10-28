@@ -32,6 +32,8 @@ module Aws
           end
         end
 
+        let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+
         it 'should have child class inherit dynamodb client from parent class' do
           parent_class.dynamodb_client
           child_class.dynamodb_client
@@ -39,9 +41,7 @@ module Aws
         end
 
         it 'should have child class maintain its own dynamodb client if defined in class' do
-          opts = { region: 'us-west-2',
-                   credentials: Aws::Credentials.new('akid', 'secret') }
-          child_class.configure_client(opts)
+          child_class.configure_client(client: stub_client)
           expect(child_class.dynamodb_client).not_to eql(parent_class.dynamodb_client)
         end
       end
