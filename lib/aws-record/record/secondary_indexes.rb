@@ -20,6 +20,12 @@ module Aws
         sub_class.instance_variable_set("@local_secondary_indexes", {})
         sub_class.instance_variable_set("@global_secondary_indexes", {})
         sub_class.extend(SecondaryIndexesClassMethods)
+        if sub_class.superclass.include?(Aws::Record) && sub_class.table_name == sub_class.superclass.table_name
+          superclass_local_secondary_indexes = sub_class.superclass.instance_variable_get("@local_secondary_indexes")
+          superclass_global_secondary_indexes = sub_class.superclass.instance_variable_get("@global_secondary_indexes")
+          sub_class.instance_variable_set("@local_secondary_indexes", superclass_local_secondary_indexes)
+          sub_class.instance_variable_set("@global_secondary_indexes", superclass_global_secondary_indexes)
+        end
       end
 
       module SecondaryIndexesClassMethods
