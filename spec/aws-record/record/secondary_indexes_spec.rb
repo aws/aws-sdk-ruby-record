@@ -179,6 +179,7 @@ module Aws
         Class.new do
           include(Aws::Record)
           integer_attr(:id, hash_key: true)
+          string_attr(:name, range_key: true)
         end
       end
 
@@ -186,6 +187,7 @@ module Aws
         Class.new(parent_class) do
           include(Aws::Record)
           string_attr(:foo)
+          string_attr(:bar)
         end
       end
 
@@ -195,7 +197,7 @@ module Aws
       it 'should have child class inherit global secondary indexes from parent class ' do
       end
 
-      it 'should have child class not inherit indexes if it has a different table name from parent class' do
+      it 'should have child class maintain own indexes if table name is different from parent class' do
       end
 
       it 'allows the child class to define and override parent indexes' do
