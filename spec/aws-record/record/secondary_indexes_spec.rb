@@ -173,5 +173,35 @@ module Aws
       end
 
     end
+
+    describe 'inheritance support' do
+      let(:parent_class) do
+        Class.new do
+          include(Aws::Record)
+          integer_attr(:id, hash_key: true)
+        end
+      end
+
+      let(:child_class) do
+        Class.new(parent_class) do
+          include(Aws::Record)
+          string_attr(:foo)
+        end
+      end
+
+      it 'should have child class inherit local secondary indexes from parent class ' do
+      end
+
+      it 'should have child class inherit global secondary indexes from parent class ' do
+      end
+
+      it 'should have child class not inherit indexes if it has a different table name from parent class' do
+      end
+
+      it 'allows the child class to define and override parent indexes' do
+      end
+
+    end
+
   end
 end
