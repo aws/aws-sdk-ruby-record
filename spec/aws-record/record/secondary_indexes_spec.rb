@@ -191,13 +191,17 @@ module Aws
         end
       end
 
-      it 'should have child class inherit local secondary indexes from parent class ' do
-      end
+      it 'should have child class inherit secondary indexes from parent class ' do
+        parent_class.set_table_name('ParentTable')
+        parent_class.local_secondary_index( :local_index, hash_key: :name, range_key: :id)
+        parent_class.global_secondary_index( :global_index, hash_key: :name, range_key: :id)
 
-      it 'should have child class inherit global secondary indexes from parent class ' do
+        expect(child_class.local_secondary_indexes).to eq(parent_class.local_secondary_indexes)
+        expect(child_class.global_secondary_indexes).to eq(parent_class.global_secondary_indexes)
       end
 
       it 'should have child class maintain own indexes if table name is different from parent class' do
+
       end
 
       it 'allows the child class to define and override parent indexes' do
