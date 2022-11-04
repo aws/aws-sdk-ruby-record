@@ -201,8 +201,16 @@ module Aws
       end
 
       it 'allows the child class to define and override parent indexes' do
-      end
+        parent_class.local_secondary_index( :local_index, hash_key: :id, range_key: :message)
+        parent_class.global_secondary_index( :global_index, hash_key: :name, range_key: :message)
+        child_class.local_secondary_index( :local_index, hash_key: :id, range_key: :foo)
+        child_class.local_secondary_index( :local_index2, hash_key: :id, range_key: :bar)
+        child_class.global_secondary_index( :global_index, hash_key: :bar, range_key: :foo)
+        child_class.global_secondary_index( :global_index2, hash_key: :name, range_key: :bar)
 
+        expect(parent_class.local_secondary_indexes).to eq(child_class.local_secondary_indexes)
+        expect(parent_class.global_secondary_indexes).to eq(child_class.global_secondary_indexes)
+      end
     end
 
   end
