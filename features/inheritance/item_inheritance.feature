@@ -13,8 +13,8 @@
 
 # language: en
 
-@dynamodb @item
-Feature: Amazon DynamoDB Item Inheritance
+@dynamodb
+Feature: Amazon DynamoDB Inheritance
   This feature tests inheritance between parent class and child classes. To run
   these tests, you will need to have valid AWS credentials that are accessible
   with the AWS SDK for Ruby's standard credential provider chain. In practice,
@@ -22,16 +22,3 @@ Feature: Amazon DynamoDB Item Inheritance
   These tests may have some AWS costs associated with running them since AWS resources
   are created and destroyed within these tests.
 
-  Background:
-    Given an aws-record parent model named 'Animal' with data:
-      """
-      [
-        { "method": "string_attr", "name": "name", "hash_key": true },
-        { "method": "integer_attr", "name": "age", "range_key": true },
-        { "method": "string_attr", "name": "size", "default_value": "None" }
-      ]
-      """
-
-    Scenario: Child Classes inherits parent class attributes
-
-    Scenario: Child Class overrides parent class key attributes
