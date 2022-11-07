@@ -13,19 +13,16 @@
 
 Given(/^a "([^"]*)" model with definition:$/) do |model, string|
   if model == 'Parent'
-    @parent_model = Class.new do
+    @parent = Class.new do
       include(Aws::Record)
     end
-    @parent_model.class_eval(string)
-    @table_name = @parent_model.table_name
-    puts @parent_model.attributes.inspect
-    puts @parent_model.table_name
+    @parent.class_eval(string)
+    @table_name = @parent.table_name
   elsif model == 'Child'
-    @model = Class.new(@parent_model) do
+    @model = Class.new(@parent) do
       include(Aws::Record)
     end
     @model.class_eval(string)
     @table_name = @model.table_name
-    puts @model.attributes.inspect
   end
 end
