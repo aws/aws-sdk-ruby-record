@@ -46,7 +46,6 @@ module Aws
           opts[:hash_key] = hash_key
           _validate_required_lsi_keys(opts)
           local_secondary_indexes[name] = opts
-
         end
 
         # Creates a global secondary index for the model. Learn more about

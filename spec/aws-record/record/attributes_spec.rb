@@ -263,8 +263,6 @@ module Aws
         end
       end
 
-      # Did not want to interfere with other existing blocks above
-      # so created a separate block to test inheritance between classes
       describe 'inheritance support' do
         let(:parent_class) do
           Class.new do
