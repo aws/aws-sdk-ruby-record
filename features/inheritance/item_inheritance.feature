@@ -13,7 +13,7 @@
 
 # language: en
 
-@dynamodb
+@dynamodb @inheritance
 Feature: Amazon DynamoDB Inheritance
   This feature tests inheritance between parent class and child classes. To run
   these tests, you will need to have valid AWS credentials that are accessible
