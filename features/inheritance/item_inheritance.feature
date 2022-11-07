@@ -22,3 +22,13 @@ Feature: Amazon DynamoDB Inheritance
   These tests may have some AWS costs associated with running them since AWS resources
   are created and destroyed within these tests.
 
+
+  Background:
+    Given a "Parent" model with definition:
+      """
+      set_table_name('Animal')
+      integer_attr  :id,    hash_key: true
+      string_attr :name, range_key: true
+      string_attr :size
+      """
+

@@ -10,4 +10,22 @@
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 # or implied. See the License for the specific language governing permissions
 # and limitations under the License.
-#
+
+Given(/^a "([^"]*)" model with definition:$/) do |model, string|
+  if model == 'Parent'
+    @parent_model = Class.new do
+      include(Aws::Record)
+    end
+    @parent_model.class_eval(string)
+    @table_name = @parent_model.table_name
+    puts @parent_model.attributes.inspect
+    puts @parent_model.table_name
+  elsif model == 'Child'
+    @model = Class.new(@parent_model) do
+      include(Aws::Record)
+    end
+    @model.class_eval(string)
+    @table_name = @model.table_name
+    puts @model.attributes.inspect
+  end
+end
