@@ -26,3 +26,16 @@ Given(/^a "([^"]*)" model with definition:$/) do |model, string|
     @table_name = @model.table_name
   end
 end
+
+And(/^we create a new instance of the "([^"]*)" model with attribute value pairs:$/) do |model, string|
+  data = JSON.parse(string)
+  if model == 'Parent'
+    @instance = @parent.new
+  elsif model == 'Child'
+    @instance = @model.new
+  end
+  data.each do |row|
+    attribute, value = row
+    @instance.send(:"#{attribute}=", value)
+  end
+end
