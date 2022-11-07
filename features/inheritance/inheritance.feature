@@ -117,4 +117,52 @@ Feature: Amazon DynamoDB Inheritance
       }
       """
 
-
+  Scenario:  Create a Table based on the Child Model and be able to create an item
+    Given a "Child" model with definition:
+      """
+      set_table_name('Cat')
+      integer_attr  :toe_beans
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.global_secondary_index(:gsi) do |i|
+          i.read_capacity_units(1)
+          i.write_capacity_units(1)
+        end
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And we create a new instance of the "Child" model with attribute value pairs:
+      """
+      [
+        ["id", 1],
+        ["name", "Donut"],
+        ["size", "Chonk"],
+        ["characteristics", ["Makes good bread", "Likes snacks"]],
+        ["toe_beans", 9]
+      ]
+      """
+    And we save the model instance
+    And we call the 'find' class method with parameter data:
+      """
+      {
+        "id": 1,
+        "name": "Donut"
+      }
+      """
+    Then we should receive an aws-record item with attribute data:
+      """
+      {
+        "id": 1,
+        "name": "Donut",
+        "size": "Chonk",
+        "characteristics": ["Makes good bread", "Likes snacks"],
+        "toe_beans": 9
+      }
+      """
