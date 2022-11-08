@@ -264,7 +264,7 @@ module Aws
       end
 
       describe 'inheritance support' do
-        let(:parent_class) do
+        let(:parent_model) do
           Class.new do
             include(Aws::Record)
             integer_attr(:id, hash_key: true)
@@ -273,25 +273,25 @@ module Aws
           end
         end
 
-        let(:child_class) do
-          Class.new(parent_class) do
+        let(:child_model) do
+          Class.new(parent_model) do
             include(Aws::Record)
             string_attr(:body)
           end
         end
 
-        let(:child_class2) do
-          Class.new(parent_class) do
+        let(:child_model2) do
+          Class.new(parent_model) do
             include(Aws::Record)
             string_attr(:body2)
           end
         end
 
-        it 'should have instances of child classes with parent attributes '\
-           'and an instance of parent class with its own attributes' do
-          parent_item = parent_class.new(id: 1, date: '2022-10-10', list: [])
-          child_item = child_class.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')
-          child_item2 = child_class2.new(id: 3, date: '2022-10-31', list: [4, 5, 6], body2: 'World')
+        it 'should have instances of child models with parent attributes '\
+           'and an instance of parent model with its own attributes' do
+          parent_item = parent_model.new(id: 1, date: '2022-10-10', list: [])
+          child_item = child_model.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')
+          child_item2 = child_model2.new(id: 3, date: '2022-10-31', list: [4, 5, 6], body2: 'World')
 
           expect(parent_item.id).to eq(1)
           expect(parent_item.date).to eq(Date.parse('2022-10-10'))
@@ -312,26 +312,26 @@ module Aws
           expect { child_item2.body }.to raise_error(NoMethodError)
         end
 
-        it 'should let child class override attribute keys' do
-          child_class.integer_attr(:rk, range_key: true)
-          child_item = child_class.new(id: 1, rk: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
+        it 'should let child model override attribute keys' do
+          child_model.integer_attr(:rk, range_key: true)
+          child_item = child_model.new(id: 1, rk: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
 
           expect(child_item.id).to eq(1)
           expect(child_item.rk).to eq(1)
           expect(child_item.key_values).to eq({"id"=>1, "rk"=>1})
         end
 
-        it 'correctly passes default values to child class' do
-          parent_class.string_attr(:test, default_value: -> { 'test' })
-          child_item = child_class.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
+        it 'correctly passes default values to child model' do
+          parent_model.string_attr(:test, default_value: -> { 'test' })
+          child_item = child_model.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
 
           expect(child_item.test).to eq('test')
         end
 
-        it 'lets parent class maintain its own attributes after changes' do
-          child_item = child_class.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
-          parent_class.string_attr(:new_attr)
-          parent_item = parent_class.new(id: 1, date: '2022-10-10', list: [], new_attr: 'test')
+        it 'lets parent model maintain its own attributes after changes' do
+          child_item = child_model.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
+          parent_model.string_attr(:new_attr)
+          parent_item = parent_model.new(id: 1, date: '2022-10-10', list: [], new_attr: 'test')
 
           expect(parent_item.id).to eq(1)
           expect(parent_item.date).to eq(Date.parse('2022-10-10'))

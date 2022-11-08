@@ -24,7 +24,7 @@ Feature: Amazon DynamoDB Inheritance
 
 
   Background:
-    Given a "Parent" model with definition:
+    Given a Parent model with definition:
       """
       set_table_name('Animal')
       integer_attr  :id,    hash_key: true
@@ -42,7 +42,7 @@ Feature: Amazon DynamoDB Inheritance
       """
 
   Scenario: Create a Table and be able to create Items from both Child model and Parent model
-    Given a "Child" model with definition:
+    Given a Child model with definition:
       """
       boolean_attr :family_friendly
       """
@@ -62,7 +62,7 @@ Feature: Amazon DynamoDB Inheritance
     When we migrate the TableConfig
     Then eventually the table should exist in DynamoDB
     And the table should have a global secondary index named "gsi"
-    And we create a new instance of the "Child" model with attribute value pairs:
+    And we create a new instance of the Child model with attribute value pairs:
       """
       [
         ["id", 1],
@@ -90,7 +90,7 @@ Feature: Amazon DynamoDB Inheritance
         "family_friendly": true
       }
       """
-    And we create a new instance of the "Parent" model with attribute value pairs:
+    And we create a new instance of the Parent model with attribute value pairs:
       """
       [
         ["id", 2],
@@ -118,7 +118,7 @@ Feature: Amazon DynamoDB Inheritance
       """
 
   Scenario:  Create a Table based on the Child Model and be able to create an item
-    Given a "Child" model with definition:
+    Given a Child model with definition:
       """
       set_table_name('Cat')
       integer_attr  :toe_beans
@@ -138,7 +138,7 @@ Feature: Amazon DynamoDB Inheritance
       """
     When we migrate the TableConfig
     Then eventually the table should exist in DynamoDB
-    And we create a new instance of the "Child" model with attribute value pairs:
+    And we create a new instance of the Child model with attribute value pairs:
       """
       [
         ["id", 1],
