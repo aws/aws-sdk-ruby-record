@@ -17,7 +17,17 @@ module Aws
   # decorate them with the Amazon DynamoDB integration methods provided by this
   # library. Methods you can use are shown below, in sub-modules organized by
   # functionality.
-  #
+  # === Inheritance Support
+  # This support allows models to be extended. If a user extends an +Aws::Record+
+  # model class, the following instance variables will be inherited:
+  # * +@table_name+
+  # * +@attributes+
+  # * +@keys+
+  # * +@track_mutations+
+  # * +@local_secondary_indexes+
+  # * +@global_secondary_indexes+
+  # * +@dynamodb_client+
+  # See example below to see the feature in action.
   # @example A class definition using +Aws::Record+
   #   class MyModel
   #     include Aws::Record
@@ -28,6 +38,21 @@ module Aws
   #     string_set_attr :tags
   #     map_attr        :metadata
   #   end
+  # @example Inheritance between models
+  #   class Animal
+  #     include Aws::Record
+  #     string_attr :name, hash_key: true
+  #     integer_attr :age
+  #   end
+  #
+  #   class Dog < Animal
+  #     include Aws::Record
+  #     boolean_attr :family_friendly
+  #   end
+  #
+  #   dog = Dog.find(name: 'Sunflower')
+  #   dog.age = 3
+  #   dog.family_friendly = true
   module Record
     # @!parse extend RecordClassMethods
     # @!parse include Attributes
@@ -76,12 +101,14 @@ module Aws
       # also define a custom table name at the class level to be anything that
       # you want.
       #
+      # *Note*: Can be inherited to child models if defined in parent model.
+      # See {set_table_name} for more details.
       # @example
       #   class MyTable
       #     include Aws::Record
       #   end
       #
-      #   class MyTableTest
+      #   class MyOtherTable
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
@@ -101,20 +128,52 @@ module Aws
 
       # Allows you to set a custom Amazon DynamoDB table name for this model
       # class.
+      # === Inheritance Support
+      # +table_name+ can be inherited to child models if defined in parent model.
       #
-      # @example
+      # The parent model will need to have +set_table_name+ defined in their model
+      # for the child model to inherit the +table_name+.
+      # If no +set_table_name+ is defined, the parent and child models will have separate
+      # table names based on their class name.
+      #
+      # If both parent and child models have defined +set_table_name+ in their model,
+      # the child model will override the +table_name+ with theirs.
+      # @example Setting custom table name for model class
       #   class MyTable
       #     include Aws::Record
       #     set_table_name "prod_MyTable"
       #   end
       #
-      #   class MyTableTest
+      #   class MyOtherTable
       #     include Aws::Record
       #     set_table_name "test_MyTable"
       #   end
       #
       #   MyTable.table_name      # => "prod_MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
+      # @example Child model inherits table name from Parent model
+      #   class Animal
+      #     include Aws::Record
+      #     set_table_name "AnimalTable"
+      #   end
+      #
+      #   class Dog < Animal
+      #     include Aws::Record
+      #   end
+      #
+      #   Dog.table_name      # => "AnimalTable"
+      # @example Child model overrides table name from Parent model
+      #   class Animal
+      #     include Aws::Record
+      #     set_table_name "AnimalTable"
+      #   end
+      #
+      #   class Dog < Animal
+      #     include Aws::Record
+      #     set_table_name "DogTable"
+      #   end
+      #
+      #   Dog.table_name      # => "DogTable"
       def set_table_name(name)
         @table_name = name
       end
@@ -156,6 +215,8 @@ module Aws
       end
 
       # Turns off mutation tracking for all attributes in the model.
+      #
+      # *Note*: Can be inherited to child models if defined in parent model.
       def disable_mutation_tracking
         @track_mutations = false
       end
@@ -165,6 +226,8 @@ module Aws
       # call this. It is provided in case there is a need to dynamically turn
       # this feature on and off, though that would be generally discouraged and
       # could cause inaccurate mutation tracking at runtime.
+      #
+      # *Note*: Can be inherited to child models if defined in parent model.
       def enable_mutation_tracking
         @track_mutations = true
       end
