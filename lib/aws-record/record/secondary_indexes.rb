@@ -34,6 +34,7 @@ module Aws
         # Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LSI.html Amazon DynamoDB Developer Guide}.
         #
+        # *Note*: Can be inherited to child models if defined in parent model.
         # @param [Symbol] name index name for this local secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :range_key the range key used by this local
@@ -52,6 +53,7 @@ module Aws
         # Global Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html Amazon DynamoDB Developer Guide}.
         #
+        # *Note*: Can be inherited to child models if defined in parent model.
         # @param [Symbol] name index name for this global secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :hash_key the hash key used by this global
@@ -66,12 +68,18 @@ module Aws
           global_secondary_indexes[name] = opts
         end
 
+        # Returns hash of local secondary index names to the index’s attributes.
+        #
+        # *Note*: Can be inherited to child models if defined in parent model by using {#local_secondary_index}.
         # @return [Hash] hash of local secondary index names to the index's
         #   attributes.
         def local_secondary_indexes
           @local_secondary_indexes
         end
 
+        # Returns hash of global secondary index names to the index’s attributes.
+        #
+        # *Note*: Can be inherited to child models if defined in parent model by using {#global_secondary_index}.
         # @return [Hash] hash of global secondary index names to the index's
         #   attributes.
         def global_secondary_indexes
