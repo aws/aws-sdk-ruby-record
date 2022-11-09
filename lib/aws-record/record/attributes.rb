@@ -43,6 +43,14 @@ module Aws
         end
       end
 
+      # Base initialization method for a new item. Optionally, allows you to
+      # provide initial attribute values for the model. You do not need to
+      # provide all, or even any, attributes at item creation time.
+      #
+      # === Inheritance Support
+      # Child models will inherit the attributes and keys defined in the parent
+      # model. Child models can override attribute keys if defined in their own model.
+      # See examples below to see the feature in action.
       # @example Usage Example
       #   class MyModel
       #     include Aws::Record
@@ -52,11 +60,34 @@ module Aws
       #   end
       #
       #   item = MyModel.new(id: 1, name: "Quick Create")
+      # @example Child model inheriting from Parent model
+      #   class Animal
+      #     include Aws::Record
+      #     string_attr :name,   hash_key: true
+      #     integer_attr :age,   default_value: 1
+      #   end
       #
-      # Base initialization method for a new item. Optionally, allows you to
-      # provide initial attribute values for the model. You do not need to
-      # provide all, or even any, attributes at item creation time.
+      #   class Cat < Animal
+      #     include Aws::Record
+      #     integer_attr :num_of_wiskers
+      #   end
       #
+      #   cat = Cat.find(name: 'Foo')
+      #   cat.age    # => 1
+      #   cat.num_of_wiskers = 200
+      # @example Child model overrides the hash key
+      #   class Animal
+      #     include Aws::Record
+      #     string_attr :name,   hash_key: true
+      #     integer_attr :age,   range_key: true
+      #   end
+      #
+      #   class Dog < Animal
+      #     include Aws::Record
+      #     integer_attr :id, hash_key: true
+      #   end
+      #
+      #   Dog.keys # => {:hash=>:id, :range=>:age}
       # @param [Hash] attr_values Attribute symbol/value pairs for any initial
       #  attribute values you wish to set.
       # @return [Aws::Record] An item instance for your model.
