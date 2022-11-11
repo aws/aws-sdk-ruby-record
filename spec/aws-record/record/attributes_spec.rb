@@ -327,18 +327,6 @@ module Aws
 
           expect(child_item.test).to eq('test')
         end
-
-        it 'lets parent model maintain its own attributes after changes' do
-          child_item = child_model.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
-          parent_model.string_attr(:new_attr)
-          parent_item = parent_model.new(id: 1, date: '2022-10-10', list: [], new_attr: 'test')
-
-          expect(parent_item.id).to eq(1)
-          expect(parent_item.date).to eq(Date.parse('2022-10-10'))
-          expect(parent_item.list).to eq([])
-          expect(parent_item.new_attr).to eq('test')
-          expect { parent_item.body }.to raise_error(NoMethodError)
-        end
       end
 
     end
