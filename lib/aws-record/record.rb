@@ -102,8 +102,8 @@ module Aws
       # also define a custom table name at the class level to be anything that
       # you want.
       #
-      # *Note*: +table_name+ is inherited from a parent model when it is explicitly specified
-      # in the parent. See {set_table_name} for more details.
+      # *Note*: +table_name+ is inherited from a parent model when {set_table_name}
+      # is explicitly specified in the parent.
       # @example
       #   class MyTable
       #     include Aws::Record
