@@ -102,7 +102,7 @@ module Aws
       # also define a custom table name at the class level to be anything that
       # you want.
       #
-      # *Note*: Can be inherited to child models if defined in parent model.
+      # *Note*: If defined in parent model, the +table_name+ will be inherited.
       # See {set_table_name} for more details.
       # @example
       #   class MyTable
@@ -130,7 +130,7 @@ module Aws
       # Allows you to set a custom Amazon DynamoDB table name for this model
       # class.
       # === Inheritance Support
-      # +table_name+ can be inherited to child models if defined in parent model.
+      # +table_name+ will be inherited if defined in parent model.
       #
       # The parent model will need to have +set_table_name+ defined in their model
       # for the child model to inherit the +table_name+.
@@ -217,7 +217,7 @@ module Aws
 
       # Turns off mutation tracking for all attributes in the model.
       #
-      # *Note*: Can be inherited to child models if defined in parent model.
+      # *Note*: If defined in parent model, this will be inherited.
       def disable_mutation_tracking
         @track_mutations = false
       end
@@ -228,7 +228,7 @@ module Aws
       # this feature on and off, though that would be generally discouraged and
       # could cause inaccurate mutation tracking at runtime.
       #
-      # *Note*: Can be inherited to child models if defined in parent model.
+      # *Note*: If defined in parent model, this will be inherited.
       def enable_mutation_tracking
         @track_mutations = true
       end
