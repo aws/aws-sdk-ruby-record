@@ -169,14 +169,12 @@ module Aws
         Class.new do
           include(Aws::Record)
           set_table_name('ParentTable')
-          integer_attr(:id, hash_key: true)
         end
       end
 
       let(:child_model) do
         Class.new(parent_model) do
           include(Aws::Record)
-          string_attr(:foo)
         end
       end
 
@@ -185,11 +183,24 @@ module Aws
         expect(child_model.table_name).to eq('ParentTable')
       end
 
-      it 'should have child model maintain its own table name if defined in model' do
+      it 'should have child model override parent table name if defined in model' do
         child_model.set_table_name('ChildTable')
         expect(parent_model.table_name).to eq('ParentTable')
         expect(child_model.table_name).to eq('ChildTable')
       end
+
+      it 'should have parent and child models maintain their own table names' do
+        ::ParentModel = Class.new do
+          include(Aws::Record)
+        end
+        ::ChildModel = Class.new(ParentModel) do
+          include(Aws::Record)
+        end
+
+        expect(ParentModel.table_name).to eq("ParentModel")
+        expect(ChildModel.table_name). to eq("ChildModel")
+      end
+
     end
 
     describe 'inheritance support for track mutations' do
