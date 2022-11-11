@@ -19,14 +19,15 @@ module Aws
   # functionality.
   # === Inheritance Support
   # This support allows models to be extended. If a user extends an +Aws::Record+
-  # model class, the following instance variables will be inherited:
-  # * +@table_name+
-  # * +@attributes+
-  # * +@keys+
-  # * +@track_mutations+
-  # * +@local_secondary_indexes+
-  # * +@global_secondary_indexes+
-  # * +@dynamodb_client+
+  # model class, the following be inherited:
+  # * {#set_table_name set_table_name}
+  # * {#initialize Attributes and keys}
+  # * Mutation Tracking:
+  #   * {#enable_mutation_tracking enable_mutation_tracking}
+  #   * {#disable_mutation_tracking disable_mutation_tracking}
+  # * {#local_secondary_indexes local_secondary_indexes}
+  # * {#global_secondary_indexes global_secondary_indexes}
+  # * {ClientConfiguration#configure_client configure_client}
   # See example below to see the feature in action.
   # @example A class definition using +Aws::Record+
   #   class MyModel
