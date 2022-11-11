@@ -35,7 +35,7 @@ module Aws
         it 'should have child model inherit dynamodb client from parent model' do
           parent_model.configure_client(client: stub_client)
           child_model.dynamodb_client
-          expect(parent_model.dynamodb_client).to eq(child_model.dynamodb_client)
+          expect(parent_model.dynamodb_client).to be(child_model.dynamodb_client)
         end
 
         it 'should have child model maintain its own dynamodb client if defined in model' do
