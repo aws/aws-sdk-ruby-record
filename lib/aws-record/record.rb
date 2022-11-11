@@ -102,8 +102,8 @@ module Aws
       # also define a custom table name at the class level to be anything that
       # you want.
       #
-      # *Note*: If defined in parent model, the +table_name+ will be inherited.
-      # See {set_table_name} for more details.
+      # *Note*: +table_name+ is inherited from a parent model when it is explicitly specified
+      # in the parent. See {set_table_name} for more details.
       # @example
       #   class MyTable
       #     include Aws::Record
@@ -130,7 +130,8 @@ module Aws
       # Allows you to set a custom Amazon DynamoDB table name for this model
       # class.
       # === Inheritance Support
-      # +table_name+ will be inherited if defined in parent model.
+      # +table_name+ is inherited from a parent model when it is explicitly specified
+      # in the parent.
       #
       # The parent model will need to have +set_table_name+ defined in their model
       # for the child model to inherit the +table_name+.
