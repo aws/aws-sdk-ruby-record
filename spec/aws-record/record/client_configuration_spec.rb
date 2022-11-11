@@ -21,14 +21,12 @@ module Aws
         let(:parent_model) do
           Class.new do
             include(Aws::Record)
-            integer_attr(:id, hash_key: true)
           end
         end
 
         let(:child_model) do
           Class.new(parent_model) do
             include(Aws::Record)
-            string_attr(:foo)
           end
         end
 
