@@ -34,7 +34,8 @@ module Aws
         # Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LSI.html Amazon DynamoDB Developer Guide}.
         #
-        # *Note*: Can be inherited to child models if defined in parent model.
+        # *Note*: {#local_secondary_indexes} is inherited from a parent model
+        # when +local_secondary_index+ is explicitly specified in the parent.
         # @param [Symbol] name index name for this local secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :range_key the range key used by this local
@@ -53,7 +54,8 @@ module Aws
         # Global Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html Amazon DynamoDB Developer Guide}.
         #
-        # *Note*: Can be inherited to child models if defined in parent model.
+        # *Note*: {#global_secondary_indexes} is inherited from a parent model
+        # when +global_secondary_index+ is explicitly specified in the parent.
         # @param [Symbol] name index name for this global secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :hash_key the hash key used by this global
@@ -70,7 +72,8 @@ module Aws
 
         # Returns hash of local secondary index names to the index’s attributes.
         #
-        # *Note*: Can be inherited to child models if defined in parent model by using {#local_secondary_index}.
+        # *Note*: +local_secondary_indexes+ is inherited from a parent model when {#local_secondary_index}
+        # is explicitly specified in the parent.
         # @return [Hash] hash of local secondary index names to the index's
         #   attributes.
         def local_secondary_indexes
@@ -79,7 +82,8 @@ module Aws
 
         # Returns hash of global secondary index names to the index’s attributes.
         #
-        # *Note*: Can be inherited to child models if defined in parent model by using {#global_secondary_index}.
+        # *Note*: +global_secondary_indexes+ is inherited from a parent model when {#global_secondary_index}
+        # is explicitly specified in the parent.
         # @return [Hash] hash of global secondary index names to the index's
         #   attributes.
         def global_secondary_indexes
