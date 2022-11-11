@@ -218,7 +218,8 @@ module Aws
 
       # Turns off mutation tracking for all attributes in the model.
       #
-      # *Note*: If defined in parent model, this will be inherited.
+      # *Note*: +disable_mutation_tracking+ is inherited from a parent model
+      # when it is explicitly specified in the parent.
       def disable_mutation_tracking
         @track_mutations = false
       end
@@ -229,7 +230,8 @@ module Aws
       # this feature on and off, though that would be generally discouraged and
       # could cause inaccurate mutation tracking at runtime.
       #
-      # *Note*: If defined in parent model, this will be inherited.
+      # *Note*: +enable_mutation_tracking+ is inherited from a parent model
+      # when it is explicitly specified in the parent.
       def enable_mutation_tracking
         @track_mutations = true
       end
