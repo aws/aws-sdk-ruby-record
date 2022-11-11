@@ -26,7 +26,8 @@ module Aws
       # in doubt, call this method to ensure your client is configured the way
       # you want it to be configured.
       #
-      # *Note*: Can be inherited to child models if defined in parent model.
+      # *Note*: +dynamodb_client+ is inherited from a parent model when
+      # +configure_client+ is explicitly specified in the parent.
       # @param [Hash] opts the options you wish to use to create the client.
       #  Note that if you include the option +:client+, all other options
       #  will be ignored. See the documentation for other options in the
@@ -51,7 +52,9 @@ module Aws
       # {#configure_client} has not yet been called, will configure a new
       # client for you with default parameters.
       #
-      # *Note*: Can be inherited to child models if defined in parent model by using {#configure_client}.
+      # *Note*: +dynamodb_client+ is inherited from a parent model when
+      # +configure_client+ is explicitly specified in the parent.
+      # See {configure_client} for more details.
       #
       # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
       def dynamodb_client
