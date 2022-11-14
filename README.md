@@ -88,3 +88,34 @@ item.name = "Item"
 item.active = false
 item.save
 ```
+
+### Inheritance Support
+This support allows models to be extended. If a user extends an `Aws::Record`
+model class, the following be inherited:
+* [set_table_name](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/RecordClassMethods.html#set_table_name-instance_method)
+* [Attributes and Keys](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/Attributes.html#initialize-instance_method)
+* Mutation Tracking:
+  * [enable_mutation_tracking](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/RecordClassMethods.html#enable_mutation_tracking-instance_method)
+  * [disable_mutation_tracking](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/RecordClassMethods.html#disable_mutation_tracking-instance_method)
+* [local_secondary_indexes](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/SecondaryIndexes/SecondaryIndexesClassMethods.html#local_secondary_indexes-instance_method)
+* [global_secondary_indexes](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/SecondaryIndexes/SecondaryIndexesClassMethods.html#global_secondary_indexes-instance_method)
+* [configure_client](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/ClientConfiguration.html#configure_client-instance_method)
+
+See example below to see the feature in action.
+
+```ruby
+class Animal
+  include Aws::Record
+  string_attr :name, hash_key: true
+  integer_attr :age
+end
+
+class Dog < Animal
+  include Aws::Record
+  boolean_attr :family_friendly
+end
+
+dog = Dog.find(name: 'Sunflower')
+dog.age = 3
+dog.family_friendly = true
+```
