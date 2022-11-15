@@ -84,8 +84,7 @@ module Aws
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
       if Aws::Record.extends_record?(sub_class)
-        superclass_track_mutations = sub_class.superclass.instance_variable_get("@track_mutations")
-        sub_class.instance_variable_set("@track_mutations", superclass_track_mutations)
+        inherit_track_mutations(sub_class)
       end
     end
 
@@ -96,6 +95,11 @@ module Aws
     private
     def dynamodb_client
       self.class.dynamodb_client
+    end
+
+    def self.inherit_track_mutations(klass)
+      superclass_track_mutations = klass.superclass.instance_variable_get("@track_mutations")
+      klass.instance_variable_set("@track_mutations", superclass_track_mutations)
     end
 
     module RecordClassMethods
@@ -122,7 +126,7 @@ module Aws
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
         @table_name ||= begin
-          if self.superclass.include?(Aws::Record) &&
+          if Aws::Record.extends_record?(self) &&
               default_table_name(self.superclass) != self.superclass.table_name
             self.superclass.instance_variable_get('@table_name')
           else
