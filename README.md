@@ -90,8 +90,8 @@ item.save
 ```
 
 ### Inheritance Support
-This support allows models to be extended. If a user extends an `Aws::Record`
-model class, the following be inherited:
+This support allows models to be extended. The child model must include `Aws::Record` 
+in their model and the following will be inherited:
 * [set_table_name](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/RecordClassMethods.html#set_table_name-instance_method)
 * [Attributes and Keys](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/Attributes.html#initialize-instance_method)
 * Mutation Tracking:
