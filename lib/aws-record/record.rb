@@ -18,8 +18,8 @@ module Aws
   # library. Methods you can use are shown below, in sub-modules organized by
   # functionality.
   # === Inheritance Support
-  # This support allows models to be extended. If a user extends an +Aws::Record+
-  # model class, the following be inherited:
+  # This support allows models to be extended. The child model must include
+  # +Aws::Record+ in their model and the following will be inherited:
   # * {#set_table_name set_table_name}
   # * {#initialize Attributes and keys}
   # * Mutation Tracking:
@@ -83,10 +83,14 @@ module Aws
       sub_class.send(:include, DirtyTracking)
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
-      if sub_class.superclass.include?(Aws::Record)
+      if Aws::Record.extends_record?(sub_class)
         superclass_track_mutations = sub_class.superclass.instance_variable_get("@track_mutations")
         sub_class.instance_variable_set("@track_mutations", superclass_track_mutations)
       end
+    end
+
+    def self.extends_record?(klass)
+      klass.superclass.include?(Aws::Record)
     end
 
     private
