@@ -35,7 +35,7 @@ module Aws
       # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
       #  own pre-configured client.
       def configure_client(opts = {})
-        if self.class != Module && self.superclass.include?(Aws::Record) && opts.empty? &&
+        if self.class != Module && Aws::Record.extends_record?(self) && opts.empty? &&
           self.superclass.instance_variable_get('@dynamodb_client')
             @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
         else
