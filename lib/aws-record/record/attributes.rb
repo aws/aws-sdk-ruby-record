@@ -20,26 +20,8 @@ module Aws
         model_attributes = ModelAttributes.new(self)
         sub_class.instance_variable_set("@attributes", model_attributes)
         sub_class.instance_variable_set("@keys", KeyAttributes.new(model_attributes))
-
-        if sub_class.superclass.include?(Aws::Record)
-          superclass_attributes = sub_class.superclass.instance_variable_get("@attributes")
-
-          superclass_attributes.attributes.each do |name, attribute|
-            subclass_attributes = sub_class.instance_variable_get("@attributes")
-            subclass_attributes.register_superclass_attribute(name, attribute)
-          end
-
-          superclass_keys = sub_class.superclass.instance_variable_get("@keys")
-          subclass_keys = sub_class.instance_variable_get("@keys")
-
-          if superclass_keys.hash_key
-            subclass_keys.hash_key = superclass_keys.hash_key
-          end
-
-          if superclass_keys.range_key
-            subclass_keys.range_key = superclass_keys.range_key
-          end
-
+        if Aws::Record.extends_record?(sub_class)
+          inherit_attributes(sub_class)
         end
       end
 
@@ -106,6 +88,27 @@ module Aws
       # @return [Hash] Map of attribute names to raw values.
       def to_h
         @data.hash_copy
+      end
+
+      private
+      def self.inherit_attributes(klass)
+        superclass_attributes = klass.superclass.instance_variable_get("@attributes")
+
+        superclass_attributes.attributes.each do |name, attribute|
+          subclass_attributes = klass.instance_variable_get("@attributes")
+          subclass_attributes.register_superclass_attribute(name, attribute)
+        end
+
+        superclass_keys = klass.superclass.instance_variable_get("@keys")
+        subclass_keys = klass.instance_variable_get("@keys")
+
+        if superclass_keys.hash_key
+          subclass_keys.hash_key = superclass_keys.hash_key
+        end
+
+        if superclass_keys.range_key
+          subclass_keys.range_key = superclass_keys.range_key
+        end
       end
 
       module ClassMethods
