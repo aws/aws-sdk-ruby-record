@@ -1,4 +1,4 @@
-Unreleased Changes
+2.9.0 (2022-11-16)
 ------------------
 
 * Feature - Add support for inheritance. Aws Record models can now be extended using standard ruby inheritance (#80).
