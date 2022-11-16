@@ -173,5 +173,43 @@ module Aws
       end
 
     end
+
+    describe 'inheritance support' do
+      let(:parent_model) do
+        Class.new do
+          include(Aws::Record)
+          integer_attr(:id, hash_key: true)
+          string_attr(:name, range_key: true)
+          string_attr(:message)
+        end
+      end
+
+      let(:child_model) do
+        Class.new(parent_model) do
+          include(Aws::Record)
+          string_attr(:foo)
+          string_attr(:bar)
+        end
+      end
+
+      it 'should have child model inherit secondary indexes from parent model' do
+        parent_model.local_secondary_index( :local_index, hash_key: :id, range_key: :message)
+        parent_model.global_secondary_index( :global_index, hash_key: :name, range_key: :message)
+
+        expect(child_model.local_secondary_indexes).to eq(parent_model.local_secondary_indexes)
+        expect(child_model.global_secondary_indexes).to eq(parent_model.global_secondary_indexes)
+      end
+
+      it 'allows the child model override parent indexes' do
+        parent_model.local_secondary_index( :local_index, hash_key: :id, range_key: :message)
+        parent_model.global_secondary_index( :global_index, hash_key: :name, range_key: :message)
+        child_model.local_secondary_index( :local_index, hash_key: :id, range_key: :foo)
+        child_model.global_secondary_index( :global_index, hash_key: :bar, range_key: :foo)
+
+        expect(child_model.local_secondary_indexes).to eq({:local_index=>{:hash_key=>:id, :range_key=>:foo}})
+        expect(child_model.global_secondary_indexes).to eq(:global_index=>{:hash_key=>:bar, :range_key=>:foo})
+      end
+    end
+
   end
 end

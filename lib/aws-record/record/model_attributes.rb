@@ -32,6 +32,13 @@ module Aws
         attribute
       end
 
+      def register_superclass_attribute (name, attribute)
+        _new_attr_validation(name, attribute)
+        @attributes[name] = attribute.dup
+        @storage_attributes[attribute.database_name] = name
+        attribute
+      end
+
       def attribute_for(name)
         @attributes[name]
       end

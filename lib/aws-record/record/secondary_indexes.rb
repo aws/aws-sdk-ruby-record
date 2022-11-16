@@ -20,6 +20,17 @@ module Aws
         sub_class.instance_variable_set("@local_secondary_indexes", {})
         sub_class.instance_variable_set("@global_secondary_indexes", {})
         sub_class.extend(SecondaryIndexesClassMethods)
+        if Aws::Record.extends_record?(sub_class)
+          inherit_indexes(sub_class)
+        end
+      end
+
+      private
+      def self.inherit_indexes(klass)
+        superclass_lsi = klass.superclass.instance_variable_get("@local_secondary_indexes").dup
+        superclass_gsi = klass.superclass.instance_variable_get("@global_secondary_indexes").dup
+        klass.instance_variable_set("@local_secondary_indexes", superclass_lsi)
+        klass.instance_variable_set("@global_secondary_indexes", superclass_gsi)
       end
 
       module SecondaryIndexesClassMethods
@@ -28,6 +39,8 @@ module Aws
         # Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LSI.html Amazon DynamoDB Developer Guide}.
         #
+        # *Note*: {#local_secondary_indexes} is inherited from a parent model
+        # when +local_secondary_index+ is explicitly specified in the parent.
         # @param [Symbol] name index name for this local secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :range_key the range key used by this local
@@ -46,6 +59,8 @@ module Aws
         # Global Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html Amazon DynamoDB Developer Guide}.
         #
+        # *Note*: {#global_secondary_indexes} is inherited from a parent model
+        # when +global_secondary_index+ is explicitly specified in the parent.
         # @param [Symbol] name index name for this global secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :hash_key the hash key used by this global
@@ -60,12 +75,20 @@ module Aws
           global_secondary_indexes[name] = opts
         end
 
+        # Returns hash of local secondary index names to the index’s attributes.
+        #
+        # *Note*: +local_secondary_indexes+ is inherited from a parent model when {#local_secondary_index}
+        # is explicitly specified in the parent.
         # @return [Hash] hash of local secondary index names to the index's
         #   attributes.
         def local_secondary_indexes
           @local_secondary_indexes
         end
 
+        # Returns hash of global secondary index names to the index’s attributes.
+        #
+        # *Note*: +global_secondary_indexes+ is inherited from a parent model when {#global_secondary_index}
+        # is explicitly specified in the parent.
         # @return [Hash] hash of global secondary index names to the index's
         #   attributes.
         def global_secondary_indexes

@@ -20,8 +20,19 @@ module Aws
         model_attributes = ModelAttributes.new(self)
         sub_class.instance_variable_set("@attributes", model_attributes)
         sub_class.instance_variable_set("@keys", KeyAttributes.new(model_attributes))
+        if Aws::Record.extends_record?(sub_class)
+          inherit_attributes(sub_class)
+        end
       end
 
+      # Base initialization method for a new item. Optionally, allows you to
+      # provide initial attribute values for the model. You do not need to
+      # provide all, or even any, attributes at item creation time.
+      #
+      # === Inheritance Support
+      # Child models will inherit the attributes and keys defined in the parent
+      # model. Child models can override attribute keys if defined in their own model.
+      # See examples below to see the feature in action.
       # @example Usage Example
       #   class MyModel
       #     include Aws::Record
@@ -31,11 +42,34 @@ module Aws
       #   end
       #
       #   item = MyModel.new(id: 1, name: "Quick Create")
+      # @example Child model inheriting from Parent model
+      #   class Animal
+      #     include Aws::Record
+      #     string_attr :name,   hash_key: true
+      #     integer_attr :age,   default_value: 1
+      #   end
       #
-      # Base initialization method for a new item. Optionally, allows you to
-      # provide initial attribute values for the model. You do not need to
-      # provide all, or even any, attributes at item creation time.
+      #   class Cat < Animal
+      #     include Aws::Record
+      #     integer_attr :num_of_wiskers
+      #   end
       #
+      #   cat = Cat.find(name: 'Foo')
+      #   cat.age    # => 1
+      #   cat.num_of_wiskers = 200
+      # @example Child model overrides the hash key
+      #   class Animal
+      #     include Aws::Record
+      #     string_attr :name,   hash_key: true
+      #     integer_attr :age,   range_key: true
+      #   end
+      #
+      #   class Dog < Animal
+      #     include Aws::Record
+      #     integer_attr :id, hash_key: true
+      #   end
+      #
+      #   Dog.keys # => {:hash=>:id, :range=>:age}
       # @param [Hash] attr_values Attribute symbol/value pairs for any initial
       #  attribute values you wish to set.
       # @return [Aws::Record] An item instance for your model.
@@ -54,6 +88,27 @@ module Aws
       # @return [Hash] Map of attribute names to raw values.
       def to_h
         @data.hash_copy
+      end
+
+      private
+      def self.inherit_attributes(klass)
+        superclass_attributes = klass.superclass.instance_variable_get("@attributes")
+
+        superclass_attributes.attributes.each do |name, attribute|
+          subclass_attributes = klass.instance_variable_get("@attributes")
+          subclass_attributes.register_superclass_attribute(name, attribute)
+        end
+
+        superclass_keys = klass.superclass.instance_variable_get("@keys")
+        subclass_keys = klass.instance_variable_get("@keys")
+
+        if superclass_keys.hash_key
+          subclass_keys.hash_key = superclass_keys.hash_key
+        end
+
+        if superclass_keys.range_key
+          subclass_keys.range_key = superclass_keys.range_key
+        end
       end
 
       module ClassMethods

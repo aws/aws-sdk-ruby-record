@@ -164,5 +164,72 @@ module Aws
       end
     end
 
+    describe 'inheritance support for table name' do
+      let(:parent_model) do
+        Class.new do
+          include(Aws::Record)
+          set_table_name('ParentTable')
+        end
+      end
+
+      let(:child_model) do
+        Class.new(parent_model) do
+          include(Aws::Record)
+        end
+      end
+
+      it 'should have child model inherit table name from parent model if it is defined in parent model'  do
+        expect(parent_model.table_name).to eq('ParentTable')
+        expect(child_model.table_name).to eq('ParentTable')
+      end
+
+      it 'should have child model override parent table name if defined in model' do
+        child_model.set_table_name('ChildTable')
+        expect(parent_model.table_name).to eq('ParentTable')
+        expect(child_model.table_name).to eq('ChildTable')
+      end
+
+      it 'should have parent and child models maintain their default table names' do
+        ::ParentModel = Class.new do
+          include(Aws::Record)
+        end
+        ::ChildModel = Class.new(ParentModel) do
+          include(Aws::Record)
+        end
+
+        expect(ParentModel.table_name).to eq("ParentModel")
+        expect(ChildModel.table_name). to eq("ChildModel")
+      end
+
+    end
+
+    describe 'inheritance support for track mutations' do
+      let(:parent_model) do
+        Class.new do
+          include(Aws::Record)
+          integer_attr(:id, hash_key: true)
+        end
+      end
+
+      let(:child_model) do
+        Class.new(parent_model) do
+          include(Aws::Record)
+          string_attr(:foo)
+        end
+      end
+
+      it 'should have child model inherit track mutations from parent model' do
+        parent_model.disable_mutation_tracking
+        expect(parent_model.mutation_tracking_enabled?).to be_falsy
+        expect(child_model.mutation_tracking_enabled?). to be_falsy
+      end
+
+      it 'should have child model maintain its own track mutations if defined in model' do
+        child_model.disable_mutation_tracking
+        expect(parent_model.mutation_tracking_enabled?).to be_truthy
+        expect(child_model.mutation_tracking_enabled?). to be_falsy
+      end
+    end
+
   end
 end

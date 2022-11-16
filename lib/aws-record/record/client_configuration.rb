@@ -26,6 +26,8 @@ module Aws
       # in doubt, call this method to ensure your client is configured the way
       # you want it to be configured.
       #
+      # *Note*: {#dynamodb_client} is inherited from a parent model when
+      # +configure_client+ is explicitly specified in the parent.
       # @param [Hash] opts the options you wish to use to create the client.
       #  Note that if you include the option +:client+, all other options
       #  will be ignored. See the documentation for other options in the
@@ -33,14 +35,22 @@ module Aws
       # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
       #  own pre-configured client.
       def configure_client(opts = {})
-        @dynamodb_client = _build_client(opts)
+        if self.class != Module && Aws::Record.extends_record?(self) && opts.empty? &&
+          self.superclass.instance_variable_get('@dynamodb_client')
+            @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
+        else
+          @dynamodb_client = _build_client(opts)
+        end
       end
 
       # Gets the
-      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html}
+      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html Client}
       # instance that Transactions use. When called for the first time, if
       # {#configure_client} has not yet been called, will configure a new
       # client for you with default parameters.
+      #
+      # *Note*: +dynamodb_client+ is inherited from a parent model when
+      # {configure_client} is explicitly specified in the parent.
       #
       # @return [Aws::DynamoDB::Client] the Amazon DynamoDB client instance.
       def dynamodb_client

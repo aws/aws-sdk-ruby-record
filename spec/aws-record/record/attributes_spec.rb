@@ -263,6 +263,72 @@ module Aws
         end
       end
 
+      describe 'inheritance support' do
+        let(:parent_model) do
+          Class.new do
+            include(Aws::Record)
+            integer_attr(:id, hash_key: true)
+            date_attr(:date, range_key: true)
+            list_attr(:list)
+          end
+        end
+
+        let(:child_model) do
+          Class.new(parent_model) do
+            include(Aws::Record)
+            string_attr(:body)
+          end
+        end
+
+        let(:child_model2) do
+          Class.new(parent_model) do
+            include(Aws::Record)
+            string_attr(:body2)
+          end
+        end
+
+        it 'should have instances of child models with parent attributes '\
+           'and an instance of parent model with its own attributes' do
+          parent_item = parent_model.new(id: 1, date: '2022-10-10', list: [])
+          child_item = child_model.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')
+          child_item2 = child_model2.new(id: 3, date: '2022-10-31', list: [4, 5, 6], body2: 'World')
+
+          expect(parent_item.id).to eq(1)
+          expect(parent_item.date).to eq(Date.parse('2022-10-10'))
+          expect(parent_item.list).to eq([])
+          expect { parent_item.body }.to raise_error(NoMethodError)
+          expect { parent_item.body2 }.to raise_error(NoMethodError)
+
+          expect(child_item.id).to eq(2)
+          expect(child_item.date).to eq(Date.parse('2022-10-21'))
+          expect(child_item.list).to eq([1, 2, 3])
+          expect(child_item.body).to eq('Hello')
+          expect { child_item.body2 }.to raise_error(NoMethodError)
+
+          expect(child_item2.id).to eq(3)
+          expect(child_item2.date).to eq(Date.parse('2022-10-31'))
+          expect(child_item2.list).to eq([4, 5, 6])
+          expect(child_item2.body2).to eq('World')
+          expect { child_item2.body }.to raise_error(NoMethodError)
+        end
+
+        it 'should let child model override attribute keys' do
+          child_model.integer_attr(:rk, range_key: true)
+          child_item = child_model.new(id: 1, rk: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
+
+          expect(child_item.id).to eq(1)
+          expect(child_item.rk).to eq(1)
+          expect(child_item.key_values).to eq({"id"=>1, "rk"=>1})
+        end
+
+        it 'correctly passes default values to child model' do
+          parent_model.string_attr(:test, default_value: -> { 'test' })
+          child_item = child_model.new(id: 1, date: '2022-10-21', list: [1, 2, 3], body: 'foo')
+
+          expect(child_item.test).to eq('test')
+        end
+      end
+
     end
   end
 end
