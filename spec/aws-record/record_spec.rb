@@ -189,7 +189,7 @@ module Aws
         expect(child_model.table_name).to eq('ChildTable')
       end
 
-      it 'should have parent and child models maintain their own table names' do
+      it 'should have parent and child models maintain their default table names' do
         ::ParentModel = Class.new do
           include(Aws::Record)
         end
