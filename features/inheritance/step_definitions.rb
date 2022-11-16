@@ -28,7 +28,7 @@ Given(/^a (Parent|Child) model with definition:$/) do |model, string|
       @model.class_eval(string)
       @table_name = @model.table_name
     else
-      raise SyntaxError.new('Model must be either a Parent or Child')
+      raise 'Model must be either a Parent or Child'
   end
 end
 
@@ -40,7 +40,7 @@ And(/^we create a new instance of the (Parent|Child) model with attribute value 
     when 'Child'
       @instance = @model.new
     else
-    raise SyntaxError.new('Model must be either a Parent or Child')
+      raise 'Model must be either a Parent or Child'
   end
   data.each do |row|
     attribute, value = row
