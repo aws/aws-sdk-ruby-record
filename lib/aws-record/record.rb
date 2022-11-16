@@ -18,8 +18,9 @@ module Aws
   # library. Methods you can use are shown below, in sub-modules organized by
   # functionality.
   # === Inheritance Support
-  # This support allows models to be extended. The child model must include
-  # +Aws::Record+ in their model and the following will be inherited:
+  # Aws Record models can be extended using standard ruby inheritance. The child
+  # model must include +Aws::Record+ in their model and the following will
+  # be inherited:
   # * {#set_table_name set_table_name}
   # * {#initialize Attributes and keys}
   # * Mutation Tracking:
