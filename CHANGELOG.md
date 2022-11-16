@@ -1,3 +1,8 @@
+Unreleased Changes
+------------------
+
+* Feature - Add support for inheritance (#80)
+
 2.8.0 (2022-10-12)
 ------------------
 
