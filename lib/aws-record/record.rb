@@ -89,6 +89,7 @@ module Aws
       end
     end
 
+    # @api private
     def self.extends_record?(klass)
       klass.superclass.include?(Aws::Record)
     end
