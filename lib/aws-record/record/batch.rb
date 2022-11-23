@@ -76,6 +76,11 @@ module Aws
           block.call(batch)
           batch.execute!
         end
+
+        # TO-DO
+        def read(opts = {}, &block)
+        end
+
       end
     end
   end
