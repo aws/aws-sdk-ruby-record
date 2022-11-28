@@ -14,10 +14,24 @@
 module Aws
   module Record
     class BatchRead
+      def initialize(client:)
+        @client = client
+      end
 
+      def find(record)
+        table_name, params = record_find_params(record)
+        operations[table_name] ||= { keys: [] }
+        operations[table_name][:keys] << params
+      end
 
+      def operations
+        @operations ||= {}
+      end
 
-
+      private
+      def record_find_params(record)
+        [record.class.table_name, record.key_values]
+      end
 
     end
   end
