@@ -81,6 +81,7 @@ module Aws
         def read(opts = {}, &block)
           batch = BatchRead.new(client: _build_client(opts))
           block.call(batch)
+          batch.execute!
         end
 
       end
