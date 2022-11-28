@@ -24,6 +24,12 @@ module Aws
         operations[table_name][:keys] << params
       end
 
+      def execute!
+        result = @client.batch_get_item(request_items: operations)
+        @operations = result.unprocessed_keys
+        self
+      end
+
       def operations
         @operations ||= {}
       end
