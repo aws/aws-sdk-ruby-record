@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mamuller@amazon.com", "alexwoo@amazon.com"]
   spec.summary       = "AWS Record library for Amazon DynamoDB"
   spec.description   = "Provides an object mapping abstraction for Amazon DynamoDB."
-  spec.homepage      = "http://github.com/aws/aws-sdk-ruby-record"
+  spec.homepage      = "https://github.com/aws/aws-sdk-ruby-record"
   spec.license       = "Apache 2.0"
 
   spec.require_paths = ["lib"]
