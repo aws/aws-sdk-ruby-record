@@ -30,11 +30,15 @@ module Aws
         self
       end
 
+      def unprocessed_keys
+        operations
+      end
+
+      private
       def operations
         @operations ||= {}
       end
 
-      private
       def record_find_params(record)
         [record.class.table_name, record.key_values]
       end
