@@ -19,6 +19,28 @@ module Aws
       end
 
       def find(klass, **key)
+        item_key = format_key(klass, key)
+        operations[klass.table_name] ||= { keys: [] }
+        operations[klass.table_name][:keys] << item_key
+      end
+
+      def execute!
+        result = @client.batch_get_item(request_items: operations)
+        puts result.responses
+        @operations = result.unprocessed_keys
+        self
+      end
+
+      def unprocessed_keys
+        operations
+      end
+
+      private
+      def operations
+        @operations ||= {}
+      end
+
+      def format_key(klass, key)
         item_key = {}
         attributes = klass.attributes
         klass.keys.each_value do |attr_sym|
@@ -31,23 +53,7 @@ module Aws
           item_key[attr_name] = attributes.attribute_for(attr_sym).
             serialize(key[attr_sym])
         end
-        operations[klass.table_name] ||= { keys: [] }
-        operations[klass.table_name][:keys] << item_key
-      end
-
-      def execute!
-        result = @client.batch_get_item(request_items: operations)
-        @operations = result.unprocessed_keys
-        self
-      end
-
-      def unprocessed_keys
-        operations
-      end
-
-      private
-      def operations
-        @operations ||= {}
+        item_key
       end
 
     end
