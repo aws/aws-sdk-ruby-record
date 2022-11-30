@@ -18,10 +18,21 @@ module Aws
         @client = client
       end
 
-      def find(record)
-        table_name, params = record_find_params(record)
-        operations[table_name] ||= { keys: [] }
-        operations[table_name][:keys] << params
+      def find(klass, **key)
+        item_key = {}
+        attributes = klass.attributes
+        klass.keys.each_value do |attr_sym|
+          unless key[attr_sym]
+            raise Errors::KeyMissing.new(
+              "Missing required key #{attr_sym} in #{key}"
+            )
+          end
+          attr_name = attributes.storage_name_for(attr_sym)
+          item_key[attr_name] = attributes.attribute_for(attr_sym).
+            serialize(key[attr_sym])
+        end
+        operations[klass.table_name] ||= { keys: [] }
+        operations[klass.table_name][:keys] << item_key
       end
 
       def execute!
@@ -37,10 +48,6 @@ module Aws
       private
       def operations
         @operations ||= {}
-      end
-
-      def record_find_params(record)
-        [record.class.table_name, record.key_values]
       end
 
     end
