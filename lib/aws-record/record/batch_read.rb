@@ -20,8 +20,10 @@ module Aws
 
       def find(klass, **key)
         item_key = format_key(klass, key)
+        store_item_class(klass, key)
         operations[klass.table_name] ||= { keys: [] }
         operations[klass.table_name][:keys] << item_key
+        puts "Item Classes: #{item_classes}"
       end
 
       def execute!
@@ -35,9 +37,26 @@ module Aws
         operations
       end
 
+      def items
+        @items ||= []
+      end
+
       private
       def operations
         @operations ||= {}
+      end
+
+      # keeps track of all the item information
+      # such as class name, keys and table name
+      # before it sends off
+      def item_classes
+        @item_classes ||= {}
+      end
+
+      # logic that stores item info under item_keys
+      # also checks to see if there's items with same keys & table name
+      # but if it has different class name, should throw an error
+      def store_item_class(klass, key)
       end
 
       def format_key(klass, key)
@@ -54,6 +73,13 @@ module Aws
             serialize(key[attr_sym])
         end
         item_key
+      end
+
+      # finds the key and returns info to
+      def find_item_class
+      end
+
+      def build_item
       end
 
     end
