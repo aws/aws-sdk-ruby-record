@@ -20,15 +20,14 @@ module Aws
 
       def find(klass, **key)
         item_key = format_key(klass, key)
-        store_item_class(klass, key)
+        store_item_class(klass, item_key)
         operations[klass.table_name] ||= { keys: [] }
         operations[klass.table_name][:keys] << item_key
-        puts "Item Classes: #{item_classes}"
       end
 
       def execute!
         result = @client.batch_get_item(request_items: operations)
-        puts result.responses
+        build_items(result.responses)
         @operations = result.unprocessed_keys
         self
       end
@@ -46,17 +45,20 @@ module Aws
         @operations ||= {}
       end
 
-      # keeps track of all the item information
-      # such as class name, keys and table name
-      # before it sends off
       def item_classes
         @item_classes ||= {}
       end
 
-      # logic that stores item info under item_keys
-      # also checks to see if there's items with same keys & table name
-      # but if it has different class name, should throw an error
       def store_item_class(klass, key)
+        if item_classes.include?(klass.table_name)
+          item_classes[klass.table_name].each do | item |
+            if item[:keys] == key && item[:class] != klass
+              raise 'Provided item keys is a duplicate request'
+            end
+          end
+        end
+        item_classes[klass.table_name] ||= []
+        item_classes[klass.table_name] << {keys: key, class: klass}
       end
 
       def format_key(klass, key)
@@ -75,11 +77,28 @@ module Aws
         item_key
       end
 
-      # finds the key and returns info to
-      def find_item_class
+      def find_item_class(table, item)
+        item_class = nil
+        item_classes[table].find do |item_info|
+          if item >= item_info[:keys]
+            item_class = item_info[:class]
+          end
+        end
+        item_class
       end
 
-      def build_item
+      def build_items(item_responses)
+        item_responses.each do | table, items |
+          items.each do |item|
+            item_class = find_item_class(table, item)
+            # raise error if item_class not found
+            if item_class.nil?
+            end
+            # build item
+            # clean item
+            # add item to @items
+          end
+        end
       end
 
     end
