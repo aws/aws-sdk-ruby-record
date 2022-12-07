@@ -14,7 +14,6 @@
 module Aws
   module Record
     class BatchRead
-      # include ItemOperations::ItemOperationsClassMethods
 
       def initialize(client:)
         @client = client
