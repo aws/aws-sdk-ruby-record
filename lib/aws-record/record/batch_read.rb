@@ -14,6 +14,8 @@
 module Aws
   module Record
     class BatchRead
+      # include ItemOperations::ItemOperationsClassMethods
+
       def initialize(client:)
         @client = client
       end
@@ -88,15 +90,20 @@ module Aws
       end
 
       def build_items(item_responses)
-        item_responses.each do | table, items |
-          items.each do |item|
+        item_responses.each do | table, unprocessed_items |
+          unprocessed_items.each do |item|
             item_class = find_item_class(table, item)
-            # raise error if item_class not found
             if item_class.nil?
+              raise 'Item Class was not found'
             end
-            # build item
-            # clean item
-            # add item to @items
+            new_item_opts = {}
+            item.each do |db_name, value|
+              name = item_class.attributes.db_to_attribute_name(db_name)
+              new_item_opts[name] = value
+            end
+            item = item_class.new(new_item_opts)
+            item.clean!
+            items << item
           end
         end
       end
