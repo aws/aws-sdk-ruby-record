@@ -82,6 +82,19 @@ module Aws
         item_key
       end
 
+      def build_items(item_responses)
+        item_responses.each do |table, unprocessed_items|
+          unprocessed_items.each do | item |
+            item_class = find_item_class(table, item)
+            if item_class.nil?
+              raise 'Item Class was not found'
+            end
+            item = build_item(item, item_class)
+            items << item
+          end
+        end
+      end
+
       def find_item_class(table, item)
         item_class = nil
         item_classes[table].find do |item_info|
@@ -92,23 +105,15 @@ module Aws
         item_class
       end
 
-      def build_items(item_responses)
-        item_responses.each do | table, unprocessed_items |
-          unprocessed_items.each do |item|
-            item_class = find_item_class(table, item)
-            if item_class.nil?
-              raise 'Item Class was not found'
-            end
-            new_item_opts = {}
-            item.each do |db_name, value|
-              name = item_class.attributes.db_to_attribute_name(db_name)
-              new_item_opts[name] = value
-            end
-            item = item_class.new(new_item_opts)
-            item.clean!
-            items << item
-          end
+      def build_item(item, item_class)
+        new_item_opts = {}
+        item.each do |db_name, value|
+          name = item_class.attributes.db_to_attribute_name(db_name)
+          new_item_opts[name] = value
         end
+        item = item_class.new(new_item_opts)
+        item.clean!
+        item
       end
 
     end
