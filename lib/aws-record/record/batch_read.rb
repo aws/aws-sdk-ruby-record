@@ -37,6 +37,10 @@ module Aws
         operations
       end
 
+      def complete?
+        unprocessed_keys.values.none?
+      end
+
       def items
         @items ||= []
       end
