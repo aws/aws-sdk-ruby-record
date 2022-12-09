@@ -56,7 +56,7 @@ module Aws
 
       def store_item_class(klass, key)
         if item_classes.include?(klass.table_name)
-          item_classes[klass.table_name].each do | item |
+          item_classes[klass.table_name].each do |item|
             if item[:keys] == key && item[:class] != klass
               raise 'Provided item keys is a duplicate request'
             end
@@ -84,7 +84,7 @@ module Aws
 
       def build_items(item_responses)
         item_responses.each do |table, unprocessed_items|
-          unprocessed_items.each do | item |
+          unprocessed_items.each do |item|
             item_class = find_item_class(table, item)
             if item_class.nil?
               raise 'Item Class was not found'
