@@ -95,6 +95,50 @@ module Aws
         end
       end
 
+      describe '.read' do
+
+        context 'when all operations succeed' do
+
+
+          it 'reads a batch of operations' do
+
+          end
+
+          it 'is complete' do
+
+          end
+
+        end
+
+        context 'when some operations fail' do
+
+          it 'sets the unprocessed_keys attribute' do
+
+          end
+
+          it 'is not complete' do
+
+          end
+
+          it 'can process the remaining operations by running execute' do
+
+          end
+        end
+
+        it 'raises when an operation is missing a key' do
+
+        end
+
+        it 'raises when there is a duplicate item key' do
+
+        end
+
+        it 'raises exception from API when none of the items can be processed due to '\
+            'an insufficient provisioned throughput on all tables in the request' do
+
+        end
+
+      end
 
 
 
