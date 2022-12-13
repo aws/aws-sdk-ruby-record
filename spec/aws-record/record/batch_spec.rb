@@ -17,7 +17,7 @@ module Aws
   module Record
     describe Batch do
 
-      let(:client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+      let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
 
       describe '.write' do
         Planet = Class.new do
@@ -27,12 +27,12 @@ module Aws
         end
 
         before(:each) do
-          Planet.configure_client(client: client)
+          Planet.configure_client(client: stub_client)
         end
 
         let(:pluto) { Planet.find(id: 9, name: 'pluto') }
         let(:result) do
-          described_class.write(client: client) do |db|
+          described_class.write(client: stub_client) do |db|
             db.put(Planet.new(id: 1, name: 'mercury'))
             db.put(Planet.new(id: 2, name: 'venus'))
             db.put(Planet.new(id: 3, name: 'earth'))
@@ -46,7 +46,7 @@ module Aws
         end
 
         before(:each) do
-          client.stub_responses(
+          stub_client.stub_responses(
             :get_item,
             item: {
               'id' => 9,
@@ -57,7 +57,7 @@ module Aws
 
         context 'when all operations succeed' do
           before(:each) do
-            client.stub_responses(
+            stub_client.stub_responses(
               :batch_write_item,
               unprocessed_items: {}
             )
@@ -74,7 +74,7 @@ module Aws
 
         context 'when some operations fail' do
           before(:each) do
-            client.stub_responses(
+            stub_client.stub_responses(
               :batch_write_item,
               unprocessed_items: {
                 'planet' => [
@@ -122,14 +122,13 @@ module Aws
         end
 
         before(:each) do
-          Aws::Record::Batch.configure_client(client: client)
+          Aws::Record::Batch.configure_client(client: stub_client)
         end
 
         context 'when all operations succeed' do
 
           it 'reads a batch of operations' do
-
-          end
+            end
 
           it 'is complete' do
 
