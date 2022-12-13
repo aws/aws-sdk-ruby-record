@@ -105,7 +105,6 @@ describe Aws::Record::Batch do
       end
     end
 
-
     let(:breakfast) do
       Class.new(food) do
         include(Aws::Record)
@@ -119,21 +118,23 @@ describe Aws::Record::Batch do
       string_attr(:drink)
     end
 
+    before(:each) do
+      Aws::Record::Batch.configure_client(client: stub_client)
+    end
+
     context 'when all operations succeed' do
 
       before(:each) do
         stub_client.stub_responses(
           :batch_get_item,
-          {
-            responses:
-              {'FoodTable'=> [
-                {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
-                {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
-              ],
-               'Drinks'=> [
-                 {'id' => 1, 'drink' => 'Hot Chocolate'},
-               ]
-              }
+          responses: {
+            'FoodTable'=> [
+              {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
+              {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
+            ],
+            'Drinks'=> [
+              {'id' => 1, 'drink' => 'Hot Chocolate'},
+            ]
           }
         )
       end
@@ -146,10 +147,26 @@ describe Aws::Record::Batch do
         end
       end
 
+      # how to test modeled items? cannot use indexes since items will be unordered
+      # wait since I mocked my responses, I do know the order!
       it 'reads a batch of operations and returns modeled items' do
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(3)
+        expect(result.items[0].class).to eq(food)
+        expect(result.items[1].class).to eq(breakfast)
+        expect(result.items[2].class).to eq(Drinks)
+        expect(result.items[0].dirty?).to be_falsey
+        expect(result.items[1].dirty?).to be_falsey
+        expect(result.items[2].dirty?).to be_falsey
+        expect(result.items[0].spicy).to be_falsey
+        expect(result.items[1].spicy).to be_falsey
+        expect(result.items[1].gluten_free).to be_truthy
+        expect(result.items[2].drink).to eq('Hot Chocolate')
       end
 
+      # should this be part of the above test?
       it 'is complete' do
+        expect(result).to be_complete
       end
 
     end
@@ -157,7 +174,6 @@ describe Aws::Record::Batch do
     context 'when some operations fail' do
 
       it 'sets the unprocessed_keys attribute' do
-
       end
 
       it 'is not complete' do
