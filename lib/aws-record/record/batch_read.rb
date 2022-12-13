@@ -22,6 +22,7 @@ module Aws
       def find(klass, **key)
         item_key = format_key(klass, key)
         store_item_class(klass, item_key)
+        puts klass.table_name
         operations[klass.table_name] ||= { keys: [] }
         operations[klass.table_name][:keys] << item_key
       end
