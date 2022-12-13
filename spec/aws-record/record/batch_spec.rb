@@ -97,8 +97,35 @@ module Aws
 
       describe '.read' do
 
-        context 'when all operations succeed' do
+        let(:food) do
+          Class.new do
+            include(Aws::Record)
+            integer_attr(:id, hash_key: true)
+            string_attr(:dish, range_key: true)
+            bool_attr(:spicy)
+          end
+        end
 
+        let(:breakfast) do
+          Class.new(food) do
+            include(Aws::Record)
+            bool_attr(:gluten_free)
+          end
+        end
+
+        let(:drinks) do
+          Class.new do
+            include(Aws::Record)
+            integer_attr(:id, hash_key: true)
+            string_attr(:drink)
+          end
+        end
+
+        before(:each) do
+          Aws::Record::Batch.configure_client(client: client)
+        end
+
+        context 'when all operations succeed' do
 
           it 'reads a batch of operations' do
 
