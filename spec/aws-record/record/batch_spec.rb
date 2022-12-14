@@ -112,10 +112,13 @@ describe Aws::Record::Batch do
       end
     end
 
-    Drinks = Class.new do
-      include(Aws::Record)
-      integer_attr(:id, hash_key: true)
-      string_attr(:drink)
+    let(:drink) do
+      Class.new do
+        include(Aws::Record)
+        set_table_name('DrinkTable')
+        integer_attr(:id, hash_key: true)
+        string_attr(:drink)
+      end
     end
 
     before(:each) do
@@ -132,7 +135,7 @@ describe Aws::Record::Batch do
               {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
               {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
             ],
-            'Drinks'=> [
+            'DrinkTable'=> [
               {'id' => 1, 'drink' => 'Hot Chocolate'},
             ]
           }
@@ -143,18 +146,16 @@ describe Aws::Record::Batch do
         Aws::Record::Batch.read(client: stub_client) do |db|
           db.find(food, id: 1, dish: 'Pasta')
           db.find(breakfast, id: 2, dish: 'Waffles')
-          db.find(Drinks, id: 1)
+          db.find(drink, id: 1)
         end
       end
 
-      # how to test modeled items? cannot use indexes since items will be unordered
-      # wait since I mocked my responses, I do know the order!
       it 'reads a batch of operations and returns modeled items' do
         expect(result).to be_an(Aws::Record::BatchRead)
         expect(result.items.size).to eq(3)
         expect(result.items[0].class).to eq(food)
         expect(result.items[1].class).to eq(breakfast)
-        expect(result.items[2].class).to eq(Drinks)
+        expect(result.items[2].class).to eq(drink)
         expect(result.items[0].dirty?).to be_falsey
         expect(result.items[1].dirty?).to be_falsey
         expect(result.items[2].dirty?).to be_falsey
@@ -164,14 +165,13 @@ describe Aws::Record::Batch do
         expect(result.items[2].drink).to eq('Hot Chocolate')
       end
 
-      # should this be part of the above test?
       it 'is complete' do
         expect(result).to be_complete
       end
 
     end
 
-    context 'when some operations fail' do
+    context 'when some operations are uncompleted' do
       before(:each) do
         stub_client.stub_responses(
           :batch_get_item,
@@ -187,7 +187,7 @@ describe Aws::Record::Batch do
                   {'id' => 2, 'dish' => 'Waffles'}
                 ]
               },
-              'Drinks'=> {
+              'DrinkTable'=> {
                 :keys => [
                   {'id' => 1},
                   {'id' => 2}
@@ -202,14 +202,14 @@ describe Aws::Record::Batch do
         Aws::Record::Batch.read(client: stub_client) do |db|
           db.find(food, id: 1, dish: 'Pasta')
           db.find(breakfast, id: 2, dish: 'Waffles')
-          db.find(Drinks, id: 1)
-          db.find(Drinks, id: 2)
+          db.find(drink, id: 1)
+          db.find(drink, id: 2)
         end
       end
 
       it 'sets the unprocessed_keys attribute' do
         expect(result.unprocessed_keys['FoodTable'][:keys].size).to eq(1)
-        expect(result.unprocessed_keys['Drinks'][:keys].size).to eq(2)
+        expect(result.unprocessed_keys['DrinkTable'][:keys].size).to eq(2)
       end
 
       it 'is not complete' do
@@ -224,7 +224,7 @@ describe Aws::Record::Batch do
             'FoodTable'=> [
               {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
             ],
-            'Drinks'=> [
+            'DrinkTable'=> [
               {'id' => 1, 'drink' => 'Hot Chocolate'},
               {'id' => 2, 'drink' => 'Coffee'},
             ]
@@ -236,13 +236,6 @@ describe Aws::Record::Batch do
         expect(result.items.size).to eq(4)
       end
 
-    end
-
-    context 'when there are unprocessed keys after operations' do
-
-      it 'can process the remaining operations by running execute' do
-
-      end
     end
 
     it 'raises when an operation is missing a key' do
