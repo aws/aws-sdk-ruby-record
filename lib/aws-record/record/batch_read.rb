@@ -22,7 +22,6 @@ module Aws
       def find(klass, **key)
         item_key = format_key(klass, key)
         store_item_class(klass, item_key)
-        puts klass.table_name
         operations[klass.table_name] ||= { keys: [] }
         operations[klass.table_name][:keys] << item_key
       end
@@ -30,8 +29,16 @@ module Aws
       def execute!
         result = @client.batch_get_item(request_items: operations)
         build_items(result.responses)
-        @operations = result.unprocessed_keys
+
+        case
+        when result.unprocessed_keys.nil?
+          @operations = {}
+        else
+          @operations = build_unprocessed_keys(result.unprocessed_keys)
+        end
+
         self
+
       end
 
       def unprocessed_keys
@@ -94,6 +101,15 @@ module Aws
             items << item
           end
         end
+      end
+
+      def build_unprocessed_keys(unprocessed_keys)
+        updated_keys = {}
+        unprocessed_keys.each do | table_name, values |
+          updated_keys[table_name] ||= { }
+          updated_keys[table_name][:keys] = values.keys
+        end
+        updated_keys
       end
 
       def find_item_class(table, item)
