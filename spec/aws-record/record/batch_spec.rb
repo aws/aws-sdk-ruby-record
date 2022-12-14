@@ -172,13 +172,73 @@ describe Aws::Record::Batch do
     end
 
     context 'when some operations fail' do
+      before(:each) do
+        stub_client.stub_responses(
+          :batch_get_item,
+          {
+            responses: {
+              'FoodTable'=> [
+                {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
+              ],
+            },
+            unprocessed_keys: {
+              'FoodTable' => {
+                :keys => [
+                  {'id' => 2, 'dish' => 'Waffles'}
+                ]
+              },
+              'Drinks'=> {
+                :keys => [
+                  {'id' => 1},
+                  {'id' => 2}
+                ]
+              }
+            }
+          }
+        )
+      end
+
+      let(:result) do
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Pasta')
+          db.find(breakfast, id: 2, dish: 'Waffles')
+          db.find(Drinks, id: 1)
+          db.find(Drinks, id: 2)
+        end
+      end
 
       it 'sets the unprocessed_keys attribute' do
+        expect(result.unprocessed_keys['FoodTable'][:keys].size).to eq(1)
+        expect(result.unprocessed_keys['Drinks'][:keys].size).to eq(2)
       end
 
       it 'is not complete' do
-
+        expect(result).to_not be_complete
       end
+
+      it 'can process the remaining operations by running execute' do
+        expect(result).to_not be_complete
+        stub_client.stub_responses(
+          :batch_get_item,
+          responses: {
+            'FoodTable'=> [
+              {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
+            ],
+            'Drinks'=> [
+              {'id' => 1, 'drink' => 'Hot Chocolate'},
+              {'id' => 2, 'drink' => 'Coffee'},
+            ]
+          }
+        )
+        result.execute!
+        expect(result).to be_complete
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(4)
+      end
+
+    end
+
+    context 'when there are unprocessed keys after operations' do
 
       it 'can process the remaining operations by running execute' do
 
@@ -186,16 +246,13 @@ describe Aws::Record::Batch do
     end
 
     it 'raises when an operation is missing a key' do
-
     end
 
     it 'raises when there is a duplicate item key' do
-
     end
 
     it 'raises exception from API when none of the items can be processed due to '\
         'an insufficient provisioned throughput on all tables in the request' do
-
     end
 
   end
