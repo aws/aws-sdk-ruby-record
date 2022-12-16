@@ -27,6 +27,7 @@ module Aws
       end
 
       def execute!
+        # 100 item check
         result = @client.batch_get_item(request_items: operations)
         build_items(result.responses)
 
@@ -115,7 +116,7 @@ module Aws
       def find_item_class(table, item)
         item_class = nil
         item_classes[table].find do |item_info|
-          if item >= item_info[:keys]
+          if item > item_info[:keys]
             item_class = item_info[:class]
           end
         end
