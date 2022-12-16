@@ -239,13 +239,34 @@ describe Aws::Record::Batch do
     end
 
     it 'raises when an operation is missing a key' do
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1)
+        end
+      }.to raise_error(Aws::Record::Errors::KeyMissing)
     end
 
     it 'raises when there is a duplicate item key' do
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Pancakes')
+          db.find(breakfast, id: 1, dish: 'Pancakes')
+        end
+      }.to raise_error(RuntimeError)
     end
 
     it 'raises exception from API when none of the items can be processed due to '\
         'an insufficient provisioned throughput on all tables in the request' do
+      stub_client.stub_responses(
+        :batch_get_item,
+        'ProvisionedThroughputExceededException'
+      )
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Omurice')
+          db.find(breakfast, id: 2, dish: 'Omelette')
+        end
+      }.to raise_error(Aws::DynamoDB::Errors::ProvisionedThroughputExceededException)
     end
 
   end
