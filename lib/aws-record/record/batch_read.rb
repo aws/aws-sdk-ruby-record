@@ -116,7 +116,7 @@ module Aws
       def find_item_class(table, item)
         item_class = nil
         item_classes[table].find do |item_info|
-          if item > item_info[:keys]
+          if item.merge(item_info[:keys]) == item
             item_class = item_info[:class]
           end
         end
