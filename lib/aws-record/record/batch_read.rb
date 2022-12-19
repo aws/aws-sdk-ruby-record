@@ -118,6 +118,7 @@ module Aws
         item_classes[table].find do |item_info|
           if item.merge(item_info[:keys]) == item
             item_class = item_info[:class]
+            break
           end
         end
         item_class
