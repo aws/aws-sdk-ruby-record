@@ -15,8 +15,8 @@ module Aws
   module Record
     class BatchRead
 
-      def initialize(client:)
-        @client = client
+      def initialize(opts = {})
+        @client = opts[:client]
       end
 
       def find(klass, **key)
@@ -28,6 +28,7 @@ module Aws
 
       def execute!
         # 100 item check
+        # check_operations_limit
         result = @client.batch_get_item(request_items: operations)
         build_items(result.responses)
 
@@ -134,6 +135,21 @@ module Aws
         item.clean!
         item
       end
+
+      # def check_operations_limit
+      #   puts operations
+      #   unprocessed_items = {}
+      #   operations_count = 0
+      #
+      #   operations.each do |table_name, keys|
+      #     operations[table_name][:keys].each do | item_key |
+      #       operations_count += 1
+      #     end
+      #     puts operations[table_name][:keys]
+      #   end
+      #   puts operations_count
+      #
+      # end
 
     end
   end

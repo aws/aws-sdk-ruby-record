@@ -15,8 +15,8 @@ module Aws
   module Record
     class BatchWrite
       # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
-      def initialize(client:)
-        @client = client
+      def initialize(opts = {})
+        @client = opts[:client]
       end
 
       # Append a +PutItem+ operation to a batch write request.

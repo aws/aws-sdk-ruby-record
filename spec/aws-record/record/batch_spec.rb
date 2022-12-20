@@ -151,6 +151,7 @@ describe Aws::Record::Batch do
       end
 
       it 'reads a batch of operations and returns modeled items' do
+
         expect(result).to be_an(Aws::Record::BatchRead)
         expect(result.items.size).to eq(3)
         expect(result.items[0].class).to eq(food)
@@ -255,8 +256,7 @@ describe Aws::Record::Batch do
       }.to raise_error(RuntimeError)
     end
 
-    it 'raises exception from API when none of the items can be processed due to '\
-        'an insufficient provisioned throughput on all tables in the request' do
+    it 'raises exception when BatchGetItem raises an exception' do
       stub_client.stub_responses(
         :batch_get_item,
         'ProvisionedThroughputExceededException'
