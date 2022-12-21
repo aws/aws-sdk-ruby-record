@@ -20,35 +20,34 @@ module Aws
       end
 
       def find(klass, **key)
-        item_key = format_key(klass, key)
-        store_item_class(klass, item_key)
-        operations[klass.table_name] ||= { keys: [] }
-        operations[klass.table_name][:keys] << item_key
+        unprocessed_key = format_unprocessed_key(klass, key)
+        store_unprocessed_key(klass, unprocessed_key)
+        store_item_class(klass, unprocessed_key)
       end
 
       def execute!
-        # 100 item check
-        # check_operations_limit
+        if unprocessed_keys.count > 100
+          operation_keys = unprocessed_keys[..99].dup
+          @unprocessed_keys = unprocessed_keys[100..].dup
+        else
+          operation_keys = unprocessed_keys.dup
+          @unprocessed_keys.clear
+        end
+
+        operations = build_operations(operation_keys)
         result = @client.batch_get_item(request_items: operations)
         build_items(result.responses)
 
-        case
-        when result.unprocessed_keys.nil?
-          @operations = {}
-        else
-          @operations = build_unprocessed_keys(result.unprocessed_keys)
+        unless result.unprocessed_keys.nil?
+          update_unprocessed_keys(result.unprocessed_keys)
         end
 
         self
 
       end
 
-      def unprocessed_keys
-        operations
-      end
-
       def complete?
-        unprocessed_keys.values.none?
+        unprocessed_keys.none?
       end
 
       def items
@@ -56,27 +55,15 @@ module Aws
       end
 
       private
-      def operations
-        @operations ||= {}
+      def unprocessed_keys
+        @unprocessed_keys ||=[]
       end
 
       def item_classes
         @item_classes ||= {}
       end
 
-      def store_item_class(klass, key)
-        if item_classes.include?(klass.table_name)
-          item_classes[klass.table_name].each do |item|
-            if item[:keys] == key && item[:class] != klass
-              raise 'Provided item keys is a duplicate request'
-            end
-          end
-        end
-        item_classes[klass.table_name] ||= []
-        item_classes[klass.table_name] << {keys: key, class: klass}
-      end
-
-      def format_key(klass, key)
+      def format_unprocessed_key(klass, key)
         item_key = {}
         attributes = klass.attributes
         klass.keys.each_value do |attr_sym|
@@ -92,6 +79,31 @@ module Aws
         item_key
       end
 
+      def store_unprocessed_key(klass, unprocessed_key)
+        unprocessed_keys << {:keys => unprocessed_key, :table_name => klass.table_name}
+      end
+
+      def store_item_class(klass, key)
+        if item_classes.include?(klass.table_name)
+          item_classes[klass.table_name].each do |item|
+            if item[:keys] == key && item[:class] != klass
+              raise 'Provided item keys is a duplicate request'
+            end
+          end
+        end
+        item_classes[klass.table_name] ||= []
+        item_classes[klass.table_name] << {keys: key, class: klass}
+      end
+
+      def build_operations(keys)
+        operations = {}
+        keys.each do | key |
+          operations[key[:table_name]] ||= { keys: [] }
+          operations[key[:table_name]][:keys] << key[:keys]
+        end
+        operations
+      end
+
       def build_items(item_responses)
         item_responses.each do |table, unprocessed_items|
           unprocessed_items.each do |item|
@@ -105,13 +117,13 @@ module Aws
         end
       end
 
-      def build_unprocessed_keys(unprocessed_keys)
-        updated_keys = {}
-        unprocessed_keys.each do | table_name, values |
-          updated_keys[table_name] ||= { }
-          updated_keys[table_name][:keys] = values.keys
+      def update_unprocessed_keys(keys)
+        keys.each do | table_name, table_values |
+          table_values.keys.each do | key |
+            formatted_key = {:keys => key, :table_name => table_name}
+            unprocessed_keys << formatted_key
+          end
         end
-        updated_keys
       end
 
       def find_item_class(table, item)
@@ -135,21 +147,6 @@ module Aws
         item.clean!
         item
       end
-
-      # def check_operations_limit
-      #   puts operations
-      #   unprocessed_items = {}
-      #   operations_count = 0
-      #
-      #   operations.each do |table_name, keys|
-      #     operations[table_name][:keys].each do | item_key |
-      #       operations_count += 1
-      #     end
-      #     puts operations[table_name][:keys]
-      #   end
-      #   puts operations_count
-      #
-      # end
 
     end
   end
