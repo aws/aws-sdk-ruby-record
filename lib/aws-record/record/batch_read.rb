@@ -27,8 +27,8 @@ module Aws
 
       def execute!
         if unprocessed_keys.count > 100
-          operation_keys = unprocessed_keys[..99].dup
-          @unprocessed_keys = unprocessed_keys[100..].dup
+          operation_keys = unprocessed_keys[0..99].dup
+          @unprocessed_keys = unprocessed_keys[100..-1].dup
         else
           operation_keys = unprocessed_keys.dup
           @unprocessed_keys.clear
@@ -43,7 +43,6 @@ module Aws
         end
 
         self
-
       end
 
       def complete?
