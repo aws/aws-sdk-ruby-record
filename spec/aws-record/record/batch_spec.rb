@@ -151,7 +151,6 @@ describe Aws::Record::Batch do
       end
 
       it 'reads a batch of operations and returns modeled items' do
-
         expect(result).to be_an(Aws::Record::BatchRead)
         expect(result.items.size).to eq(3)
         expect(result.items[0].class).to eq(food)
@@ -206,11 +205,6 @@ describe Aws::Record::Batch do
           db.find(drink, id: 1)
           db.find(drink, id: 2)
         end
-      end
-
-      it 'sets the unprocessed_keys attribute' do
-        expect(result.unprocessed_keys['FoodTable'][:keys].size).to eq(1)
-        expect(result.unprocessed_keys['DrinkTable'][:keys].size).to eq(2)
       end
 
       it 'is not complete' do
@@ -270,8 +264,6 @@ describe Aws::Record::Batch do
     end
 
   end
-
-
 
 end
 
