@@ -19,7 +19,7 @@ module Aws
         @client = opts[:client]
       end
 
-      def find(klass, **key)
+      def find(klass, key = {})
         unprocessed_key = format_unprocessed_key(klass, key)
         store_unprocessed_key(klass, unprocessed_key)
         store_item_class(klass, unprocessed_key)
