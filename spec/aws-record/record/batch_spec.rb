@@ -171,26 +171,25 @@ describe Aws::Record::Batch do
 
     end
 
-    context 'when some operations are uncompleted' do
+    context 'when there are more than 100 operations' do
+
+      let(:response_array) do
+        (1..99).each.map do | i |
+          { 'id' => i, 'dish' => "Food#{i}", 'spicy' => false}
+        end
+      end
+
       before(:each) do
         stub_client.stub_responses(
           :batch_get_item,
           {
             responses: {
-              'FoodTable'=> [
-                {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
-              ],
+              'FoodTable'=> response_array,
             },
             unprocessed_keys: {
               'FoodTable' => {
                 :keys => [
-                  {'id' => 2, 'dish' => 'Waffles'}
-                ]
-              },
-              'DrinkTable'=> {
-                :keys => [
-                  {'id' => 1},
-                  {'id' => 2}
+                  {'id' => 100, 'dish' => 'Food100'}
                 ]
               }
             }
@@ -200,11 +199,15 @@ describe Aws::Record::Batch do
 
       let(:result) do
         Aws::Record::Batch.read(client: stub_client) do |db|
-          db.find(food, id: 1, dish: 'Pasta')
-          db.find(breakfast, id: 2, dish: 'Waffles')
-          db.find(drink, id: 1)
-          db.find(drink, id: 2)
+          (1..101).each do |i|
+            db.find(food, id: i, dish: "Food#{i}")
+          end
         end
+      end
+
+      it 'reads batch of operations and returns most processed items' do
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(99)
       end
 
       it 'is not complete' do
@@ -217,20 +220,16 @@ describe Aws::Record::Batch do
           :batch_get_item,
           responses: {
             'FoodTable'=> [
-              {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
+              {'id' => 100, 'dish' => 'Food100', 'spicy' => false},
+              {'id' => 101, 'dish' => 'Food101', 'spicy' => false},
             ],
-            'DrinkTable'=> [
-              {'id' => 1, 'drink' => 'Hot Chocolate'},
-              {'id' => 2, 'drink' => 'Coffee'},
-            ]
           }
         )
         result.execute!
         expect(result).to be_complete
         expect(result).to be_an(Aws::Record::BatchRead)
-        expect(result.items.size).to eq(4)
+        expect(result.items.size).to eq(101)
       end
-
     end
 
     it 'raises when an operation is missing a key' do
