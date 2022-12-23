@@ -514,6 +514,14 @@ module Aws
           end
         end
 
+        def find_all(key_block)
+          Aws::Record::Batch.read do |db|
+            key_block.each do | key |
+              db.find(self, key)
+            end
+          end
+        end
+
         # @example Usage Example
         #   class MyModel
         #     include Aws::Record
