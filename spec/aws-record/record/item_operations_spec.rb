@@ -1,4 +1,4 @@
-# Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2015-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may not
 # use this file except in compliance with the License. A copy of the License is
@@ -340,6 +340,26 @@ module Aws
             },
             consistent_read: true
           }])
+        end
+      end
+
+      describe '#find_all' do
+        let(:keys) do
+          [
+            {id: 1, date: '2022-12-24'},
+            {id: 2, date: '2022-12-25'},
+            {id: 3, date: '2022-12-26'},
+          ]
+        end
+
+        it 'passes the correct class and key arguments to BatchRead' do
+          mock_batch_read = double
+          expect(Batch).to receive(:read).and_yield(mock_batch_read).and_return(mock_batch_read)
+          expect(mock_batch_read).to receive(:find).with(klass, keys[0])
+          expect(mock_batch_read).to receive(:find).with(klass, keys[1])
+          expect(mock_batch_read).to receive(:find).with(klass, keys[2])
+          result = klass.find_all(keys)
+          expect(result).to eql(mock_batch_read)
         end
       end
 
