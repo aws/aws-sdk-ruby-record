@@ -15,10 +15,11 @@
 
 @dynamodb @batch
 Feature: Amazon DynamoDB Batch
-  This feature tests the ability to use the batch get and write item APIs via
+  This feature tests the ability to use the batch read and write item APIs via
   aws-record. To run these tests, you will need to have valid AWS credentials
   that are accessible with the AWS SDK for Ruby's standard credential provider
   chain. In practice, this means a shared credential file or environment
   variables with your credentials. These tests may have some AWS costs associated
   with running them since AWS resources are created and destroyed within
   these tests.
+
