@@ -23,3 +23,38 @@ Feature: Amazon DynamoDB Batch
   with running them since AWS resources are created and destroyed within
   these tests.
 
+  Background:
+    Given a Parent model with definition:
+      """
+      set_table_name('ParentTable')
+      integer_attr :hk, hash_key: true
+      integer_attr :rk, range_key: true
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+    And a Child model with definition:
+      """
+        set_table_name('ChildTable')
+      """
+    And a TableConfig of:
+      """
+      Aws::Record::TableConfig.define do |t|
+        t.model_class(TableConfigTestModel)
+        t.read_capacity_units(2)
+        t.write_capacity_units(2)
+        t.client_options(region: "us-east-1")
+      end
+      """
+    When we migrate the TableConfig
+    Then eventually the table should exist in DynamoDB
+
+
