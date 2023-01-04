@@ -48,7 +48,19 @@ And(/^we make a batch read call for the following keys:$/) do |key_table|
   end
 end
 
-
+Then(/^we expect the batch read result to include the following items:$/) do |expected_block|
+  expected = eval(expected_block)
+  actual = @batch_read_result.items.map do | item |
+    item.to_h
+  end
+  result = expected.inject([]) do | merged_items, expected_item|
+    actual.each do | actual_item |
+      merged_items << expected_item.merge(actual_item) if expected_item == actual_item
+    end
+    merged_items
+  end
+  expect(result.count).to eq(expected.count)
+end
 
 private
 def format_key(item_key)

@@ -69,3 +69,11 @@ Feature: Amazon DynamoDB Batch
       | Parent | 1  | Papaya Salad |
       | Parent | 2  | Hamburger    |
       | Child  | 1  | Apple Pie    |
+    Then we expect the batch read result to include the following items:
+      """
+      [
+        { id: 1, dish: 'Papaya Salad', spicy: true },
+        { id: 2, dish: 'Hamburger', spicy: false },
+        { id: 1, dish: 'Apple Pie', spicy: false }
+      ]
+      """
