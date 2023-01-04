@@ -58,3 +58,9 @@ Feature: Amazon DynamoDB Batch
     When we migrate the TableConfig
     Then eventually the table should exist in DynamoDB
 
+  Scenario: Perform a batch set of writes and read
+    When we make a batch write call with following Parent and Child model items:
+      | model  | id |    dish      | spicy |
+      | Parent | 1  | Papaya Salad | true  |
+      | Parent | 2  | Hamburger    | false |
+      | Child  | 1  | Apple Pie    | false |
