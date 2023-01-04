@@ -11,16 +11,17 @@
 # or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
-When(/^we make a batch write call with following Parent and Child model items:$/) do |item_table|
-  item_table = item_table.hashes
-  Aws::Record::Batch.write do | db |
-    item_table.each do | item |
-      case item['model']
+When(/^we make a batch write call with following Parent and Child model items:$/) do |string|
+  item_data = JSON.parse(string, symbolize_names: true)
+
+  Aws::Record::Batch.write do |db|
+    item_data.each do |item|
+      case item[:model]
       when 'Parent'
-        formatted_item = item.select {|k,v| k != 'model'}
+        formatted_item = remove_model_key(item)
         item_instance = @parent.new(formatted_item)
       when 'Child'
-        formatted_item = item.select {|k,v| k != 'model'}
+        formatted_item = remove_model_key(item)
         item_instance = @model.new(formatted_item)
       else
         raise 'Model must be either a Parent or Child'
@@ -30,16 +31,17 @@ When(/^we make a batch write call with following Parent and Child model items:$/
   end
 end
 
-And(/^we make a batch read call for the following keys:$/) do |key_table|
-  key_table = key_table.hashes
-  @batch_read_result = Aws::Record::Batch.read do | db |
-    key_table.each do | item_key |
-      case item_key['model']
+And(/^we make a batch read call for the following keys:$/) do |string|
+  key_batch = JSON.parse(string, symbolize_names: true)
+
+  @batch_read_result = Aws::Record::Batch.read do |db|
+    key_batch.each do |item_key|
+      case item_key[:model]
       when 'Parent'
-        formatted_key = format_key(item_key)
+        formatted_key = remove_model_key(item_key)
         db.find(@parent, formatted_key)
       when 'Child'
-        formatted_key = format_key(item_key)
+        formatted_key = remove_model_key(item_key)
         db.find(@model, formatted_key)
       else
         raise 'Model must be either a Parent or Child'
@@ -48,25 +50,19 @@ And(/^we make a batch read call for the following keys:$/) do |key_table|
   end
 end
 
-Then(/^we expect the batch read result to include the following items:$/) do |expected_block|
-  expected = eval(expected_block)
-  actual = @batch_read_result.items.map do | item |
+Then(/^we expect the batch read result to include the following items:$/) do |string|
+  expected = JSON.parse(string, symbolize_names: true)
+  actual = @batch_read_result.items.map do |item|
     item.to_h
   end
-  result = expected.inject([]) do | merged_items, expected_item|
-    actual.each do | actual_item |
-      merged_items << expected_item.merge(actual_item) if expected_item == actual_item
-    end
-    merged_items
-  end
-  expect(result.count).to eq(expected.count)
+  expect(expected.count).to eq(actual.count)
+  expect(expected.all? { |e| actual.include?(e) }).to be_truthy
 end
 
 private
-def format_key(item_key)
-  item_key.inject({}) do |result, (key, value)|
-    result[key.to_sym] = value unless key == 'model'
+def remove_model_key(item)
+  item.inject({}) do |result, (key, value)|
+    result[key] = value unless key == :model
     result
   end
 end
-

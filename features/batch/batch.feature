@@ -45,6 +45,7 @@ Feature: Amazon DynamoDB Batch
     And a Child model with definition:
       """
         set_table_name('DessertTable')
+        boolean_attr :gluten_free
       """
     And a TableConfig of:
       """
@@ -60,20 +61,26 @@ Feature: Amazon DynamoDB Batch
 
   Scenario: Perform a batch set of writes and read
     When we make a batch write call with following Parent and Child model items:
-      | model  | id |    dish      | spicy |
-      | Parent | 1  | Papaya Salad | true  |
-      | Parent | 2  | Hamburger    | false |
-      | Child  | 1  | Apple Pie    | false |
+      """
+      [
+        { "model": "Parent", "id": 1, "dish": "Papaya Salad", "spicy": true },
+        { "model": "Parent", "id": 2, "dish": "Hamburger", "spicy": false },
+        { "model": "Child", "id": 1, "dish": "Apple Pie", "spicy": false, "gluten_free": false }
+      ]
+      """
     And we make a batch read call for the following keys:
-      | model  | id |    dish      |
-      | Parent | 1  | Papaya Salad |
-      | Parent | 2  | Hamburger    |
-      | Child  | 1  | Apple Pie    |
+      """
+      [
+        { "model": "Parent", "id": 1, "dish": "Papaya Salad" },
+        { "model": "Parent", "id": 2, "dish": "Hamburger" },
+        { "model": "Child", "id": 1, "dish": "Apple Pie" }
+      ]
+      """
     Then we expect the batch read result to include the following items:
       """
       [
-        { id: 1, dish: 'Papaya Salad', spicy: true },
-        { id: 2, dish: 'Hamburger', spicy: false },
-        { id: 1, dish: 'Apple Pie', spicy: false }
+        { "id": 1, "dish": "Papaya Salad", "spicy": true },
+        { "id": 2, "dish": "Hamburger", "spicy": false },
+        { "id": 1, "dish": "Apple Pie", "spicy": false, "gluten_free": false }
       ]
       """
