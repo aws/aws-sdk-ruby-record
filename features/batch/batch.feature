@@ -26,9 +26,10 @@ Feature: Amazon DynamoDB Batch
   Background:
     Given a Parent model with definition:
       """
-      set_table_name('ParentTable')
-      integer_attr :hk, hash_key: true
-      integer_attr :rk, range_key: true
+      set_table_name('FoodTable')
+      integer_attr :id, hash_key: true
+      string_attr :dish, range_key: true
+      boolean_attr :spicy
       """
     And a TableConfig of:
       """
@@ -43,7 +44,7 @@ Feature: Amazon DynamoDB Batch
     Then eventually the table should exist in DynamoDB
     And a Child model with definition:
       """
-        set_table_name('ChildTable')
+        set_table_name('DessertTable')
       """
     And a TableConfig of:
       """
@@ -56,5 +57,4 @@ Feature: Amazon DynamoDB Batch
       """
     When we migrate the TableConfig
     Then eventually the table should exist in DynamoDB
-
 
