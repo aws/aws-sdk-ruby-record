@@ -30,5 +30,31 @@ When(/^we make a batch write call with following Parent and Child model items:$/
   end
 end
 
+And(/^we make a batch read call for the following keys:$/) do |key_table|
+  key_table = key_table.hashes
+  @batch_read_result = Aws::Record::Batch.read do | db |
+    key_table.each do | item_key |
+      case item_key['model']
+      when 'Parent'
+        formatted_key = format_key(item_key)
+        db.find(@parent, formatted_key)
+      when 'Child'
+        formatted_key = format_key(item_key)
+        db.find(@model, formatted_key)
+      else
+        raise 'Model must be either a Parent or Child'
+      end
+    end
+  end
+end
 
+
+
+private
+def format_key(item_key)
+  item_key.inject({}) do |result, (key, value)|
+    result[key.to_sym] = value unless key == 'model'
+    result
+  end
+end
 

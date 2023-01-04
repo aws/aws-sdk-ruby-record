@@ -64,3 +64,8 @@ Feature: Amazon DynamoDB Batch
       | Parent | 1  | Papaya Salad | true  |
       | Parent | 2  | Hamburger    | false |
       | Child  | 1  | Apple Pie    | false |
+    And we make a batch read call for the following keys:
+      | model  | id |    dish      |
+      | Parent | 1  | Papaya Salad |
+      | Parent | 2  | Hamburger    |
+      | Child  | 1  | Apple Pie    |
