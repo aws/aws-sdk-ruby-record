@@ -68,7 +68,7 @@ Feature: Amazon DynamoDB Batch
         { "model": "Child", "id": 1, "dish": "Apple Pie", "spicy": false, "gluten_free": false }
       ]
       """
-    And we make a batch read call for the following keys:
+    And we make a batch read call for the following Parent and Child model item keys:
       """
       [
         { "model": "Parent", "id": 1, "dish": "Papaya Salad" },

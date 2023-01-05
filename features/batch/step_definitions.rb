@@ -31,7 +31,7 @@ When(/^we make a batch write call with following Parent and Child model items:$/
   end
 end
 
-And(/^we make a batch read call for the following keys:$/) do |string|
+And(/^we make a batch read call for the following Parent and Child model item keys:$/) do |string|
   key_batch = JSON.parse(string, symbolize_names: true)
 
   @batch_read_result = Aws::Record::Batch.read do |db|
