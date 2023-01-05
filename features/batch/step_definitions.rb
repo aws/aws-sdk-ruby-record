@@ -61,8 +61,6 @@ end
 
 private
 def remove_model_key(item)
-  item.inject({}) do |result, (key, value)|
-    result[key] = value unless key == :model
-    result
-  end
+  item.delete(:model)
+  item
 end
