@@ -174,7 +174,7 @@ describe Aws::Record::Batch do
     context 'when there are more than 100 operations' do
 
       let(:response_array) do
-        (1..99).each.map do | i |
+        (1..99).each.map do |i|
           { 'id' => i, 'dish' => "Food#{i}", 'spicy' => false}
         end
       end
