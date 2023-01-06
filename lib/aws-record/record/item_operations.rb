@@ -516,7 +516,7 @@ module Aws
 
         def find_all(key_block)
           Aws::Record::Batch.read do |db|
-            key_block.each do | key |
+            key_block.each do |key|
               db.find(self, key)
             end
           end
