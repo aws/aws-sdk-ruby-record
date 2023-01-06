@@ -15,6 +15,8 @@ module Aws
   module Record
     class BatchRead
 
+      BATCH_GET_ITEM_LIMIT = 100
+
       def initialize(opts = {})
         @client = opts[:client]
       end
@@ -26,9 +28,9 @@ module Aws
       end
 
       def execute!
-        if unprocessed_keys.count > 100
-          operation_keys = unprocessed_keys[0..99].dup
-          @unprocessed_keys = unprocessed_keys[100..-1].dup
+        if unprocessed_keys.count > BATCH_GET_ITEM_LIMIT
+          operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1].dup
+          @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1].dup
         else
           operation_keys = unprocessed_keys.dup
           @unprocessed_keys.clear
