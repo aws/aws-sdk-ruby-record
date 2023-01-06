@@ -11,6 +11,19 @@
 # or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 
+And(/^a (Parent|Child) model with TableConfig of:$/) do |model, code_block|
+  case model
+  when 'Parent'
+    ParentTableModel = @parent
+  when 'Child'
+    ChildTableModel = @model
+  else
+    raise 'Model must be either a Parent or Child'
+  end
+
+  @table_config = eval(code_block)
+end
+
 When(/^we make a batch write call with following Parent and Child model items:$/) do |string|
   item_data = JSON.parse(string, symbolize_names: true)
 

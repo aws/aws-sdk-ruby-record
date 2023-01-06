@@ -12,12 +12,7 @@
 # and limitations under the License.
 
 Given(/^a TableConfig of:$/) do |code_block|
-  if @model.nil?
-    TableConfigTestModel = @parent
-  else
-    TableConfigTestModel = @model
-  end
-
+  TableConfigTestModel = @model
   @table_config = eval(code_block)
 end
 

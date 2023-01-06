@@ -31,10 +31,10 @@ Feature: Amazon DynamoDB Batch
       string_attr :dish, range_key: true
       boolean_attr :spicy
       """
-    And a TableConfig of:
+    And a Parent model with TableConfig of:
       """
       Aws::Record::TableConfig.define do |t|
-        t.model_class(TableConfigTestModel)
+        t.model_class(ParentTableModel)
         t.read_capacity_units(2)
         t.write_capacity_units(2)
         t.client_options(region: "us-east-1")
@@ -47,10 +47,10 @@ Feature: Amazon DynamoDB Batch
         set_table_name('DessertTable')
         boolean_attr :gluten_free
       """
-    And a TableConfig of:
+    And a Child model with TableConfig of:
       """
       Aws::Record::TableConfig.define do |t|
-        t.model_class(TableConfigTestModel)
+        t.model_class(ChildTableModel)
         t.read_capacity_units(2)
         t.write_capacity_units(2)
         t.client_options(region: "us-east-1")
