@@ -60,9 +60,7 @@ end
 
 Then(/^we expect the batch read result to include the following items:$/) do |string|
   expected = JSON.parse(string, symbolize_names: true)
-  actual = @batch_read_result.items.map do |item|
-    item.to_h
-  end
+  actual = @batch_read_result.items.map(&:to_h)
   expect(expected.count).to eq(actual.count)
   expect(expected.all? { |e| actual.include?(e) }).to be_truthy
 end
