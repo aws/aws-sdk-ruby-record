@@ -31,12 +31,15 @@ When(/^we make a batch write call with following Parent and Child model items:$/
     item_data.each do |item|
       case item[:model]
       when 'Parent'
-        db.put(@parent.new(remove_model_key(item)))
+        formatted_item = remove_model_key(item)
+        item_instance = @parent.new(formatted_item)
       when 'Child'
-        db.put(@model.new(remove_model_key(item)))
+        formatted_item = remove_model_key(item)
+        item_instance = @model.new(formatted_item)
       else
         raise 'Model must be either a Parent or Child'
       end
+      db.put(item_instance)
     end
   end
 end
