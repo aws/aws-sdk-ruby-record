@@ -28,13 +28,8 @@ module Aws
       end
 
       def execute!
-        if unprocessed_keys.count > BATCH_GET_ITEM_LIMIT
-          operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1].dup
-          @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1].dup
-        else
-          operation_keys = unprocessed_keys.dup
-          @unprocessed_keys.clear
-        end
+        operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1]
+        @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1] || []
 
         operations = build_operations(operation_keys)
         result = @client.batch_get_item(request_items: operations)
