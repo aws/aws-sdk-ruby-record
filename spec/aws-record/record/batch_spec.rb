@@ -246,7 +246,7 @@ describe Aws::Record::Batch do
           db.find(food, id: 1, dish: 'Pancakes')
           db.find(breakfast, id: 1, dish: 'Pancakes')
         end
-      }.to raise_error(RuntimeError)
+      }.to raise_error(ArgumentError)
     end
 
     it 'raises exception when BatchGetItem raises an exception' do

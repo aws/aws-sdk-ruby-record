@@ -83,7 +83,7 @@ module Aws
         if item_classes.include?(klass.table_name)
           item_classes[klass.table_name].each do |item|
             if item[:keys] == key && item[:class] != klass
-              raise 'Provided item keys is a duplicate request'
+              raise ArgumentError.new('Provided item keys is a duplicate request')
             end
           end
         end
