@@ -105,7 +105,10 @@ module Aws
           unprocessed_items.each do |item|
             item_class = find_item_class(table, item)
             if item_class.nil?
-              raise 'Item Class was not found'
+              client.config.logger.warn(
+                "Unexpected response from service \n
+                Received: #{item} \n
+                Skipping above item and continuing...")
             end
             item = build_item(item, item_class)
             items << item
