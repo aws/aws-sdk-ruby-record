@@ -119,7 +119,7 @@ module Aws
       def update_unprocessed_keys(keys)
         keys.each do |table_name, table_values|
           table_values.keys.each do |key|
-            formatted_key = {:keys => key, :table_name => table_name}
+            formatted_key = { keys: key, table_name: table_name}
             unprocessed_keys << formatted_key
           end
         end
