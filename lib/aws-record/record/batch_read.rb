@@ -128,12 +128,16 @@ module Aws
       def find_item_class(table, item)
         item_class = nil
         item_classes[table].find do |item_info|
-          if item.merge(item_info[:keys]) == item
+          if contains_keys?(item, item_info[:keys])
             item_class = item_info[:class]
             break
           end
         end
         item_class
+      end
+
+      def contains_keys?(item, keys)
+        item.merge(keys) == item
       end
 
       def build_item(item, item_class)
