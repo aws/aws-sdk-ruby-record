@@ -106,7 +106,7 @@ module Aws
               client.config.logger.warn(
                 "Unexpected response from service \n
                 Received: #{item} \n
-                Skipping above item and continuing...")
+                Skipping above item and continuing")
             end
             item = build_item(item, item_class)
             items << item
