@@ -64,9 +64,7 @@ module Aws
         attributes = klass.attributes
         klass.keys.each_value do |attr_sym|
           unless key[attr_sym]
-            raise Errors::KeyMissing.new(
-              "Missing required key #{attr_sym} in #{key}"
-            )
+            raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
           end
           attr_name = attributes.storage_name_for(attr_sym)
           item_key[attr_name] = attributes.attribute_for(attr_sym).
@@ -83,7 +81,7 @@ module Aws
         if item_classes.include?(klass.table_name)
           item_classes[klass.table_name].each do |item|
             if item[:keys] == key && item[:class] != klass
-              raise ArgumentError.new('Provided item keys is a duplicate request')
+              raise ArgumentError, 'Provided item keys is a duplicate request'
             end
           end
         end
