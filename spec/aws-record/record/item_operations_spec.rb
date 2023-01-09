@@ -355,9 +355,7 @@ module Aws
         it 'passes the correct class and key arguments to BatchRead' do
           mock_batch_read = double
           expect(Batch).to receive(:read).and_yield(mock_batch_read).and_return(mock_batch_read)
-          expect(mock_batch_read).to receive(:find).with(klass, keys[0])
-          expect(mock_batch_read).to receive(:find).with(klass, keys[1])
-          expect(mock_batch_read).to receive(:find).with(klass, keys[2])
+          keys.each { |key| expect(mock_batch_read).to receive(:find).with(klass, key) }
           result = klass.find_all(keys)
           expect(result).to eql(mock_batch_read)
         end
