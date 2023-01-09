@@ -126,14 +126,8 @@ module Aws
       end
 
       def find_item_class(table, item)
-        item_class = nil
-        item_classes[table].find do |item_info|
-          if contains_keys?(item, item_info[:keys])
-            item_class = item_info[:class]
-            break
-          end
-        end
-        item_class
+        selected_item = item_classes[table].select { |item_info| contains_keys?(item, item_info[:keys]) }.first
+        selected_item[:class]
       end
 
       def contains_keys?(item, keys)
