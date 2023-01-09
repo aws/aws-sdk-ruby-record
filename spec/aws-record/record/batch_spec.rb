@@ -171,7 +171,7 @@ describe Aws::Record::Batch do
 
     end
 
-    context 'when there are more than 100 operations' do
+    context 'when there are more than 100 records' do
 
       let(:response_array) do
         (1..99).each.map do |i|
@@ -214,7 +214,7 @@ describe Aws::Record::Batch do
         expect(result).to_not be_complete
       end
 
-      it 'can process the remaining operations by running execute' do
+      it 'can process the remaining records by running execute' do
         expect(result).to_not be_complete
         stub_client.stub_responses(
           :batch_get_item,
@@ -232,7 +232,7 @@ describe Aws::Record::Batch do
       end
     end
 
-    it 'raises when an operation is missing a key' do
+    it 'raises when a record is missing a key' do
       expect {
         Aws::Record::Batch.read(client: stub_client) do |db|
           db.find(food, id: 1)
