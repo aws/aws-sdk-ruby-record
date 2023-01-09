@@ -56,7 +56,7 @@ module Aws
       end
 
       def item_classes
-        @item_classes ||= {}
+        @item_classes ||= Hash.new { |table_name, item_info| table_name[item_info] = [] }
       end
 
       def format_unprocessed_key(klass, key)
@@ -85,7 +85,6 @@ module Aws
             end
           end
         end
-        item_classes[klass.table_name] ||= []
         item_classes[klass.table_name] << {keys: key, class: klass}
       end
 
