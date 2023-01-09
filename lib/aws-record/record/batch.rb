@@ -17,6 +17,28 @@ module Aws
       extend ClientConfiguration
 
       class << self
+        # Provides a thin wrapper to the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
+        # method. Up to 25 +PutItem+ or +DeleteItem+ operations are supported.
+        # A single request may write up to 16 MB of data, with each item having a
+        # write limit of 400 KB.
+        #
+        # *Note*: this operation does not support dirty attribute handling,
+        # nor does it enforce safe write operations (i.e. update vs new record
+        # checks).
+        #
+        # This call may partially execute write operations. Failed operations
+        # are returned as +Aws::Record::BatchWrite#unprocessed_items+ (i.e. the
+        # table fails to meet requested write capacity). Any unprocessed
+        # items may be retried by calling +Aws::Record::BatchWrite#execute!+
+        # again. You can determine if the request needs to be retried by calling
+        # the +Aws::Record::BatchWrite#complete?+ method - which returns +true+
+        # when all operations have been completed.
+        #
+        # Please see
+        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations Batch Operations and Error Handling}
+        # in the DynamoDB Developer Guide for more details.
+        #
         # @example Usage Example
         #   class Breakfast
         #     include Aws::Record
@@ -38,29 +60,7 @@ module Aws
         #   end
         #
         #   # unprocessed items can be retried by calling Aws::Record::BatchWrite#execute!
-        #   operation.execute! unless operation.complete?
-        #
-        # Provides a thin wrapper to the
-        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
-        # method. Up to 25 +PutItem+ or +DeleteItem+ operations are supported.
-        # A single rquest may write up to 16 MB of data, with each item having a
-        # write limit of 400 KB.
-        #
-        # *Note*: this operation does not support dirty attribute handling,
-        # nor does it enforce safe write operations (i.e. update vs new record
-        # checks).
-        #
-        # This call may partially execute write operations. Failed operations
-        # are returned as +Aws::Record::BatchWrite#unprocessed_items+ (i.e. the
-        # table fails to meet requested write capacity). Any unprocessed
-        # items may be retried by calling +Aws::Record::BatchWrite#execute!+
-        # again. You can determine if the request needs to be retried by calling
-        # the +Aws::Record::BatchWrite#complete?+ method - which returns +true+
-        # when all operations have been completed.
-        #
-        # Please see
-        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations Batch Operations and Error Handling}
-        # in the DynamoDB Developer Guide for more details.
+        #   operation.execute! until operation.complete?
         #
         # @param [Hash] opts the options you wish to use to create the client.
         #  Note that if you include the option +:client+, all other options
