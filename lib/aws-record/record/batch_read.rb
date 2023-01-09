@@ -15,18 +15,30 @@ module Aws
   module Record
     class BatchRead
 
+      # @api private
       BATCH_GET_ITEM_LIMIT = 100
 
+      # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
       def initialize(opts = {})
         @client = opts[:client]
       end
 
+      # Append the item keys to a batch read request.
+      #
+      # See {Batch.read} for example usage.
+      # @param [Aws::Record] klass a model class that includes {Aws::Record}
+      # @param [Hash] key attribute-value pairs for the key you wish to search for.
+      # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do not include all model keys.
       def find(klass, key = {})
         unprocessed_key = format_unprocessed_key(klass, key)
         store_unprocessed_key(klass, unprocessed_key)
         store_item_class(klass, unprocessed_key)
       end
 
+      # Perform a +batch_get_item+ request.
+      #
+      # See {Batch.read} for example usage.
+      # @return [Aws::Record::BatchWrite] an instance to access {#items} and allows for retries.
       def execute!
         operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1]
         @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1] || []
@@ -42,10 +54,18 @@ module Aws
         self
       end
 
+      # Indicates if all item keys have been processed.
+      #
+      # See {Batch.read} for example usage.
+      # @return [Boolean] +true+ if all item keys has been processed, +false+ otherwise.
       def complete?
         unprocessed_keys.none?
       end
 
+      # Returns an array of modeled items. The items are marshaled into classes used in {#find} method.
+      #
+      # See {Batch.read} for example usage.
+      # @return [Array] an array of modeled items from the +batch_get_item+ call.
       def items
         @items ||= []
       end

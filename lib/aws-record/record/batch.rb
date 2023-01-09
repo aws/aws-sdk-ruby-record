@@ -77,6 +77,56 @@ module Aws
           batch.execute!
         end
 
+        # Provides a thin wrapper to the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method
+        # Aws::DynamoDB::Client#batch_get_item} method.
+        #
+        # The +batch_get_item+ supports up to 100 operations and a single operation can
+        # retrieve up to 16 MB of data.
+        #
+        # +Aws::Record::BatchRead+ can take more than 100 request keys. The first 100 requests
+        # will be processed and the remaining requests will be stored to be manually processed
+        # later. Any unprocessed keys can be retried by calling +Aws::Record::BatchRead#execute!+.
+        #
+        # You can determine if the request needs to be retried by calling the
+        # +Aws::Record::BatchRead#complete?+ method - which returns +true+
+        # when all operations have been completed.
+        #
+        # All processed operations can be accessed by +items+ which is an array of modeled items
+        # from the response.
+        #
+        # @example Usage Example
+        #   class Lunch
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #
+        #   class Dessert
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #
+        #   # batch operations
+        #   operation = Aws::Record::Batch.read do |db|
+        #     db.find(Lunch, id: 1, name: 'Papaya Salad')
+        #     db.find(Lunch, id: 2, name: 'BLT Sandwich')
+        #     db.find(Dessert, id: 1, name: 'Apple Pie')
+        #   end
+        #
+        #   # unprocessed items can be retried by calling Aws::Record::BatchRead#execute!
+        #   operation.execute! until operation.complete?
+        #
+        # @param [Hash] opts the options you wish to use to create the client.
+        #  Note that if you include the option +:client+, all other options
+        #  will be ignored. See the documentation for other options in the
+        #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method
+        #  AWS SDK for Ruby}.
+        # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
+        #  own pre-configured client.
+        # @return [Aws::Record::BatchRead] An instance that contains modeled items
+        #  from the +BatchGetItem+ response result and allows retries for unprocessed keys.
         def read(opts = {}, &block)
           batch = BatchRead.new(client: _build_client(opts))
           block.call(batch)
