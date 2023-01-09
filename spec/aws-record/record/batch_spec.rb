@@ -175,7 +175,7 @@ describe Aws::Record::Batch do
 
       let(:response_array) do
         (1..99).each.map do |i|
-          { 'id' => i, 'dish' => "Food#{i}", 'spicy' => false}
+          { 'Food ID' => i, 'dish' => "Food#{i}", 'spicy' => false}
         end
       end
 
