@@ -27,7 +27,7 @@ Feature: Amazon DynamoDB Batch
     Given a Parent model with definition:
       """
       set_table_name('FoodTable')
-      integer_attr :id, hash_key: true
+      integer_attr :id, hash_key: true, database_attribute_name: 'Food ID'
       string_attr :dish, range_key: true
       boolean_attr :spicy
       """

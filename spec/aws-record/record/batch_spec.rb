@@ -99,7 +99,7 @@ describe Aws::Record::Batch do
       Class.new do
         include(Aws::Record)
         set_table_name('FoodTable')
-        integer_attr(:id, hash_key: true)
+        integer_attr(:id, hash_key: true, database_attribute_name: 'Food ID')
         string_attr(:dish, range_key: true)
         boolean_attr(:spicy)
       end
@@ -132,8 +132,8 @@ describe Aws::Record::Batch do
           :batch_get_item,
           responses: {
             'FoodTable'=> [
-              {'id' => 1, 'dish' => 'Pasta', 'spicy' => false},
-              {'id' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
+              {'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false},
+              {'Food ID' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
             ],
             'DrinkTable'=> [
               {'id' => 1, 'drink' => 'Hot Chocolate'},
@@ -189,7 +189,7 @@ describe Aws::Record::Batch do
             unprocessed_keys: {
               'FoodTable' => {
                 :keys => [
-                  {'id' => 100, 'dish' => 'Food100'}
+                  {'Food ID' => 100, 'dish' => 'Food100'}
                 ]
               }
             }
@@ -220,8 +220,8 @@ describe Aws::Record::Batch do
           :batch_get_item,
           responses: {
             'FoodTable'=> [
-              {'id' => 100, 'dish' => 'Food100', 'spicy' => false},
-              {'id' => 101, 'dish' => 'Food101', 'spicy' => false},
+              {'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false},
+              {'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false},
             ],
           }
         )
