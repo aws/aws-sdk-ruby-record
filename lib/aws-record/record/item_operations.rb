@@ -536,7 +536,7 @@ module Aws
         # This method will take a list of keys and return an instance of +Aws::Record::BatchRead+
         #
         # See {Batch.read} for more details.
-        # @param [Array] key_block an array of item key hashes you wish to search for.
+        # @param [Array] keys an array of item key hashes you wish to search for.
         # @return [Aws::Record::BatchRead] An instance that contains modeled items
         #  from the +BatchGetItem+ result and stores unprocessed keys to be
         #  manually processed later.
@@ -544,9 +544,9 @@ module Aws
         #  include all the keys defined in model.
         # @raise [ArgumentError] if the provided keys is a duplicate request within
         #  the same instance
-        def find_all(key_block)
+        def find_all(keys)
           Aws::Record::Batch.read do |db|
-            key_block.each do |key|
+            keys.each do |key|
               db.find(self, key)
             end
           end
