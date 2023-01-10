@@ -514,6 +514,36 @@ module Aws
           end
         end
 
+
+        # @example Usage Example
+        #   class MyModel
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #
+        #   # returns a homogenous list of items
+        #   foo_items = MyModel.find_all(
+        #     [
+        #       {id: 1, name: 'n1'},
+        #       {id: 2, name: 'n2'}
+        #     ])
+        #
+        # Provides support for the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method
+        # Aws::DynamoDB::Client#batch_get_item} for your model.
+        #
+        # This method will take a list of keys and return an instance of +Aws::Record::BatchRead+
+        #
+        # See {Batch.read} for more details.
+        # @param [Array] key_block an array of item key hashes you wish to search for.
+        # @return [Aws::Record::BatchRead] An instance that contains modeled items
+        #  from the +BatchGetItem+ result and stores unprocessed keys to be
+        #  manually processed later.
+        # @raise [Aws::Record::Errors::KeyMissing] if your param hashes do not
+        #  include all the keys defined in model.
+        # @raise [ArgumentError] if the provided keys is a duplicate request within
+        #  the same instance
         def find_all(key_block)
           Aws::Record::Batch.read do |db|
             key_block.each do |key|
