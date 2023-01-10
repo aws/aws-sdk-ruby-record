@@ -116,7 +116,7 @@ module Aws
       end
 
       def build_operations(keys)
-        operations = Hash.new { | h,k | h[k] = { keys: [] } }
+        operations = Hash.new { |h, k| h[k] = { keys: [] } }
         keys.each do |key|
           operations[key[:table_name]][:keys] << key[:keys]
         end
