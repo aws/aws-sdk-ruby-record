@@ -14,8 +14,6 @@
 require 'spec_helper'
 
 describe Aws::Record::Batch do
-
-  # the nil
   let(:stub_logger) { double(info: nil) }
 
   let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true, logger: stub_logger) }
@@ -97,7 +95,6 @@ describe Aws::Record::Batch do
   end
 
   describe '.read' do
-
     let(:food) do
       Class.new do
         include(Aws::Record)
@@ -129,17 +126,16 @@ describe Aws::Record::Batch do
     end
 
     context 'when all operations succeed' do
-
       before(:each) do
         stub_client.stub_responses(
           :batch_get_item,
           responses: {
-            'FoodTable'=> [
-              {'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false},
-              {'Food ID' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true},
+            'FoodTable' => [
+              { 'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false },
+              { 'Food ID' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true }
             ],
-            'DrinkTable'=> [
-              {'id' => 1, 'drink' => 'Hot Chocolate'},
+            'DrinkTable' => [
+              { 'id' => 1, 'drink' => 'Hot Chocolate' }
             ]
           }
         )
@@ -171,14 +167,12 @@ describe Aws::Record::Batch do
       it 'is complete' do
         expect(result).to be_complete
       end
-
     end
 
     context 'when there are more than 100 records' do
-
       let(:response_array) do
         (1..99).each.map do |i|
-          { 'Food ID' => i, 'dish' => "Food#{i}", 'spicy' => false}
+          { 'Food ID' => i, 'dish' => "Food#{i}", 'spicy' => false }
         end
       end
 
@@ -187,12 +181,12 @@ describe Aws::Record::Batch do
           :batch_get_item,
           {
             responses: {
-              'FoodTable'=> response_array,
+              'FoodTable' => response_array
             },
             unprocessed_keys: {
               'FoodTable' => {
-                :keys => [
-                  {'Food ID' => 100, 'dish' => 'Food100'}
+                keys: [
+                  { 'Food ID' => 100, 'dish' => 'Food100' }
                 ]
               }
             }
@@ -222,10 +216,10 @@ describe Aws::Record::Batch do
         stub_client.stub_responses(
           :batch_get_item,
           responses: {
-            'FoodTable'=> [
-              {'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false},
-              {'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false},
-            ],
+            'FoodTable' => [
+              { 'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false },
+              { 'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false }
+            ]
           }
         )
         result.execute!
@@ -269,11 +263,11 @@ describe Aws::Record::Batch do
       stub_client.stub_responses(
         :batch_get_item,
         responses: {
-          'FoodTable'=> [
-            {'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false}
+          'FoodTable' => [
+            { 'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false }
           ],
-          'DinnerTable'=> [
-            {'id' => 1, 'dish' => 'Spaghetti'},
+          'DinnerTable' => [
+            { 'id' => 1, 'dish' => 'Spaghetti' }
           ]
         }
       )
@@ -282,10 +276,6 @@ describe Aws::Record::Batch do
       Aws::Record::Batch.read(client: stub_client) do |db|
         db.find(food, id: 1, dish: 'Pasta')
       end
-
     end
-
   end
-
 end
-
