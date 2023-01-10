@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 And(/^a (Parent|Child) model with TableConfig of:$/) do |model, code_block|
   case model
   when 'Parent'
