@@ -261,7 +261,6 @@ describe Aws::Record::Batch do
         }
       )
       expect(stub_logger).to receive(:warn).with(/Unexpected response from service/)
-
       Aws::Record::Batch.read(client: stub_client) do |db|
         db.find(food, id: 1, dish: 'Pasta')
       end
