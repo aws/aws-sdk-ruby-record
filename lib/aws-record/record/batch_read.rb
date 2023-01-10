@@ -127,14 +127,14 @@ module Aws
         item_responses.each do |table, unprocessed_items|
           unprocessed_items.each do |item|
             item_class = find_item_class(table, item)
-            if item_class.nil?
-              client.config.logger.warn(
-                "Unexpected response from service \n
-                Received: #{item} \n
-                Skipping above item and continuing")
+            if item_class.nil? && @client.config.logger
+              @client.config.logger.warn(
+                "Unexpected response from service."\
+                "Received: #{item}. Skipping above item and continuing")
+            else
+              item = build_item(item, item_class)
+              items << item
             end
-            item = build_item(item, item_class)
-            items << item
           end
         end
       end
@@ -149,7 +149,7 @@ module Aws
 
       def find_item_class(table, item)
         selected_item = item_classes[table].find { |item_info| contains_keys?(item, item_info[:keys]) }
-        selected_item[:class]
+        selected_item[:class] if selected_item
       end
 
       def contains_keys?(item, keys)

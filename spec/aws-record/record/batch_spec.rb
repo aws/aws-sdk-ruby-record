@@ -15,7 +15,10 @@ require 'spec_helper'
 
 describe Aws::Record::Batch do
 
-  let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+  # the nil
+  let(:stub_logger) { double(info: nil) }
+
+  let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true, logger: stub_logger) }
 
   describe '.write' do
     Planet = Class.new do
@@ -260,6 +263,26 @@ describe Aws::Record::Batch do
           db.find(breakfast, id: 2, dish: 'Omelette')
         end
       }.to raise_error(Aws::DynamoDB::Errors::ProvisionedThroughputExceededException)
+    end
+
+    it 'warns when unable to model item from response' do
+      stub_client.stub_responses(
+        :batch_get_item,
+        responses: {
+          'FoodTable'=> [
+            {'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false}
+          ],
+          'DinnerTable'=> [
+            {'id' => 1, 'dish' => 'Spaghetti'},
+          ]
+        }
+      )
+      expect(stub_logger).to receive(:warn).with(/Unexpected response from service/)
+
+      Aws::Record::Batch.read(client: stub_client) do |db|
+        db.find(food, id: 1, dish: 'Pasta')
+      end
+
     end
 
   end
