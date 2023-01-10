@@ -110,7 +110,7 @@ module Aws
         #     db.find(Dessert, id: 1, name: 'Apple Pie')
         #   end
         #
-        #   # unprocessed items can be retried by calling Aws::Record::BatchRead#execute!
+        #   # unprocessed items can be processed by calling Aws::Record::BatchRead#execute!
         #   operation.execute! until operation.complete?
         #
         # @param [Hash] opts the options you wish to use to create the client.
