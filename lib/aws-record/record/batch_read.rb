@@ -28,7 +28,10 @@ module Aws
       # See {Batch.read} for example usage.
       # @param [Aws::Record] klass a model class that includes {Aws::Record}
       # @param [Hash] key attribute-value pairs for the key you wish to search for.
-      # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do not include all item keys.
+      # @raise [Aws::Record::Errors::KeyMissing] if your option parameters
+      #  do not include all item keys defined in the model.
+      # @raise [ArgumentError] if the provided item keys is a duplicate request
+      #  within the same instance
       def find(klass, key = {})
         unprocessed_key = format_unprocessed_key(klass, key)
         store_unprocessed_key(klass, unprocessed_key)
