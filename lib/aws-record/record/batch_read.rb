@@ -14,7 +14,6 @@
 module Aws
   module Record
     class BatchRead
-
       # @api private
       BATCH_GET_ITEM_LIMIT = 100
 
@@ -45,8 +44,8 @@ module Aws
       #  from the +BatchGetItem+ result and stores unprocessed keys to be
       #  manually processed later.
       def execute!
-        operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1]
-        @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1] || []
+        operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT - 1]
+        @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..] || []
 
         operations = build_operations(operation_keys)
         result = @client.batch_get_item(request_items: operations)
@@ -77,12 +76,13 @@ module Aws
       end
 
       private
+
       def unprocessed_keys
-        @unprocessed_keys ||=[]
+        @unprocessed_keys ||= []
       end
 
       def item_classes
-        @item_classes ||= Hash.new { |table_name, item_info| table_name[item_info] = [] }
+        @item_classes ||= Hash.new { |h, k| h[k] = [] }
       end
 
       def format_unprocessed_key(klass, key)
@@ -92,15 +92,16 @@ module Aws
           unless key[attr_sym]
             raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
           end
+
           attr_name = attributes.storage_name_for(attr_sym)
-          item_key[attr_name] = attributes.attribute_for(attr_sym).
-            serialize(key[attr_sym])
+          item_key[attr_name] = attributes.attribute_for(attr_sym)
+                                          .serialize(key[attr_sym])
         end
         item_key
       end
 
       def store_unprocessed_key(klass, unprocessed_key)
-        unprocessed_keys << {:keys => unprocessed_key, :table_name => klass.table_name}
+        unprocessed_keys << { keys: unprocessed_key, table_name: klass.table_name }
       end
 
       def store_item_class(klass, key)
@@ -111,13 +112,12 @@ module Aws
             end
           end
         end
-        item_classes[klass.table_name] << {keys: key, class: klass}
+        item_classes[klass.table_name] << { keys: key, class: klass }
       end
 
       def build_operations(keys)
-        operations = {}
-        keys.each do | key |
-          operations[key[:table_name]] ||= { keys: [] }
+        operations = Hash.new { | h,k | h[k] = { keys: [] } }
+        keys.each do |key|
           operations[key[:table_name]][:keys] << key[:keys]
         end
         operations
@@ -129,8 +129,9 @@ module Aws
             item_class = find_item_class(table, item)
             if item_class.nil? && @client.config.logger
               @client.config.logger.warn(
-                "Unexpected response from service."\
-                "Received: #{item}. Skipping above item and continuing")
+                'Unexpected response from service.'\
+                "Received: #{item}. Skipping above item and continuing"
+              )
             else
               item = build_item(item, item_class)
               items << item
@@ -142,7 +143,7 @@ module Aws
       def update_unprocessed_keys(keys)
         keys.each do |table_name, table_values|
           table_values.keys.each do |key|
-            unprocessed_keys << { keys: key, table_name: table_name}
+            unprocessed_keys << { keys: key, table_name: table_name }
           end
         end
       end
@@ -166,7 +167,6 @@ module Aws
         item.clean!
         item
       end
-
     end
   end
 end
