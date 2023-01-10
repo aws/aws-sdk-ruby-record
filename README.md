@@ -89,6 +89,68 @@ item.active = false
 item.save
 ```
 
+### `BatchGetItem` and `BatchWriteItem`
+Aws Record provides [BatchGetItem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method)
+and [BatchWriteItem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method)
+support for aws-record models.
+
+More info under the following documentation:
+* [Batch](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/Batch.html)
+* [BatchWrite](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/BatchWrite.html)
+* [BatchRead](https://docs.aws.amazon.com/sdk-for-ruby/aws-record/api/Aws/Record/BatchRead.html)
+
+See examples below to see the feature in action.
+
+**`BatchGetItem` Example:**
+```ruby
+class Lunch
+  include Aws::Record
+  integer_attr :id,   hash_key: true
+  string_attr  :name, range_key: true
+end
+
+class Dessert
+  include Aws::Record
+  integer_attr :id,   hash_key: true
+  string_attr  :name, range_key: true
+end
+
+# batch operations
+operation = Aws::Record::Batch.read do |db|
+  db.find(Lunch, id: 1, name: 'Papaya Salad')
+  db.find(Lunch, id: 2, name: 'BLT Sandwich')
+  db.find(Dessert, id: 1, name: 'Apple Pie')
+end
+
+# unprocessed items can be retried by calling Aws::Record::BatchRead#execute!
+operation.execute! until operation.complete?
+```
+
+**`BatchWriteItem` Example:**
+```ruby
+class Breakfast
+  include Aws::Record
+  integer_attr :id,   hash_key: true
+  string_attr  :name, range_key: true
+  string_attr  :body
+end
+
+# setup
+eggs = Breakfast.new(id: 1, name: "eggs").save!
+waffles = Breakfast.new(id: 2, name: "waffles")
+pancakes = Breakfast.new(id: 3, name: "pancakes")
+
+# batch operations
+operation = Aws::Record::Batch.write(client: Breakfast.dynamodb_client) do |db|
+  db.put(waffles)
+  db.delete(eggs)
+  db.put(pancakes)
+end
+
+# unprocessed items can be retried by calling Aws::Record::BatchWrite#execute!
+operation.execute! until operation.complete?
+```
+
 ### Inheritance Support
 Aws Record models can be extended using standard ruby inheritance. The child model must 
 include `Aws::Record` in their model and the following will be inherited:
