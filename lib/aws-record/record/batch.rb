@@ -96,6 +96,11 @@ module Aws
         # items from the response. The items will be unordered since DynamoDB does not return
         # items in any particular order.
         #
+        # If a requested item does not exist in the database, it is not returned in the response.
+        #
+        # If there is a returned item and there's no reference model class to be found, the item
+        # will not show up under +items+.
+        #
         # @example Usage Example
         #   class Lunch
         #     include Aws::Record
