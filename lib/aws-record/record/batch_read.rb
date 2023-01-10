@@ -28,7 +28,7 @@ module Aws
       # See {Batch.read} for example usage.
       # @param [Aws::Record] klass a model class that includes {Aws::Record}
       # @param [Hash] key attribute-value pairs for the key you wish to search for.
-      # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do not include all model keys.
+      # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do not include all item keys.
       def find(klass, key = {})
         unprocessed_key = format_unprocessed_key(klass, key)
         store_unprocessed_key(klass, unprocessed_key)
@@ -38,7 +38,9 @@ module Aws
       # Perform a +batch_get_item+ request.
       #
       # See {Batch.read} for example usage.
-      # @return [Aws::Record::BatchWrite] an instance to access {#items} and allows for retries.
+      # @return [Aws::Record::BatchRead] An instance that contains modeled items
+      #  from the +BatchGetItem+ result and stores unprocessed keys to be
+      #  manually processed later.
       def execute!
         operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT-1]
         @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1] || []
@@ -63,6 +65,7 @@ module Aws
       end
 
       # Returns an array of modeled items. The items are marshaled into classes used in {#find} method.
+      # These items will be unordered since DynamoDB does not return items in any particular order.
       #
       # See {Batch.read} for example usage.
       # @return [Array] an array of modeled items from the +batch_get_item+ call.

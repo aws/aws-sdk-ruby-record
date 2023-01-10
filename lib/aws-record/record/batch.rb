@@ -77,23 +77,24 @@ module Aws
           batch.execute!
         end
 
-        # Provides a thin wrapper to the
+        # Provides support for the
         # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method
-        # Aws::DynamoDB::Client#batch_get_item} method.
+        # Aws::DynamoDB::Client#batch_get_item} for aws-record models.
         #
         # The +batch_get_item+ supports up to 100 operations and a single operation can
         # retrieve up to 16 MB of data.
         #
-        # +Aws::Record::BatchRead+ can take more than 100 request keys. The first 100 requests
-        # will be processed and the remaining requests will be stored to be manually processed
-        # later. Any unprocessed keys can be retried by calling +Aws::Record::BatchRead#execute!+.
+        # +Aws::Record::BatchRead+ can take more than 100 item keys. The first 100 requests
+        # will be processed and the remaining requests will be stored. Any unprocessed keys can
+        # be processed by calling +Aws::Record::BatchRead#execute!+.
         #
-        # You can determine if the request needs to be retried by calling the
+        # You can determine if there are any unprocessed keys by calling the
         # +Aws::Record::BatchRead#complete?+ method - which returns +true+
         # when all operations have been completed.
         #
-        # All processed operations can be accessed by +items+ which is an array of modeled items
-        # from the response.
+        # All processed operations can be accessed by +items+ - which is an array of modeled
+        # items from the response. The items will be unordered since DynamoDB does not return
+        # items in any particular order.
         #
         # @example Usage Example
         #   class Lunch
@@ -126,7 +127,8 @@ module Aws
         # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
         #  own pre-configured client.
         # @return [Aws::Record::BatchRead] An instance that contains modeled items
-        #  from the +BatchGetItem+ response result and allows retries for unprocessed keys.
+        #  from the +BatchGetItem+ result and stores unprocessed keys to be
+        #  manually processed later.
         def read(opts = {}, &block)
           batch = BatchRead.new(client: _build_client(opts))
           block.call(batch)
