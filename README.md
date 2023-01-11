@@ -122,6 +122,9 @@ operation = Aws::Record::Batch.read do |db|
   db.find(Dessert, id: 1, name: 'Apple Pie')
 end
 
+# BatchRead is enumerable and handles pagination
+operation.each { |item| item.id }
+
 # unprocessed items can be processed by calling Aws::Record::BatchRead#execute!
 operation.execute! until operation.complete?
 ```
