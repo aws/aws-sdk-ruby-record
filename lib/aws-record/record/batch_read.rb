@@ -54,8 +54,8 @@ module Aws
       # Provides an enumeration of the results from the +batch_get_item+ request
       # and handles pagination.
       #
-      # Any pending item keys will be automatically processed
-      # and added to the {#items}.
+      # Any pending item keys will be automatically processed and be
+      # added to the {#items}.
       #
       # See {Batch.read} for example usage.
       # @return [Enumerable<BatchRead>] an enumeration over the results of
