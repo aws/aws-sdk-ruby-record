@@ -216,6 +216,24 @@ describe Aws::Record::Batch do
         expect(result).to be_an(Aws::Record::BatchRead)
         expect(result.items.size).to eq(101)
       end
+
+      it 'is a enumerable' do
+        expect(result).to_not be_complete
+        stub_client.stub_responses(
+          :batch_get_item,
+          responses: {
+            'FoodTable' => [
+              { 'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false },
+              { 'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false }
+            ]
+          }
+        )
+        result.each.with_index(1) do |item, expected_id|
+          expect(item.id).to eq(expected_id)
+        end
+        expect(result.to_a.size).to eq(101)
+      end
+
     end
 
     it 'raises when a record is missing a key' do
