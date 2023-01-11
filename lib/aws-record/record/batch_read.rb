@@ -3,6 +3,8 @@
 module Aws
   module Record
     class BatchRead
+      include Enumerable
+
       # @api private
       BATCH_GET_ITEM_LIMIT = 100
 
@@ -19,7 +21,7 @@ module Aws
       # @raise [Aws::Record::Errors::KeyMissing] if your option parameters
       #  do not include all item keys defined in the model.
       # @raise [ArgumentError] if the provided item keys is a duplicate request
-      #  within the same instance
+      #  in the same instance.
       def find(klass, key = {})
         unprocessed_key = format_unprocessed_key(klass, key)
         store_unprocessed_key(klass, unprocessed_key)
@@ -28,23 +30,44 @@ module Aws
 
       # Perform a +batch_get_item+ request.
       #
+      # This method processes the first 100 item keys and
+      # returns an array of new modeled items.
+      #
       # See {Batch.read} for example usage.
-      # @return [Aws::Record::BatchRead] An instance that contains modeled items
-      #  from the +BatchGetItem+ result and stores unprocessed keys to be
-      #  manually processed later.
+      # @return [Array] an array of unordered new items
       def execute!
         operation_keys = unprocessed_keys[0..BATCH_GET_ITEM_LIMIT - 1]
         @unprocessed_keys = unprocessed_keys[BATCH_GET_ITEM_LIMIT..-1] || []
 
         operations = build_operations(operation_keys)
         result = @client.batch_get_item(request_items: operations)
-        build_items(result.responses)
+        new_items = build_items(result.responses)
+        items.concat(new_items)
 
         unless result.unprocessed_keys.nil?
           update_unprocessed_keys(result.unprocessed_keys)
         end
 
-        self
+        new_items
+      end
+
+      # Provides an enumeration of the results from the +batch_get_item+ request
+      # and handles pagination.
+      #
+      # Any pending item keys will be automatically processed
+      # and added to the {#items}.
+      #
+      # See {Batch.read} for example usage.
+      # @return [Enumerable<BatchRead>] an enumeration over the results of
+      #  +batch_get_item+ request.
+      def each(&block)
+        return enum_for(:each) unless block_given?
+
+        @items.each { |item| yield item }
+        until complete?
+          new_items = execute!
+          new_items.each { |new_item| yield new_item }
+        end
       end
 
       # Indicates if all item keys have been processed.
@@ -113,6 +136,7 @@ module Aws
       end
 
       def build_items(item_responses)
+        new_items = []
         item_responses.each do |table, unprocessed_items|
           unprocessed_items.each do |item|
             item_class = find_item_class(table, item)
@@ -122,11 +146,11 @@ module Aws
                 "Received: #{item}. Skipping above item and continuing"
               )
             else
-              item = build_item(item, item_class)
-              items << item
+              new_items << build_item(item, item_class)
             end
           end
         end
+        new_items
       end
 
       def update_unprocessed_keys(keys)

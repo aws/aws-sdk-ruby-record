@@ -87,9 +87,13 @@ module Aws
         #
         # If a requested item does not exist in the database, it is not returned in the response.
         #
-        # If there is a returned item and there's no reference model class to be found, the item
-        # will not show up under +items+.
+        # If there is a returned item from the call and there's no reference model class
+        # to be found, the item will not show up under +items+.
         #
+        # +Aws::Record::BatchRead+ is also enumerable and handles pagination.
+        #
+        # When using +Aws::Record::BatchRead#each+, any pending item keys will be automatically
+        # processed and the new items will be added to +items+.
         # @example Usage Example
         #   class Lunch
         #     include Aws::Record
@@ -110,6 +114,9 @@ module Aws
         #     db.find(Dessert, id: 1, name: 'Apple Pie')
         #   end
         #
+        #   # BatchRead is enumerable and handles pagination
+        #   operation.each { |item| item.id }
+        #
         #   # unprocessed items can be processed by calling Aws::Record::BatchRead#execute!
         #   operation.execute! until operation.complete?
         #
@@ -127,6 +134,7 @@ module Aws
           batch = BatchRead.new(client: _build_client(opts))
           block.call(batch)
           batch.execute!
+          batch
         end
 
       end
