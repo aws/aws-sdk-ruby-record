@@ -58,9 +58,10 @@ module Aws
       # added to the {#items}.
       #
       # See {Batch.read} for example usage.
+      # @yieldparam [Aws::Record] item a modeled item
       # @return [Enumerable<BatchRead>] an enumeration over the results of
       #  +batch_get_item+ request.
-      def each(&block)
+      def each
         return enum_for(:each) unless block_given?
 
         @items.each { |item| yield item }
