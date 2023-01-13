@@ -531,8 +531,7 @@ module Aws
         #  manually processed later.
         # @raise [Aws::Record::Errors::KeyMissing] if your param hashes do not
         #  include all the keys defined in model.
-        # @raise [ArgumentError] if the provided keys is a duplicate request within
-        #  the same instance
+        # @raise [ArgumentError] if the provided keys are a duplicate.
         def find_all(keys)
           Aws::Record::Batch.read do |db|
             keys.each do |key|
