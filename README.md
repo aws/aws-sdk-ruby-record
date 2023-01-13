@@ -125,7 +125,8 @@ end
 # BatchRead is enumerable and handles pagination
 operation.each { |item| item.id }
 
-# unprocessed items can be processed by calling Aws::Record::BatchRead#execute!
+# Alternatively, BatchRead provides a lower level interface through: execute!, complete? and items.
+# Unprocessed items can be processed by calling:
 operation.execute! until operation.complete?
 ```
 
