@@ -17,11 +17,11 @@ module Aws
         # checks).
         #
         # This call may partially execute write operations. Failed operations
-        # are returned as +Aws::Record::BatchWrite#unprocessed_items+ (i.e. the
+        # are returned as {BatchWrite.unprocessed_items unprocessed_items} (i.e. the
         # table fails to meet requested write capacity). Any unprocessed
-        # items may be retried by calling +Aws::Record::BatchWrite#execute!+
+        # items may be retried by calling {BatchWrite.execute! .execute!}
         # again. You can determine if the request needs to be retried by calling
-        # the +Aws::Record::BatchWrite#complete?+ method - which returns +true+
+        # the {BatchWrite.complete? .complete?} method - which returns +true+
         # when all operations have been completed.
         #
         # Please see
@@ -71,14 +71,14 @@ module Aws
         # Aws::DynamoDB::Client#batch_get_item} for aws-record models.
         #
         # +Aws::Record::Batch+ is Enumerable and using Enumerable methods will handle
-        # paging through all requested keys automatically. Alternatively, a lower interface
-        # is available. You can determine if there are any unprocessed keys by calling
+        # paging through all requested keys automatically. Alternatively, a lower level
+        # interface is available. You can determine if there are any unprocessed keys by calling
         # {BatchRead.complete? .complete?} and any unprocessed keys can be processed by
         # calling {BatchRead.execute! .execute!}. You can access all processed items
         # through {BatchRead.items .items}.
         #
-        # The +batch_get_item+ supports up to 100 operations in a single call and a single operation
-        # can retrieve up to 16 MB of data.
+        # The +batch_get_item+ supports up to 100 operations in a single call and a single
+        # operation can retrieve up to 16 MB of data.
         #
         # +Aws::Record::BatchRead+ can take more than 100 item keys. The first 100 requests
         # will be processed and the remaining requests will be stored.
