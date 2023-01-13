@@ -2,6 +2,6 @@
 
 module Aws
   module Record
-    VERSION = '2.7.0'
+    VERSION = File.read(File.expand_path('../../../../VERSION', __FILE__)).strip
   end
 end

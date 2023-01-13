@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-version = File.read(File.expand_path('../VERSION', __FILE__)).strip
-
 Gem::Specification.new do |spec|
   spec.name          = "aws-record"
-  spec.version       = version
+  spec.version       = File.read(File.expand_path('../VERSION', __FILE__)).strip
   spec.authors       = ["Amazon Web Services"]
   spec.email         = ["mamuller@amazon.com", "alexwoo@amazon.com"]
   spec.summary       = "AWS Record library for Amazon DynamoDB"
@@ -13,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.license       = "Apache 2.0"
 
   spec.require_paths = ["lib"]
-  spec.files = Dir['lib/**/*.rb']
+  spec.files = Dir['lib/**/*.rb', 'LICENSE', 'CHANGELOG.md', 'VERSION']
 
   spec.add_dependency('aws-sdk-dynamodb', '~> 1.18')
 end
