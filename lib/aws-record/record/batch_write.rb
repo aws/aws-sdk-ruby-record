@@ -15,11 +15,13 @@ module Aws
   module Record
     class BatchWrite
       # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
-      def initialize(client:)
-        @client = client
+      def initialize(opts = {})
+        @client = opts[:client]
       end
 
       # Append a +PutItem+ operation to a batch write request.
+      #
+      # See {Batch.write} for example usage.
       #
       # @param [Aws::Record] record a model class that includes {Aws::Record}.
       def put(record)
@@ -30,6 +32,7 @@ module Aws
 
       # Append a +DeleteItem+ operation to a batch write request.
       #
+      # See {Batch.write} for example usage.
       # @param [Aws::Record] record a model class that includes {Aws::Record}.
       def delete(record)
         table_name, params = record_delete_params(record)
@@ -39,6 +42,7 @@ module Aws
 
       # Perform a +batch_write_item+ request.
       #
+      # See {Batch.write} for example usage.
       # @return [Aws::Record::BatchWrite] an instance that provides access to
       #   unprocessed items and allows for retries.
       def execute!
@@ -49,6 +53,7 @@ module Aws
 
       # Indicates if all items have been processed.
       #
+      # See {Batch.write} for example usage.
       # @return [Boolean] +true+ if +unprocessed_items+ is empty, +false+
       #   otherwise
       def complete?
@@ -58,6 +63,7 @@ module Aws
       # Returns all +DeleteItem+ and +PutItem+ operations that have not yet been
       # processed successfully.
       #
+      # See {Batch.write} for example usage.
       # @return [Hash] All operations that have not yet successfully completed.
       def unprocessed_items
         operations

@@ -1,15 +1,4 @@
-# Copyright 2015-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not
-# use this file except in compliance with the License. A copy of the License is
-# located at
-#
-#     http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# frozen_string_literal: true
 
 require 'aws-sdk-dynamodb'
 require_relative 'aws-record/record/client_configuration'
@@ -30,6 +19,7 @@ require_relative 'aws-record/record/table_migration'
 require_relative 'aws-record/record/version'
 require_relative 'aws-record/record/transactions'
 require_relative 'aws-record/record/buildable_search'
+require_relative 'aws-record/record/batch_read'
 require_relative 'aws-record/record/batch_write'
 require_relative 'aws-record/record/batch'
 require_relative 'aws-record/record/marshalers/string_marshaler'

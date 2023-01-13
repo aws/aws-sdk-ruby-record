@@ -54,7 +54,7 @@ module Aws
       # match your search.
       #
       # @return [Array<Aws::Record>] an array of the record items found in the
-      #   first page of reponses from the query or scan call.
+      #   first page of responses from the query or scan call.
       def page
         search_response = items
         @last_evaluated_key = search_response.last_evaluated_key

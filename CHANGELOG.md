@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Feature - Implement the `BatchGetItem` operation (#122)
+
 2.9.0 (2022-11-16)
 ------------------
 

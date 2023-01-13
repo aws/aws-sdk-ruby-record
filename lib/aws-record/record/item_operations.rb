@@ -1,15 +1,4 @@
-# Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not
-# use this file except in compliance with the License. A copy of the License is
-# located at
-#
-#     http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# frozen_string_literal: true
 
 module Aws
   module Record
@@ -511,6 +500,43 @@ module Aws
             nil
           else
             build_item_from_resp(resp)
+          end
+        end
+
+
+        # @example Usage Example
+        #   class MyModel
+        #     include Aws::Record
+        #     integer_attr :id,   hash_key: true
+        #     string_attr  :name, range_key: true
+        #   end
+        #
+        #   # returns a homogenous list of items
+        #   foo_items = MyModel.find_all(
+        #     [
+        #       {id: 1, name: 'n1'},
+        #       {id: 2, name: 'n2'}
+        #     ])
+        #
+        # Provides support for the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method
+        # Aws::DynamoDB::Client#batch_get_item} for your model.
+        #
+        # This method will take a list of keys and return an instance of +Aws::Record::BatchRead+
+        #
+        # See {Batch.read} for more details.
+        # @param [Array] keys an array of item key hashes you wish to search for.
+        # @return [Aws::Record::BatchRead] An instance that contains modeled items
+        #  from the +BatchGetItem+ result and stores unprocessed keys to be
+        #  manually processed later.
+        # @raise [Aws::Record::Errors::KeyMissing] if your param hashes do not
+        #  include all the keys defined in model.
+        # @raise [ArgumentError] if the provided keys are a duplicate.
+        def find_all(keys)
+          Aws::Record::Batch.read do |db|
+            keys.each do |key|
+              db.find(self, key)
+            end
           end
         end
 

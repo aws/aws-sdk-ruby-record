@@ -1,15 +1,4 @@
-# Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not
-# use this file except in compliance with the License. A copy of the License is
-# located at
-#
-#     http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# frozen_string_literal: true
 
 require 'spec_helper'
 
@@ -340,6 +329,24 @@ module Aws
             },
             consistent_read: true
           }])
+        end
+      end
+
+      describe '#find_all' do
+        let(:keys) do
+          [
+            {id: 1, date: '2022-12-24'},
+            {id: 2, date: '2022-12-25'},
+            {id: 3, date: '2022-12-26'},
+          ]
+        end
+
+        it 'passes the correct class and key arguments to BatchRead' do
+          mock_batch_read = double
+          expect(Batch).to receive(:read).and_yield(mock_batch_read).and_return(mock_batch_read)
+          keys.each { |key| expect(mock_batch_read).to receive(:find).with(klass, key) }
+          result = klass.find_all(keys)
+          expect(result).to eql(mock_batch_read)
         end
       end
 

@@ -1,33 +1,26 @@
-# Copyright 2015-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not
-# use this file except in compliance with the License. A copy of the License is
-# located at
-#
-#     http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# frozen_string_literal: true
 
-Planet = Class.new do
-  include(Aws::Record)
-  integer_attr(:id, hash_key: true)
-  string_attr(:name, range_key: true)
-end
+require 'spec_helper'
 
 describe Aws::Record::Batch do
-  let(:client) { Aws::DynamoDB::Client.new(stub_responses: true) }
+  let(:stub_logger) { double(info: nil) }
 
-  before(:each) do
-    Planet.configure_client(client: client)
-  end
+  let(:stub_client) { Aws::DynamoDB::Client.new(stub_responses: true, logger: stub_logger) }
 
   describe '.write' do
+    Planet = Class.new do
+      include(Aws::Record)
+      integer_attr(:id, hash_key: true)
+      string_attr(:name, range_key: true)
+    end
+
+    before(:each) do
+      Planet.configure_client(client: stub_client)
+    end
+
     let(:pluto) { Planet.find(id: 9, name: 'pluto') }
     let(:result) do
-      described_class.write(client: client) do |db|
+      described_class.write(client: stub_client) do |db|
         db.put(Planet.new(id: 1, name: 'mercury'))
         db.put(Planet.new(id: 2, name: 'venus'))
         db.put(Planet.new(id: 3, name: 'earth'))
@@ -41,7 +34,7 @@ describe Aws::Record::Batch do
     end
 
     before(:each) do
-      client.stub_responses(
+      stub_client.stub_responses(
         :get_item,
         item: {
           'id' => 9,
@@ -52,7 +45,7 @@ describe Aws::Record::Batch do
 
     context 'when all operations succeed' do
       before(:each) do
-        client.stub_responses(
+        stub_client.stub_responses(
           :batch_write_item,
           unprocessed_items: {}
         )
@@ -69,7 +62,7 @@ describe Aws::Record::Batch do
 
     context 'when some operations fail' do
       before(:each) do
-        client.stub_responses(
+        stub_client.stub_responses(
           :batch_write_item,
           unprocessed_items: {
             'planet' => [
@@ -86,6 +79,208 @@ describe Aws::Record::Batch do
 
       it 'is not complete' do
         expect(result).to_not be_complete
+      end
+    end
+  end
+
+  describe '.read' do
+    let(:food) do
+      Class.new do
+        include(Aws::Record)
+        set_table_name('FoodTable')
+        integer_attr(:id, hash_key: true, database_attribute_name: 'Food ID')
+        string_attr(:dish, range_key: true)
+        boolean_attr(:spicy)
+      end
+    end
+
+    let(:breakfast) do
+      Class.new(food) do
+        include(Aws::Record)
+        boolean_attr(:gluten_free)
+      end
+    end
+
+    let(:drink) do
+      Class.new do
+        include(Aws::Record)
+        set_table_name('DrinkTable')
+        integer_attr(:id, hash_key: true)
+        string_attr(:drink)
+      end
+    end
+
+    before(:each) do
+      Aws::Record::Batch.configure_client(client: stub_client)
+    end
+
+    context 'when all operations succeed' do
+      before(:each) do
+        stub_client.stub_responses(
+          :batch_get_item,
+          responses: {
+            'FoodTable' => [
+              { 'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false },
+              { 'Food ID' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true }
+            ],
+            'DrinkTable' => [
+              { 'id' => 1, 'drink' => 'Hot Chocolate' }
+            ]
+          }
+        )
+      end
+
+      let(:result) do
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Pasta')
+          db.find(breakfast, id: 2, dish: 'Waffles')
+          db.find(drink, id: 1)
+        end
+      end
+
+      it 'reads a batch of operations and returns modeled items' do
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(3)
+        expect(result.items[0].class).to eq(food)
+        expect(result.items[1].class).to eq(breakfast)
+        expect(result.items[2].class).to eq(drink)
+        expect(result.items[0].dirty?).to be_falsey
+        expect(result.items[1].dirty?).to be_falsey
+        expect(result.items[2].dirty?).to be_falsey
+        expect(result.items[0].spicy).to be_falsey
+        expect(result.items[1].spicy).to be_falsey
+        expect(result.items[1].gluten_free).to be_truthy
+        expect(result.items[2].drink).to eq('Hot Chocolate')
+      end
+
+      it 'is complete' do
+        expect(result).to be_complete
+      end
+    end
+
+    context 'when there are more than 100 records' do
+      let(:response_array) do
+        (1..99).each.map do |i|
+          { 'Food ID' => i, 'dish' => "Food#{i}", 'spicy' => false }
+        end
+      end
+
+      before(:each) do
+        stub_client.stub_responses(
+          :batch_get_item,
+          {
+            responses: {
+              'FoodTable' => response_array
+            },
+            unprocessed_keys: {
+              'FoodTable' => {
+                keys: [
+                  { 'Food ID' => 100, 'dish' => 'Food100' }
+                ]
+              }
+            }
+          }
+        )
+      end
+
+      let(:result) do
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          (1..101).each do |i|
+            db.find(food, id: i, dish: "Food#{i}")
+          end
+        end
+      end
+
+      it 'reads batch of operations and returns most processed items' do
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(99)
+      end
+
+      it 'is not complete' do
+        expect(result).to_not be_complete
+      end
+
+      it 'can process the remaining records by running execute' do
+        expect(result).to_not be_complete
+        stub_client.stub_responses(
+          :batch_get_item,
+          responses: {
+            'FoodTable' => [
+              { 'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false },
+              { 'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false }
+            ]
+          }
+        )
+        result.execute!
+        expect(result).to be_complete
+        expect(result).to be_an(Aws::Record::BatchRead)
+        expect(result.items.size).to eq(101)
+      end
+
+      it 'is a enumerable' do
+        expect(result).to_not be_complete
+        stub_client.stub_responses(
+          :batch_get_item,
+          responses: {
+            'FoodTable' => [
+              { 'Food ID' => 100, 'dish' => 'Food100', 'spicy' => false },
+              { 'Food ID' => 101, 'dish' => 'Food101', 'spicy' => false }
+            ]
+          }
+        )
+        result.each.with_index(1) do |item, expected_id|
+          expect(item.id).to eq(expected_id)
+        end
+        expect(result.to_a.size).to eq(101)
+      end
+
+    end
+
+    it 'raises when a record is missing a key' do
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1)
+        end
+      }.to raise_error(Aws::Record::Errors::KeyMissing)
+    end
+
+    it 'raises when there is a duplicate item key' do
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Pancakes')
+          db.find(breakfast, id: 1, dish: 'Pancakes')
+        end
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises exception when BatchGetItem raises an exception' do
+      stub_client.stub_responses(
+        :batch_get_item,
+        'ProvisionedThroughputExceededException'
+      )
+      expect {
+        Aws::Record::Batch.read(client: stub_client) do |db|
+          db.find(food, id: 1, dish: 'Omurice')
+          db.find(breakfast, id: 2, dish: 'Omelette')
+        end
+      }.to raise_error(Aws::DynamoDB::Errors::ProvisionedThroughputExceededException)
+    end
+
+    it 'warns when unable to model item from response' do
+      stub_client.stub_responses(
+        :batch_get_item,
+        responses: {
+          'FoodTable' => [
+            { 'Food ID' => 1, 'dish' => 'Pasta', 'spicy' => false }
+          ],
+          'DinnerTable' => [
+            { 'id' => 1, 'dish' => 'Spaghetti' }
+          ]
+        }
+      )
+      expect(stub_logger).to receive(:warn).with(/Unexpected response from service/)
+      Aws::Record::Batch.read(client: stub_client) do |db|
+        db.find(food, id: 1, dish: 'Pasta')
       end
     end
   end
