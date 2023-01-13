@@ -70,30 +70,31 @@ module Aws
         # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_get_item-instance_method
         # Aws::DynamoDB::Client#batch_get_item} for aws-record models.
         #
-        # The +batch_get_item+ supports up to 100 operations and a single operation can
-        # retrieve up to 16 MB of data.
+        # +Aws::Record::Batch+ is Enumerable and using Enumerable methods will handle
+        # paging through all requested keys automatically. Alternatively, a lower interface
+        # is available. You can determine if there are any unprocessed keys by calling
+        # {BatchRead.complete? .complete?} and any unprocessed keys can be processed by
+        # calling {BatchRead.execute! .execute!}. You can access all processed items
+        # through {BatchRead.items .items}.
+        #
+        # The +batch_get_item+ supports up to 100 operations in a single call and a single operation
+        # can retrieve up to 16 MB of data.
         #
         # +Aws::Record::BatchRead+ can take more than 100 item keys. The first 100 requests
-        # will be processed and the remaining requests will be stored. Any unprocessed keys can
-        # be processed by calling +Aws::Record::BatchRead#execute!+.
+        # will be processed and the remaining requests will be stored.
+        # When using Enumerable methods, any pending item keys will be automatically
+        # processed and the new items will be added to +items+.
+        # Alternately, use {BatchRead.execute! .execute!} to process any pending item keys.
         #
-        # You can determine if there are any unprocessed keys by calling the
-        # +Aws::Record::BatchRead#complete?+ method - which returns +true+
-        # when all operations have been completed.
-        #
-        # All processed operations can be accessed by +items+ - which is an array of modeled
-        # items from the response. The items will be unordered since DynamoDB does not return
-        # items in any particular order.
+        # All processed operations can be accessed by {BatchRead.items items} - which is an
+        # array of modeled items from the response. The items will be unordered since
+        # DynamoDB does not return items in any particular order.
         #
         # If a requested item does not exist in the database, it is not returned in the response.
         #
         # If there is a returned item from the call and there's no reference model class
         # to be found, the item will not show up under +items+.
         #
-        # +Aws::Record::BatchRead+ is also enumerable and handles pagination.
-        #
-        # When using +Aws::Record::BatchRead#each+, any pending item keys will be automatically
-        # processed and the new items will be added to +items+.
         # @example Usage Example
         #   class Lunch
         #     include Aws::Record
@@ -117,7 +118,9 @@ module Aws
         #   # BatchRead is enumerable and handles pagination
         #   operation.each { |item| item.id }
         #
-        #   # unprocessed items can be processed by calling Aws::Record::BatchRead#execute!
+        #   # Alternatively, BatchRead provides a lower level
+        #   # interface through: execute!, complete? and items.
+        #   # Unprocessed items can be processed by calling:
         #   operation.execute! until operation.complete?
         #
         # @param [Hash] opts the options you wish to use to create the client.
