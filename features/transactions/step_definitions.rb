@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 When("we make a global transact_find call with parameters:") do |param_block|
   params = eval(param_block)
   @transact_get_result = Aws::Record::Transactions.transact_find(params)

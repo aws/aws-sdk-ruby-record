@@ -1,15 +1,4 @@
-# Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may not
-# use this file except in compliance with the License. A copy of the License is
-# located at
-#
-#     http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions
-# and limitations under the License.
+# frozen_string_literal: true
 
 module Aws
   module Record
@@ -45,7 +34,8 @@ module Aws
       #   nil values will be ignored and not persisted. By default, is false.
       # @option options [Object] :default_value Optional attribute used to
       #   define a "default value" to be used if the attribute's value on an
-      #   item is nil or not set at persistence time.
+      #   item is nil or not set at persistence time. Additionally, lambda can
+      #   be used as a default value.
       def initialize(name, options = {})
         @name = name
         @database_name = (options[:database_attribute_name]  || name).to_s
@@ -79,8 +69,8 @@ module Aws
         @marshaler.serialize(cast_value)
       end
 
-      # @return [Boolean] true if this attribute will actively persist nil
-      #   values, false otherwise. Default: false
+      # @return [Boolean] +true+ if this attribute will actively persist nil
+      #   values, +false+ otherwise. Default: +false+
       def persist_nil?
         @persist_nil ? true : false
       end

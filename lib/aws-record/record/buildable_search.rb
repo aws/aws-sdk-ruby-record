@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Aws
   module Record
     class BuildableSearch
@@ -263,13 +265,13 @@ module Aws
 
       def _next_name
         ret = "#" + @next_name
-        @next_name.next!
+        @next_name = @next_name.next
         ret
       end
 
       def _next_value
         ret = ":" + @next_value
-        @next_value.next!
+        @next_value = @next_value.next
         ret
       end
     end
