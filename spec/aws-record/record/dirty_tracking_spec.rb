@@ -59,7 +59,7 @@ describe Aws::Record::DirtyTracking do
       instance.mykey_dirty!
       expect(instance.mykey_dirty?).to be true 
 
-      instance.mykey << 's'
+      instance.mykey = 's'
       expect(instance.mykey_dirty?).to be true
     end
 
@@ -67,7 +67,7 @@ describe Aws::Record::DirtyTracking do
       expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alex"
 
-      instance.mykey << 'i'
+      instance.mykey = 'Alexi'
       expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexi"
 
@@ -75,7 +75,7 @@ describe Aws::Record::DirtyTracking do
       expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexi"
 
-      instance.mykey << 's'
+      instance.mykey = 'Alexis'
       expect(instance.mykey_was).to eq "Alex"
       expect(instance.mykey).to eq "Alexis"
     end
