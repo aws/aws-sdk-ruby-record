@@ -1,4 +1,4 @@
-Unreleased Changes
+2.10.1 (2023-01-17)
 ------------------
 
 * Issue - Set `Aws::Record::VERSION` constant from the `VERSION` file
