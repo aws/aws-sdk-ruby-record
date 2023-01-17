@@ -215,9 +215,9 @@ end
 
 results = Aws::Record::Transactions.transact_find(
   transact_items: [
-    TableOne.tfind_opts(key: { uuid: "uuid1234" }),
-    TableTwo.tfind_opts(key: { hk: "hk1", rk: "rk1"}),
-    TableTwo.tfind_opts(key: { hk: "hk2", rk: "rk2"})
+    TableOne.tfind_opts(key: { uuid: 'uuid1234' }),
+    TableTwo.tfind_opts(key: { hk: 'hk1', rk: 'rk1'}),
+    TableTwo.tfind_opts(key: { hk: 'hk2', rk: 'rk2'})
   ]
 ) # => results.responses contains nil or marshalled items
 results.responses.map { |r| r.class } # [TableOne, TableTwo, TableTwo]
@@ -227,22 +227,22 @@ results.responses.map { |r| r.class } # [TableOne, TableTwo, TableTwo]
 ```ruby
 # same models as `TransactGetItems` Example
 check_exp = TableOne.transact_check_expression(
-  key: { uuid: "foo" },
-  condition_expression: "size(#T) <= :v",
+  key: { uuid: 'foo' },
+  condition_expression: 'size(#T) <= :v',
   expression_attribute_names: {
-    "#T" => "body"
+    '#T' => 'body'
   },
   expression_attribute_values: {
-    ":v" => 1024
+    ':v' => 1024
   }
 )
-new_item = TableTwo.new(hk: "hk1", rk: "rk1", body: "Hello!")
-update_item_1 = TableOne.find(uuid: "bar")
-update_item_1.body = "Updated the body!"
-put_item = TableOne.new(uuid: "foobar", body: "Content!")
-update_item_2 = TableTwo.find(hk: "hk2", rk: "rk2")
-update_item_2.body = "Update!"
-delete_item = TableOne.find(uuid: "to_be_deleted")
+new_item = TableTwo.new(hk: 'hk1', rk: 'rk1', body: 'Hello!')
+update_item_1 = TableOne.find(uuid: 'bar')
+update_item_1.body = 'Updated the body!'
+put_item = TableOne.new(uuid: 'foobar', body: 'Content!')
+update_item_2 = TableTwo.find(hk: 'hk2', rk: 'rk2')
+update_item_2.body = 'Update!'
+delete_item = TableOne.find(uuid: 'to_be_deleted')
 
 Aws::Record::Transactions.transact_write(
   transact_items: [
@@ -251,9 +251,9 @@ Aws::Record::Transactions.transact_write(
     { save: update_item_1 },
     {
       put: put_item,
-      condition_expression: "attribute_not_exists(#H)",
-      expression_attribute_names: { "#H" => "uuid" },
-      return_values_on_condition_check_failure: "ALL_OLD"
+      condition_expression: 'attribute_not_exists(#H)',
+      expression_attribute_names: { '#H' => 'uuid' },
+      return_values_on_condition_check_failure: 'ALL_OLD'
     },
       { update: update_item_2 },
       { delete: delete_item }
