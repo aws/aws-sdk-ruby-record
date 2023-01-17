@@ -34,7 +34,8 @@ module Aws
       #   nil values will be ignored and not persisted. By default, is false.
       # @option options [Object] :default_value Optional attribute used to
       #   define a "default value" to be used if the attribute's value on an
-      #   item is nil or not set at persistence time.
+      #   item is nil or not set at persistence time. Additionally, lambda can
+      #   be used as a default value.
       def initialize(name, options = {})
         @name = name
         @database_name = (options[:database_attribute_name]  || name).to_s
@@ -68,8 +69,8 @@ module Aws
         @marshaler.serialize(cast_value)
       end
 
-      # @return [Boolean] true if this attribute will actively persist nil
-      #   values, false otherwise. Default: false
+      # @return [Boolean] +true+ if this attribute will actively persist nil
+      #   values, +false+ otherwise. Default: +false+
       def persist_nil?
         @persist_nil ? true : false
       end

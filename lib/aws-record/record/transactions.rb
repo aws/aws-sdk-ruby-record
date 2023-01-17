@@ -28,15 +28,26 @@ module Aws
         #   ) # => results.responses contains nil or marshalled items
         #   results.responses.map { |r| r.class } # [TableOne, TableTwo, TableTwo]
         #
-        # Provides a way to run a transactional find across multiple DynamoDB
+        # Provides support for the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method
+        # Aws::DynamoDB::Client#transact_get_item} for aws-record models.
+        #
+        # This method runs a transactional find across multiple DynamoDB
         # items, including transactions which get items across multiple actual
-        # or virtual tables.
+        # or virtual tables. This call can contain up to 100 item keys.
+        #
+        # DynamoDB will reject the request if any of the following is true:
+        # * A conflicting operation is in the process of updating an item to be read.
+        # * There is insufficient provisioned capacity for the transaction to be completed.
+        # * There is a user error, such as an invalid data format.
+        # * The aggregate size of the items in the transaction cannot exceed 4 MB.
         #
         # @param [Hash] opts Options to pass through to
         #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
-        #   with the exception of the :transact_items array, which uses the
-        #   +#tfind_opts+ operation on your model class to provide extra
-        #   metadata used to marshal your items after retrieval.
+        #   with the exception of the +:transact_items+ array, which uses the
+        #   {ItemOperations.ItemOperationsClassMethods.tfind_opts #tfind_opts} operation
+        #   on your model class to provide extra metadata used to marshal your items
+        #   after retrieval.
         # @option opts [Array] :transact_items A set of +#tfind_opts+ results,
         #   such as those created by the usage example.
         # @option opts [Aws::DynamoDB::Client] :client Optionally, you can pass
@@ -139,7 +150,11 @@ module Aws
         #     ]
         #   )
         #
-        # Provides a way to pass in aws-record items into transactional writes,
+        # Provides support for the
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method
+        # Aws::DynamoDB::Client#transact_write_items} for aws-record models.
+        #
+        # This method passes in aws-record items into transactional writes,
         # as well as adding the ability to run 'save' commands in a transaction
         # while allowing aws-record to determine if a :put or :update operation
         # is most appropriate. +#transact_write+ supports 5 different transact
@@ -147,7 +162,7 @@ module Aws
         # - save: Behaves much like the +#save+ operation on the item itself.
         #   If the keys are dirty, and thus it appears to be a new item, will
         #   create a :put operation with a conditional check on the item's
-        #   existance. Note that you cannot bring your own conditional
+        #   existence. Note that you cannot bring your own conditional
         #   expression in this case. If you wish to force put or add your
         #   own conditional checks, use the :put operation.
         # - put: Does a force put for the given item key and model.
@@ -155,6 +170,21 @@ module Aws
         # - delete: Deletes the given item.
         # - check: Takes the result of +#transact_check_expression+,
         #   performing the specified check as a part of the transaction.
+        #   See {ItemOperations.ItemOperationsClassMethods.transact_check_expression #transact_check_expression}
+        #   for more information.
+        #
+        # This call contain up to 100 action requests.
+        #
+        # DynamoDB will reject the request if any of the following is true:
+        # * A condition in one of the condition expressions is not met.
+        # * An ongoing operation is in the process of updating the same item.
+        # * There is insufficient provisioned capacity for the transaction to
+        #   be completed.
+        # * An item size becomes too large (bigger than 400 KB), a local secondary
+        #   index (LSI) becomes too large, or a similar validation error occurs
+        #   because of changes made by the transaction.
+        # * The aggregate size of the items in the transaction exceeds 4 MB.
+        # * There is a user error, such as an invalid data format.
         #
         # @param [Hash] opts Options to pass through to
         #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}

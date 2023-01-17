@@ -343,6 +343,8 @@ module Aws
         # Allows you to build a "check" expression for use in transactional
         # write operations.
         #
+        # See {Transactions.transact_write transact_write} for more info.
+        #
         # @param [Hash] opts Options matching the :condition_check contents in
         #   the
         #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}
@@ -370,6 +372,13 @@ module Aws
           opts
         end
 
+        # Used in {Transactions.transact_find}, which is a way to run
+        # transactional find across multiple DynamoDB items, including transactions
+        # which get items across multiple actual or virtual tables.
+        #
+        # This operation provide extra metadata used to marshal your items after retrieval.
+        #
+        # See {Transactions.transact_find transact_find} for more info and usage example.
         def tfind_opts(opts)
           opts = opts.dup
           key = opts.delete(:key)
