@@ -14,7 +14,7 @@ def cleanup_table
     log "Cleanup: Table #{@table_name} doesn't exist, continuing."
     @table_name = nil
   rescue Aws::DynamoDB::Errors::ResourceInUseException => e
-    log "Failed to delete table, waiting to retry."
+    log 'Failed to delete table, waiting to retry.'
     @client.wait_until(:table_exists, table_name: @table_name)
     sleep(10)
     retry
@@ -22,10 +22,10 @@ def cleanup_table
 end
 
 Before do
-  @client = Aws::DynamoDB::Client.new(region: "us-east-1")
+  @client = Aws::DynamoDB::Client.new(region: 'us-east-1')
 end
 
-After("@dynamodb") do
+After('@dynamodb') do
   cleanup_table
 end
 
@@ -129,7 +129,7 @@ end
 Then(/^the DynamoDB table should have exactly the following item attributes:$/) do |string|
   data = JSON.parse(string)
   key = {}
-  data["key"].each do |row|
+  data['key'].each do |row|
     attribute, value = row
     key[attribute] = value
   end
@@ -137,8 +137,8 @@ Then(/^the DynamoDB table should have exactly the following item attributes:$/) 
     table_name: @table_name,
     key: key
   )
-  expect(resp.item.keys.sort).to eq(data["item"].keys.sort)
-  data["item"].each do |k,v|
+  expect(resp.item.keys.sort).to eq(data['item'].keys.sort)
+  data['item'].each do |k, v|
     expect(resp.item[k]).to eq(v)
   end
 end

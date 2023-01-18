@@ -18,7 +18,7 @@ Then(/^eventually the table should exist in DynamoDB$/) do
 end
 
 Then(/^calling 'table_exists\?' on the model should return "([^"]*)"$/) do |b|
-  boolean = b == "false" || b.nil? ? false : true
+  boolean = b == 'false' || b.nil? ? false : true
   expect(@model.table_exists?).to eq(boolean)
 end
 
