@@ -161,6 +161,32 @@ module Aws
           }])
         end
 
+        it 'will pass the return_consumed_capacity argument to the dynamo update' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.clean! # I'm claiming that it is this way in the DB now.
+          item.body = 'Goodbye!'
+          item.save(return_consumed_capacity: "TOTAL")
+          expect(api_requests).to eq([{
+            table_name: "TestTable",
+            key: {
+              "id" => { n: "1" },
+              "MyDate" => { s: "2015-12-14" }
+            },
+            update_expression: "SET #UE_A = :ue_a",
+            expression_attribute_names: {
+              "#UE_A" => "body"
+            },
+            expression_attribute_values: {
+              ":ue_a" => { s: "Goodbye!" }
+            },
+            return_consumed_capacity: "TOTAL"
+          }])
+        end
+
         it 'raises an exception when the conditional check fails' do
           stub_client.stub_responses(:put_item,
             'ConditionalCheckFailedException'

@@ -220,20 +220,14 @@ module Aws
       end
 
       def _perform_save(opts)
-        force = opts[:force]
-        expect_new = expect_new_item?
-        if force
-          dynamodb_client.put_item(
-            table_name: self.class.table_name,
-            item: _build_item_for_save
-          )
-        elsif expect_new
-          put_opts = {
-            table_name: self.class.table_name,
-            item: _build_item_for_save
-          }.merge(prevent_overwrite_expression)
+        request_opts = opts.except(:force).merge(table_name: self.class.table_name)
+        if opts[:force]
+          dynamodb_client.put_item(request_opts.merge(item: _build_item_for_save))
+        elsif expect_new_item?
+          request_opts.merge!(item: _build_item_for_save)
+          request_opts.merge!(prevent_overwrite_expression)
           begin
-            dynamodb_client.put_item(put_opts)
+            dynamodb_client.put_item(request_opts)
           rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
             raise Errors::ConditionalWriteFailed.new(
               "Conditional #put_item call failed! Check that conditional write"\
@@ -242,27 +236,20 @@ module Aws
             )
           end
         else
-          update_pairs = _dirty_changes_for_update
+          request_opts.merge!(key: key_values)
           update_tuple = self.class.send(
             :_build_update_expression,
-            update_pairs
+            _dirty_changes_for_update
           )
           if update_tuple
             uex, exp_attr_names, exp_attr_values = update_tuple
-            request_opts = {
-              table_name: self.class.table_name,
-              key: key_values,
+            request_opts.merge!({
               update_expression: uex,
               expression_attribute_names: exp_attr_names,
-            }
+            })
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-            dynamodb_client.update_item(request_opts)
-          else
-            dynamodb_client.update_item(
-              table_name: self.class.table_name,
-              key: key_values
-            )
           end
+          dynamodb_client.update_item(request_opts)
         end
         data = self.instance_variable_get("@data")
         data.destroyed = false
