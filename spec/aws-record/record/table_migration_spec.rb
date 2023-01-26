@@ -5,7 +5,6 @@ require 'spec_helper'
 module Aws
   module Record
     describe TableMigration do
-
       let(:api_requests) { [] }
 
       let(:stub_client) do
@@ -20,7 +19,7 @@ module Aws
 
       it 'only accepts Aws::Record models' do
         expect { TableMigration.new(Class.new) }.to raise_error(
-          Errors::InvalidModel, "Table models must include Aws::Record"
+          Errors::InvalidModel, 'Table models must include Aws::Record'
         )
       end
 
@@ -29,7 +28,7 @@ module Aws
           include(Aws::Record)
         end
         expect { TableMigration.new(model) }.to raise_error(
-          Errors::InvalidModel, "Table models must include a hash key"
+          Errors::InvalidModel, 'Table models must include a hash key'
         )
       end
 
@@ -38,7 +37,7 @@ module Aws
         let(:model) do
           model = Class.new do
             include(Aws::Record)
-            set_table_name("TestTable")
+            set_table_name('TestTable')
             integer_attr(:id, hash_key: true)
           end
           model.configure_client client: model_stub_client
@@ -54,14 +53,13 @@ module Aws
         end
       end
 
-      context "Migration Operations" do
-
+      context 'Migration Operations' do
         let(:klass) do
           Class.new do
             include(Aws::Record)
-            set_table_name("TestTable")
+            set_table_name('TestTable')
             integer_attr(:id, hash_key: true)
-            date_attr(:date, range_key: true, database_attribute_name: "datekey")
+            date_attr(:date, range_key: true, database_attribute_name: 'datekey')
             string_attr(:lsi)
             string_attr(:gsi_partition)
             string_attr(:gsi_sort)
@@ -72,7 +70,7 @@ module Aws
           TableMigration.new(klass, client: stub_client)
         end
 
-        context "#create!" do
+        context '#create!' do
           it 'calls #create_table on a client when #create! is called' do
             create_opts = {
               provisioned_throughput: {
@@ -82,33 +80,37 @@ module Aws
             }
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  provisioned_throughput: {
+                    read_capacity_units: 5,
+                    write_capacity_units: 2
+                  }
                 }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              }
-            }])
+              ]
+            )
           end
 
           it 'allows specifying on-demand billing instead of provisioned'\
@@ -116,30 +118,34 @@ module Aws
             create_opts = { billing_mode: 'PAY_PER_REQUEST' }
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  billing_mode: 'PAY_PER_REQUEST'
                 }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              billing_mode: 'PAY_PER_REQUEST'
-            }])
+              ]
+            )
           end
 
           it 'accepts a value of PROVISIONED for billing_mode if'\
@@ -153,34 +159,38 @@ module Aws
             }
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  billing_mode: 'PROVISIONED',
+                  provisioned_throughput: {
+                    read_capacity_units: 5,
+                    write_capacity_units: 2
+                  }
                 }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              billing_mode: 'PROVISIONED',
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              }
-            }])
+              ]
+            )
           end
 
           it 'requires billing_mode be PROVISIONED if specified'\
@@ -251,58 +261,62 @@ module Aws
               :test_lsi,
               range_key: :lsi,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
-                },
-                {
-                  attribute_name: "lsi",
-                  attribute_type: "S"
-                }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              local_secondary_indexes: [{
-                index_name: "test_lsi",
-                key_schema: [
-                  {
-                    attribute_name: "id",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "lsi",
-                    key_type: "RANGE"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    },
+                    {
+                      attribute_name: 'lsi',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  local_secondary_indexes: [{
+                    index_name: 'test_lsi',
+                    key_schema: [
+                      {
+                        attribute_name: 'id',
+                        key_type: 'HASH'
+                      },
+                      {
+                        attribute_name: 'lsi',
+                        key_type: 'RANGE'
+                      }
+                    ],
+                    projection: {
+                      projection_type: 'ALL'
+                    }
+                  }],
+                  provisioned_throughput: {
+                    read_capacity_units: 5,
+                    write_capacity_units: 2
                   }
-                ],
-                projection: {
-                  projection_type: "ALL"
                 }
-              }],
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              }
-            }])
+              ]
+            )
           end
 
           it 'accepts models with a global secondary index' do
@@ -323,66 +337,70 @@ module Aws
               hash_key: :gsi_partition,
               range_key: :gsi_sort,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
-                },
-                {
-                  attribute_name: "gsi_partition",
-                  attribute_type: "S"
-                },
-                {
-                  attribute_name: "gsi_sort",
-                  attribute_type: "S"
-                }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              global_secondary_indexes: [{
-                index_name: "test_gsi",
-                key_schema: [
-                  {
-                    attribute_name: "gsi_partition",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "gsi_sort",
-                    key_type: "RANGE"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    },
+                    {
+                      attribute_name: 'gsi_partition',
+                      attribute_type: 'S'
+                    },
+                    {
+                      attribute_name: 'gsi_sort',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  global_secondary_indexes: [{
+                    index_name: 'test_gsi',
+                    key_schema: [
+                      {
+                        attribute_name: 'gsi_partition',
+                        key_type: 'HASH'
+                      },
+                      {
+                        attribute_name: 'gsi_sort',
+                        key_type: 'RANGE'
+                      }
+                    ],
+                    projection: {
+                      projection_type: 'ALL'
+                    },
+                    provisioned_throughput: {
+                      read_capacity_units: 3,
+                      write_capacity_units: 1
+                    }
+                  }],
+                  provisioned_throughput: {
+                    read_capacity_units: 5,
+                    write_capacity_units: 2
                   }
-                ],
-                projection: {
-                  projection_type: "ALL"
-                },
-                provisioned_throughput: {
-                  read_capacity_units: 3,
-                  write_capacity_units: 1
                 }
-              }],
-              provisioned_throughput: {
-                read_capacity_units: 5,
-                write_capacity_units: 2
-              }
-            }])
+              ]
+            )
           end
 
           it 'does not require global secondary index throughput to be ' \
@@ -393,59 +411,63 @@ module Aws
               hash_key: :gsi_partition,
               range_key: :gsi_sort,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             migration.client = stub_client
             migration.create!(create_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              attribute_definitions: [
+            expect(api_requests).to eq(
+              [
                 {
-                  attribute_name: "id",
-                  attribute_type: "N"
-                },
-                {
-                  attribute_name: "datekey",
-                  attribute_type: "S"
-                },
-                {
-                  attribute_name: "gsi_partition",
-                  attribute_type: "S"
-                },
-                {
-                  attribute_name: "gsi_sort",
-                  attribute_type: "S"
+                  table_name: 'TestTable',
+                  attribute_definitions: [
+                    {
+                      attribute_name: 'id',
+                      attribute_type: 'N'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      attribute_type: 'S'
+                    },
+                    {
+                      attribute_name: 'gsi_partition',
+                      attribute_type: 'S'
+                    },
+                    {
+                      attribute_name: 'gsi_sort',
+                      attribute_type: 'S'
+                    }
+                  ],
+                  key_schema: [
+                    {
+                      attribute_name: 'id',
+                      key_type: 'HASH'
+                    },
+                    {
+                      attribute_name: 'datekey',
+                      key_type: 'RANGE'
+                    }
+                  ],
+                  global_secondary_indexes: [{
+                    index_name: 'test_gsi',
+                    key_schema: [
+                      {
+                        attribute_name: 'gsi_partition',
+                        key_type: 'HASH'
+                      },
+                      {
+                        attribute_name: 'gsi_sort',
+                        key_type: 'RANGE'
+                      }
+                    ],
+                    projection: {
+                      projection_type: 'ALL'
+                    }
+                  }],
+                  billing_mode: 'PAY_PER_REQUEST'
                 }
-              ],
-              key_schema: [
-                {
-                  attribute_name: "id",
-                  key_type: "HASH"
-                },
-                {
-                  attribute_name: "datekey",
-                  key_type: "RANGE"
-                }
-              ],
-              global_secondary_indexes: [{
-                index_name: "test_gsi",
-                key_schema: [
-                  {
-                    attribute_name: "gsi_partition",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "gsi_sort",
-                    key_type: "RANGE"
-                  }
-                ],
-                projection: {
-                  projection_type: "ALL"
-                }
-              }],
-              billing_mode: 'PAY_PER_REQUEST'
-            }])
+              ]
+            )
           end
 
           context 'when the table is not configured to use on-demand billing' do
@@ -465,7 +487,7 @@ module Aws
                 hash_key: :gsi_partition,
                 range_key: :gsi_sort,
                 projection: {
-                  projection_type: "ALL"
+                  projection_type: 'ALL'
                 }
               )
               migration.client = stub_client
@@ -489,7 +511,7 @@ module Aws
                 hash_key: :gsi_partition,
                 range_key: :gsi_sort,
                 projection: {
-                  projection_type: "ALL"
+                  projection_type: 'ALL'
                 }
               )
               klass.global_secondary_index(
@@ -497,7 +519,7 @@ module Aws
                 hash_key: :gsi_partition,
                 range_key: :gsi_sort,
                 projection: {
-                  projection_type: "ALL"
+                  projection_type: 'ALL'
                 }
               )
               migration.client = stub_client
@@ -510,18 +532,22 @@ module Aws
           end
         end
 
-        context "#delete!" do
+        context '#delete!' do
           it 'calls #delete_table on a client when #delete! is called' do
             migration.client = stub_client
             migration.delete!
-            expect(api_requests).to eq([{
-              table_name: "TestTable"
-            }])
+            expect(api_requests).to eq(
+              [
+                { table_name: 'TestTable' }
+              ]
+            )
           end
 
           it 'throws TableDoesNotExist when table did not exist at call time' do
-            stub_client.stub_responses(:delete_table,
-              'ResourceNotFoundException')
+            stub_client.stub_responses(
+              :delete_table,
+              'ResourceNotFoundException'
+            )
             migration.client = stub_client
             expect { migration.delete! }.to raise_error(
               Errors::TableDoesNotExist
@@ -529,7 +555,7 @@ module Aws
           end
         end
 
-        context "#update!" do
+        context '#update!' do
           it 'calles #update_table on a client when #update! is called' do
             update_opts = {
               provisioned_throughput: {
@@ -539,18 +565,24 @@ module Aws
             }
             migration.client = stub_client
             migration.update!(update_opts)
-            expect(api_requests).to eq([{
-              table_name: "TestTable",
-              provisioned_throughput: {
-                read_capacity_units: 4,
-                write_capacity_units: 3
-              }
-            }])
+            expect(api_requests).to eq(
+              [
+                {
+                  table_name: 'TestTable',
+                  provisioned_throughput: {
+                    read_capacity_units: 4,
+                    write_capacity_units: 3
+                  }
+                }
+              ]
+            )
           end
 
           it 'throws TableDoesNotExist when table did not exist at call time' do
-            stub_client.stub_responses(:update_table,
-              'ResourceNotFoundException')
+            stub_client.stub_responses(
+              :update_table,
+              'ResourceNotFoundException'
+            )
             migration.client = stub_client
             expect { migration.update!({}) }.to raise_error(
               Errors::TableDoesNotExist
@@ -560,15 +592,14 @@ module Aws
 
         context '#wait_until_available' do
           it "can check on the table's availability status" do
-            stub_client.stub_responses(:describe_table,
-              {
-                table: { table_status: "ACTIVE" }
-              })
+            stub_client.stub_responses(
+              :describe_table,
+              table: { table_status: 'ACTIVE' }
+            )
             migration.client = stub_client
             expect(migration.wait_until_available).not_to eq(nil)
           end
         end
-
       end
     end
   end

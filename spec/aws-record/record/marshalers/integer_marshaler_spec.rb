@@ -6,7 +6,6 @@ module Aws
   module Record
     module Marshalers
       describe IntegerMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = IntegerMarshaler.new
@@ -19,7 +18,7 @@ module Aws
             end
 
             it 'casts stringy integers to an integer' do
-              expect(@marshaler.type_cast("5")).to eq(5)
+              expect(@marshaler.type_cast('5')).to eq(5)
             end
 
             it 'passes through integer values' do
@@ -27,8 +26,13 @@ module Aws
             end
 
             it 'type casts values that do not directly respond to to_i' do
-              indirect = Class.new { def to_s; "5"; end }.new
-              expect(@marshaler.type_cast(indirect)).to eq(5)
+              indirect = Class.new do
+                def to_s
+                  '5'
+                end
+              end
+
+              expect(@marshaler.type_cast(indirect.new)).to eq(5)
             end
           end
 
@@ -42,14 +46,18 @@ module Aws
             end
 
             it 'raises when type_cast does not return the expected type' do
-              impossible = Class.new { def to_i; "wrong"; end }.new
+              impossible = Class.new do
+                def to_i
+                  'wrong'
+                end
+              end
+
               expect {
-                @marshaler.serialize(impossible)
+                @marshaler.serialize(impossible.new)
               }.to raise_error(ArgumentError)
             end
           end
         end
-
       end
     end
   end

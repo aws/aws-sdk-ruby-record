@@ -6,7 +6,6 @@ module Aws
   module Record
     module Marshalers
       describe BooleanMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = BooleanMarshaler.new
@@ -39,9 +38,7 @@ module Aws
             end
           end
         end
-
       end
     end
   end
 end
-

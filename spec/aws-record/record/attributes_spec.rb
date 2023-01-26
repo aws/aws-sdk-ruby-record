@@ -5,7 +5,6 @@ require 'spec_helper'
 module Aws
   module Record
     describe 'Attributes' do
-
       let(:klass) do
         Class.new do
           include(Aws::Record)
@@ -22,15 +21,15 @@ module Aws
         end
 
         it 'should allow attribute assignment at item creation time' do
-          item = model.new(id: "MyId")
-          expect(item.id).to eq("MyId")
+          item = model.new(id: 'MyId')
+          expect(item.id).to eq('MyId')
           expect(item.body).to be_nil
         end
 
         it 'should allow assignment of multiple attributes at item creation' do
-          item = model.new(id: "MyId", body: "Hello!")
-          expect(item.id).to eq("MyId")
-          expect(item.body).to eq("Hello!")
+          item = model.new(id: 'MyId', body: 'Hello!')
+          expect(item.id).to eq('MyId')
+          expect(item.body).to eq('Hello!')
         end
       end
 
@@ -60,12 +59,12 @@ module Aws
         it 'should create dynamic methods around attributes' do
           klass.string_attr(:text)
           x = klass.new
-          x.text = "Hello world!"
-          expect(x.text).to eq("Hello world!")
+          x.text = 'Hello world!'
+          expect(x.text).to eq('Hello world!')
         end
 
         it 'should reject non-symbolized attribute names' do
-          expect { klass.float_attr("floating") }.to raise_error(ArgumentError)
+          expect { klass.float_attr('floating') }.to raise_error(ArgumentError)
         end
 
         it 'rejects collisions of db storage names with existing attr names' do
@@ -92,7 +91,7 @@ module Aws
         it 'should typecast an integer attribute' do
           klass.integer_attr(:num)
           x = klass.new
-          x.num = "5"
+          x.num = '5'
           expect(x.num).to eq(5)
         end
 
@@ -100,9 +99,9 @@ module Aws
           klass.string_attr(:a)
           klass.string_attr(:b)
           x = klass.new
-          x.a = "5"
+          x.a = '5'
           x.b = 5
-          expect(x.to_h).to eq({a: "5", b: 5})
+          expect(x.to_h).to eq(a: '5', b: 5)
         end
 
         it 'should allow specification of a separate storage attribute name' do
@@ -136,8 +135,8 @@ module Aws
         it 'should allow reserved names to be used as custom storage names' do
           klass.string_attr(:clever, database_attribute_name: 'to_h')
           item = klass.new
-          item.clever = "No problem."
-          expect(item.to_h).to eq({ clever: "No problem." })
+          item.clever = 'No problem.'
+          expect(item.to_h).to eq(clever: 'No problem.')
         end
       end
 
@@ -145,27 +144,26 @@ module Aws
         it 'should override the existing default value' do
           klass.string_attr(:id, hash_key: true)
           klass.atomic_counter(:counter, default_value: 5)
-          item = klass.new(id: "MyId")
+          item = klass.new(id: 'MyId')
           expect(item.counter).to eq(5)
         end
 
         it 'should be the existing default value' do
           klass.string_attr(:id, hash_key: true)
           klass.atomic_counter(:counter)
-          item = klass.new(id: "MyId")
+          item = klass.new(id: 'MyId')
           expect(item.counter).to eq(0)
         end
 
         it 'should be able to reassign default value after creation' do
           klass.string_attr(:id, hash_key: true)
           klass.atomic_counter(:counter, default_value: 5)
-          item = klass.new(id: "MyId")
+          item = klass.new(id: 'MyId')
           item.counter = 10
           expect(item.counter).to eq(10)
         end
 
         describe '#incrementing_<attr>!' do
-
           before(:each) do
             klass.configure_client(client: stub_client)
           end
@@ -173,7 +171,7 @@ module Aws
           let(:klass) do
             Class.new do
               include(Aws::Record)
-              set_table_name("TestTable")
+              set_table_name('TestTable')
               integer_attr(:id, hash_key: true)
               atomic_counter(:counter)
             end
@@ -192,62 +190,52 @@ module Aws
           end
 
           it 'should increment atomic counter by default value' do
-            stub_client.stub_responses(:update_item,
-               {
-                 attributes:
-                   {
-                     'counter' => 1
-                   }
-               })
-
+            stub_client.stub_responses(:update_item, attributes: { 'counter' => 1 })
             item = klass.new(id: 1)
             item.save!
             item.increment_counter!
 
             expect(item.counter).to eq(1)
-            expect(api_requests[1]). to eq({
-              expression_attribute_names: {"#n"=>"counter"},
-              expression_attribute_values: {":i"=>{:n=>"1"}},
-              key: {"id"=>{:n=>"1"}},
-              return_values: "UPDATED_NEW",
-              table_name: "TestTable",
-              update_expression:"SET #n = #n + :i"
-            })
+            expect(api_requests[1]). to eq(
+              expression_attribute_names: { '#n' => 'counter' },
+              expression_attribute_values: { ':i' => { n: '1' } },
+              key: { 'id' => { n: '1' } },
+              return_values: 'UPDATED_NEW',
+              table_name: 'TestTable',
+              update_expression: 'SET #n = #n + :i'
+            )
           end
 
           it 'should increment the atomic counter by a custom value' do
-            stub_client.stub_responses(:update_item,
-               {
-                 attributes:
-                   {
-                     'counter' => 2
-                   }
-               })
-
+            stub_client.stub_responses(:update_item, attributes: { 'counter' => 2 })
             item = klass.new(id: 1)
             item.save!
             item.increment_counter!(2)
 
             expect(item.counter).to eq(2)
-            expect(api_requests[1]). to eq({
-             expression_attribute_names: {"#n"=>"counter"},
-             expression_attribute_values: {":i"=>{:n=>"2"}},
-             key: {"id"=>{:n=>"1"}},
-             return_values: "UPDATED_NEW",
-             table_name: "TestTable",
-             update_expression:"SET #n = #n + :i"
-           })
+            expect(api_requests[1]). to eq(
+              expression_attribute_names: { '#n' => 'counter' },
+              expression_attribute_values: { ':i' => { n: '2' } },
+              key: { 'id' => { n: '1' } },
+              return_values: 'UPDATED_NEW',
+              table_name: 'TestTable',
+              update_expression: 'SET #n = #n + :i'
+            )
           end
 
           it 'will raise when incrementing on a dirty item' do
             item = klass.new(id: 1)
-            expect { item.increment_counter! }.to raise_error(Errors::RecordError)
+            expect {
+              item.increment_counter!
+            }.to raise_error(Errors::RecordError)
           end
 
           it 'will raise when arg is not an integer' do
             item = klass.new(id: 1)
             item.save!
-            expect {item.increment_counter!("foo")}.to raise_error(ArgumentError)
+            expect {
+              item.increment_counter!('foo')
+            }.to raise_error(ArgumentError)
           end
         end
       end
@@ -307,7 +295,7 @@ module Aws
 
           expect(child_item.id).to eq(1)
           expect(child_item.rk).to eq(1)
-          expect(child_item.key_values).to eq({"id"=>1, "rk"=>1})
+          expect(child_item.key_values).to eq('id' => 1, 'rk' => 1)
         end
 
         it 'correctly passes default values to child model' do
@@ -317,7 +305,6 @@ module Aws
           expect(child_item.test).to eq('test')
         end
       end
-
     end
   end
 end

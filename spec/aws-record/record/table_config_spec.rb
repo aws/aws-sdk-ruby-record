@@ -5,7 +5,6 @@ require 'spec_helper'
 module Aws
   module Record
     describe TableConfig do
-
       let(:api_requests) { [] }
 
       def configure_test_client(client)
@@ -39,7 +38,7 @@ module Aws
         end
       end
 
-      describe "#migrate!" do
+      describe '#migrate!' do
         it 'will attempt to create the remote table if it does not exist' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
@@ -51,11 +50,11 @@ module Aws
           stub_client.stub_responses(
             :describe_table,
             'ResourceNotFoundException',
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModel",
+            table_name: 'TestModel',
             provisioned_throughput:
             {
               read_capacity_units: 1,
@@ -63,22 +62,22 @@ module Aws
             },
             key_schema: [
               {
-                attribute_name: "hk",
-                key_type: "HASH"
+                attribute_name: 'hk',
+                key_type: 'HASH'
               },
               {
-                attribute_name: "rk",
-                key_type: "RANGE"
+                attribute_name: 'rk',
+                key_type: 'RANGE'
               }
             ],
             attribute_definitions: [
               {
-                attribute_name: "hk",
-                attribute_type: "S"
+                attribute_name: 'hk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "rk",
-                attribute_type: "S"
+                attribute_name: 'rk',
+                attribute_type: 'S'
               }
             ]
           )
@@ -98,23 +97,23 @@ module Aws
               table: {
                 attribute_definitions: [
                   {
-                    attribute_name: "hk",
-                    attribute_type: "S"
+                    attribute_name: 'hk',
+                    attribute_type: 'S'
                   },
                   {
-                    attribute_name: "rk",
-                    attribute_type: "S"
+                    attribute_name: 'rk',
+                    attribute_type: 'S'
                   }
                 ],
-                table_name: "TestModel",
+                table_name: 'TestModel',
                 key_schema: [
                   {
-                    attribute_name: "hk",
-                    key_type: "HASH"
+                    attribute_name: 'hk',
+                    key_type: 'HASH'
                   },
                   {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
+                    attribute_name: 'rk',
+                    key_type: 'RANGE'
                   }
                 ],
                 provisioned_throughput: {
@@ -122,14 +121,14 @@ module Aws
                   write_capacity_units: 1,
                   number_of_decreases_today: 0
                 },
-                table_status: "ACTIVE"
+                table_status: 'ACTIVE'
               }
             },
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModel",
+            table_name: 'TestModel',
             provisioned_throughput:
             {
               read_capacity_units: 2,
@@ -142,7 +141,7 @@ module Aws
           cfg = TableConfig.define do |t|
             t.client_options(stub_responses: true)
           end
-          expect{ cfg.migrate! }.to raise_error(
+          expect { cfg.migrate! }.to raise_error(
             Errors::MissingRequiredConfiguration,
             'Missing: model_class, read_capacity_units, write_capacity_units'
           )
@@ -154,7 +153,7 @@ module Aws
             t.write_capacity_units(1)
             t.client_options(stub_responses: true)
           end
-          expect{ cfg.migrate! }.to raise_error(
+          expect { cfg.migrate! }.to raise_error(
             Errors::MissingRequiredConfiguration,
             'Missing: model_class'
           )
@@ -165,14 +164,13 @@ module Aws
             t.model_class(TestModel)
             t.client_options(stub_responses: true)
           end
-          expect{ cfg.migrate! }.to raise_error(
+          expect { cfg.migrate! }.to raise_error(
             Errors::MissingRequiredConfiguration,
             'Missing: read_capacity_units, write_capacity_units'
           )
         end
 
-        context "Global Secondary Indexes" do
-
+        context 'Global Secondary Indexes' do
           it 'can create a new table with global secondary indexes' do
             cfg = TableConfig.define do |t|
               t.model_class(TestModelWithGsi)
@@ -188,11 +186,11 @@ module Aws
             stub_client.stub_responses(
               :describe_table,
               'ResourceNotFoundException',
-              { table: { table_status: "ACTIVE" } }
+              table: { table_status: 'ACTIVE' }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi",
+              table_name: 'TestModelWithGsi',
               provisioned_throughput:
               {
                 read_capacity_units: 2,
@@ -200,53 +198,53 @@ module Aws
               },
               key_schema: [
                 {
-                  attribute_name: "hk",
-                  key_type: "HASH"
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
                 },
                 {
-                  attribute_name: "rk",
-                  key_type: "RANGE"
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
                 }
               ],
               attribute_definitions: [
                 {
-                  attribute_name: "hk",
-                  attribute_type: "S"
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "rk",
-                  attribute_type: "S"
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_pk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_sk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
                 }
               ],
               global_secondary_indexes: [
                 {
-                  index_name: "gsi",
+                  index_name: 'gsi',
                   key_schema: [
                     {
-                      key_type: "HASH",
-                      attribute_name: "gsi_pk"
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     },
                     {
-                      key_type: "RANGE",
-                      attribute_name: "gsi_sk"
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     }
                   ],
                   projection: {
-                    projection_type: "INCLUDE",
-                    non_key_attributes: ['c', 'b', 'a'] 
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['c', 'b', 'a']
                   },
                   provisioned_throughput: {
                     read_capacity_units: 1,
                     write_capacity_units: 1
-                  } 
+                  }
                 }
               ]
             )
@@ -270,23 +268,23 @@ module Aws
                 table: {
                   attribute_definitions: [
                     {
-                      attribute_type: "S",
-                      attribute_name: "hk"
+                      attribute_type: 'S',
+                      attribute_name: 'hk'
                     },
                     {
-                      attribute_name: "rk",
-                      attribute_type: "S"
+                      attribute_name: 'rk',
+                      attribute_type: 'S'
                     }
                   ],
-                  table_name: "TestModelWithGsi",
+                  table_name: 'TestModelWithGsi',
                   key_schema: [
                     {
-                      attribute_name: "hk",
-                      key_type: "HASH"
+                      attribute_name: 'hk',
+                      key_type: 'HASH'
                     },
                     {
-                      attribute_name: "rk",
-                      key_type: "RANGE"
+                      attribute_name: 'rk',
+                      key_type: 'RANGE'
                     }
                   ],
                   provisioned_throughput: {
@@ -294,46 +292,46 @@ module Aws
                     write_capacity_units: 2,
                     number_of_decreases_today: 0
                   },
-                  table_status: "ACTIVE"
+                  table_status: 'ACTIVE'
                 }
               },
-              { table: { table_status: "ACTIVE" } }
+              table: { table_status: 'ACTIVE' }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi",
+              table_name: 'TestModelWithGsi',
               attribute_definitions: [
                 {
-                  attribute_name: "gsi_pk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_sk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
                 }
               ],
               global_secondary_index_updates: [
                 {
                   create: {
-                    index_name: "gsi",
+                    index_name: 'gsi',
                     key_schema: [
                       {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
+                        key_type: 'HASH',
+                        attribute_name: 'gsi_pk'
                       },
                       {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
+                        key_type: 'RANGE',
+                        attribute_name: 'gsi_sk'
                       }
                     ],
                     projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ['c', 'b', 'a'] 
+                      projection_type: 'INCLUDE',
+                      non_key_attributes: ['c', 'b', 'a']
                     },
                     provisioned_throughput: {
                       read_capacity_units: 1,
                       write_capacity_units: 1
-                    } 
+                    }
                   }
                 }
               ]
@@ -358,23 +356,23 @@ module Aws
                 table: {
                   attribute_definitions: [
                     {
-                      attribute_type: "S",
-                      attribute_name: "hk"
+                      attribute_type: 'S',
+                      attribute_name: 'hk'
                     },
                     {
-                      attribute_name: "rk",
-                      attribute_type: "S"
+                      attribute_name: 'rk',
+                      attribute_type: 'S'
                     }
                   ],
-                  table_name: "TestModelWithGsi",
+                  table_name: 'TestModelWithGsi',
                   key_schema: [
                     {
-                      attribute_name: "hk",
-                      key_type: "HASH"
+                      attribute_name: 'hk',
+                      key_type: 'HASH'
                     },
                     {
-                      attribute_name: "rk",
-                      key_type: "RANGE"
+                      attribute_name: 'rk',
+                      key_type: 'RANGE'
                     }
                   ],
                   provisioned_throughput: {
@@ -382,53 +380,53 @@ module Aws
                     write_capacity_units: 1,
                     number_of_decreases_today: 0
                   },
-                  table_status: "ACTIVE"
+                  table_status: 'ACTIVE'
                 }
               },
-              { table: { table_status: "ACTIVE" } }
+              table: { table_status: 'ACTIVE' }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi",
+              table_name: 'TestModelWithGsi',
               provisioned_throughput: {
                 read_capacity_units: 2,
                 write_capacity_units: 2
               }
             )
             expect(api_requests[3]).to eq(
-              table_name: "TestModelWithGsi",
+              table_name: 'TestModelWithGsi',
               attribute_definitions: [
                 {
-                  attribute_name: "gsi_pk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_sk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
                 }
               ],
               global_secondary_index_updates: [
                 {
                   create: {
-                    index_name: "gsi",
+                    index_name: 'gsi',
                     key_schema: [
                       {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
+                        key_type: 'HASH',
+                        attribute_name: 'gsi_pk'
                       },
                       {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
+                        key_type: 'RANGE',
+                        attribute_name: 'gsi_sk'
                       }
                     ],
                     projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ['c', 'b', 'a'] 
+                      projection_type: 'INCLUDE',
+                      non_key_attributes: ['c', 'b', 'a']
                     },
                     provisioned_throughput: {
                       read_capacity_units: 1,
                       write_capacity_units: 1
-                    } 
+                    }
                   }
                 }
               ]
@@ -453,23 +451,23 @@ module Aws
                 table: {
                   attribute_definitions: [
                     {
-                      attribute_type: "S",
-                      attribute_name: "hk"
+                      attribute_type: 'S',
+                      attribute_name: 'hk'
                     },
                     {
-                      attribute_name: "rk",
-                      attribute_type: "S"
+                      attribute_name: 'rk',
+                      attribute_type: 'S'
                     }
                   ],
-                  table_name: "TestModelWithGsi2",
+                  table_name: 'TestModelWithGsi2',
                   key_schema: [
                     {
-                      attribute_name: "hk",
-                      key_type: "HASH"
+                      attribute_name: 'hk',
+                      key_type: 'HASH'
                     },
                     {
-                      attribute_name: "rk",
-                      key_type: "RANGE"
+                      attribute_name: 'rk',
+                      key_type: 'RANGE'
                     }
                   ],
                   provisioned_throughput: {
@@ -477,45 +475,45 @@ module Aws
                     write_capacity_units: 2,
                     number_of_decreases_today: 0
                   },
-                  table_status: "ACTIVE"
+                  table_status: 'ACTIVE'
                 }
               },
-              { table: { table_status: "ACTIVE" } }
+              table: { table_status: 'ACTIVE' }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi2",
+              table_name: 'TestModelWithGsi2',
               attribute_definitions: [
                 {
-                  attribute_name: "hk",
-                  attribute_type: "S"
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_sk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
                 }
               ],
               global_secondary_index_updates: [
                 {
                   create: {
-                    index_name: "gsi",
+                    index_name: 'gsi',
                     key_schema: [
                       {
-                        key_type: "HASH",
-                        attribute_name: "hk"
+                        key_type: 'HASH',
+                        attribute_name: 'hk'
                       },
                       {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
+                        key_type: 'RANGE',
+                        attribute_name: 'gsi_sk'
                       }
                     ],
                     projection: {
-                      projection_type: "ALL"
+                      projection_type: 'ALL'
                     },
                     provisioned_throughput: {
                       read_capacity_units: 1,
                       write_capacity_units: 1
-                    } 
+                    }
                   }
                 }
               ]
@@ -536,84 +534,82 @@ module Aws
             stub_client = configure_test_client(cfg.client)
             stub_client.stub_responses(
               :describe_table,
-              {
-                table: {
-                  table_status: "ACTIVE",
-                  attribute_definitions: [
-                    {
-                      attribute_name: "hk",
-                      attribute_type: "S"
-                    },
-                    {
-                      attribute_name: "rk",
-                      attribute_type: "S"
-                    },
-                    {
-                      attribute_name: "gsi_pk",
-                      attribute_type: "S"
-                    },
-                    {
-                      attribute_name: "gsi_sk",
-                      attribute_type: "S"
-                    }
-                  ],
-                  table_name: "TestModel",
-                  key_schema: [
-                    {
-                      attribute_name: "hk",
-                      key_type: "HASH"
-                    },
-                    {
-                      attribute_name: "rk",
-                      key_type: "RANGE"
-                    }
-                  ],
-                  provisioned_throughput: {
-                    read_capacity_units: 2,
-                    write_capacity_units: 2,
-                    number_of_decreases_today: 0
+              table: {
+                table_status: 'ACTIVE',
+                attribute_definitions: [
+                  {
+                    attribute_name: 'hk',
+                    attribute_type: 'S'
                   },
-                  global_secondary_indexes: [
-                    {
-                      index_name: "gsi",
-                      key_schema: [
-                        {
-                          key_type: "RANGE",
-                          attribute_name: "gsi_sk"
-                        },
-                        {
-                          key_type: "HASH",
-                          attribute_name: "gsi_pk"
-                        }
-                      ],
-                      projection: {
-                        projection_type: "INCLUDE",
-                        non_key_attributes: ["a", "b", "c"]
+                  {
+                    attribute_name: 'rk',
+                    attribute_type: 'S'
+                  },
+                  {
+                    attribute_name: 'gsi_pk',
+                    attribute_type: 'S'
+                  },
+                  {
+                    attribute_name: 'gsi_sk',
+                    attribute_type: 'S'
+                  }
+                ],
+                table_name: 'TestModel',
+                key_schema: [
+                  {
+                    attribute_name: 'hk',
+                    key_type: 'HASH'
+                  },
+                  {
+                    attribute_name: 'rk',
+                    key_type: 'RANGE'
+                  }
+                ],
+                provisioned_throughput: {
+                  read_capacity_units: 2,
+                  write_capacity_units: 2,
+                  number_of_decreases_today: 0
+                },
+                global_secondary_indexes: [
+                  {
+                    index_name: 'gsi',
+                    key_schema: [
+                      {
+                        key_type: 'RANGE',
+                        attribute_name: 'gsi_sk'
                       },
-                      item_count: 0,
-                      index_status: "ACTIVE",
-                      backfilling: false,
-                      provisioned_throughput: {
-                        read_capacity_units: 1,
-                        write_capacity_units: 1,
-                        number_of_decreases_today: 0
+                      {
+                        key_type: 'HASH',
+                        attribute_name: 'gsi_pk'
                       }
+                    ],
+                    projection: {
+                      projection_type: 'INCLUDE',
+                      non_key_attributes: ['a', 'b', 'c']
+                    },
+                    item_count: 0,
+                    index_status: 'ACTIVE',
+                    backfilling: false,
+                    provisioned_throughput: {
+                      read_capacity_units: 1,
+                      write_capacity_units: 1,
+                      number_of_decreases_today: 0
                     }
-                  ]
-                }
+                  }
+                ]
               }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi2",
+              table_name: 'TestModelWithGsi2',
               global_secondary_index_updates: [
                 {
                   update: {
-                    index_name: "gsi",
+                    index_name: 'gsi',
                     provisioned_throughput: {
                       read_capacity_units: 2,
                       write_capacity_units: 2
-                    } 
+                    }
                   }
                 }
               ]
@@ -642,27 +638,27 @@ module Aws
                 table: {
                   attribute_definitions: [
                     {
-                      attribute_type: "S",
-                      attribute_name: "hk"
+                      attribute_type: 'S',
+                      attribute_name: 'hk'
                     },
                     {
-                      attribute_name: "rk",
-                      attribute_type: "S"
+                      attribute_name: 'rk',
+                      attribute_type: 'S'
                     },
                     {
-                      attribute_name: "gsi_sk",
-                      attribute_type: "S"
+                      attribute_name: 'gsi_sk',
+                      attribute_type: 'S'
                     }
                   ],
-                  table_name: "TestModelWithGsi3",
+                  table_name: 'TestModelWithGsi3',
                   key_schema: [
                     {
-                      attribute_name: "hk",
-                      key_type: "HASH"
+                      attribute_name: 'hk',
+                      key_type: 'HASH'
                     },
                     {
-                      attribute_name: "rk",
-                      key_type: "RANGE"
+                      attribute_name: 'rk',
+                      key_type: 'RANGE'
                     }
                   ],
                   provisioned_throughput: {
@@ -672,22 +668,22 @@ module Aws
                   },
                   global_secondary_indexes: [
                     {
-                      index_name: "gsi",
+                      index_name: 'gsi',
                       key_schema: [
                         {
-                          key_type: "RANGE",
-                          attribute_name: "gsi_sk"
+                          key_type: 'RANGE',
+                          attribute_name: 'gsi_sk'
                         },
                         {
-                          key_type: "HASH",
-                          attribute_name: "hk"
+                          key_type: 'HASH',
+                          attribute_name: 'hk'
                         }
                       ],
                       projection: {
-                        projection_type: "ALL"
+                        projection_type: 'ALL'
                       },
                       item_count: 0,
-                      index_status: "ACTIVE",
+                      index_status: 'ACTIVE',
                       backfilling: false,
                       provisioned_throughput: {
                         read_capacity_units: 1,
@@ -696,50 +692,50 @@ module Aws
                       }
                     }
                   ],
-                  table_status: "ACTIVE"
+                  table_status: 'ACTIVE'
                 }
               },
-              { table: { table_status: "ACTIVE" } }
+              table: { table_status: 'ACTIVE' }
             )
             cfg.migrate!
             expect(api_requests[1]).to eq(
-              table_name: "TestModelWithGsi3",
+              table_name: 'TestModelWithGsi3',
               attribute_definitions: [
                 {
-                  attribute_name: "gsi_pk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
                 },
                 {
-                  attribute_name: "gsi_sk",
-                  attribute_type: "S"
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
                 }
               ],
               global_secondary_index_updates: [
                 {
                   create: {
-                    index_name: "gsi2",
+                    index_name: 'gsi2',
                     key_schema: [
                       {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
+                        key_type: 'HASH',
+                        attribute_name: 'gsi_pk'
                       },
                       {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
+                        key_type: 'RANGE',
+                        attribute_name: 'gsi_sk'
                       }
                     ],
                     projection: {
-                      projection_type: "ALL"
+                      projection_type: 'ALL'
                     },
                     provisioned_throughput: {
                       read_capacity_units: 2,
                       write_capacity_units: 2
-                    } 
+                    }
                   }
                 },
                 {
                   update: {
-                    index_name: "gsi",
+                    index_name: 'gsi',
                     provisioned_throughput: {
                       read_capacity_units: 2,
                       write_capacity_units: 2
@@ -749,13 +745,10 @@ module Aws
               ]
             )
           end
-
         end
-
       end
 
       describe '#compatible?' do
-
         it 'compares against a #describe_table call' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
@@ -766,34 +759,32 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1,
+                number_of_decreases_today: 0
               }
             }
           )
@@ -810,33 +801,31 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 1
               }
             }
           )
@@ -853,33 +842,31 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hashkey",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hashkey",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hashkey',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hashkey',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1
               }
             }
           )
@@ -896,37 +883,35 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "bacon",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'bacon',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1
               }
             }
           )
@@ -962,34 +947,32 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
               }
             }
           )
@@ -1010,70 +993,68 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           expect(cfg.compatible?).to be_truthy
@@ -1093,95 +1074,93 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
                   },
-                  {
-                    index_name: "sir_not_appearing_in_this_model",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
-                    },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
-                    }
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                },
+                {
+                  index_name: 'sir_not_appearing_in_this_model',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
+                    },
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
+                    }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
+                  }
+                }
+              ]
             }
           )
           expect(cfg.compatible?).to be_truthy
@@ -1201,79 +1180,75 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_rk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           expect(cfg.compatible?).to be_falsy
         end
-
       end
 
       describe '#exact_match?' do
-
         it 'compares against a #describe_table call' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
@@ -1284,34 +1259,32 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  },
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                },
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1,
+                number_of_decreases_today: 0
               }
             }
           )
@@ -1328,33 +1301,31 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 1
               }
             }
           )
@@ -1371,33 +1342,31 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hashkey",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hashkey",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hashkey',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hashkey',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1
               }
             }
           )
@@ -1414,37 +1383,35 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "bacon",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'bacon',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1
               }
             }
           )
@@ -1465,7 +1432,7 @@ module Aws
           )
           expect(cfg.exact_match?).to be_falsy
         end
-        
+
         it 'returns false if a global secondary index is missing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModelWithGsi)
@@ -1480,34 +1447,32 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
               }
             }
           )
@@ -1528,70 +1493,68 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           expect(cfg.exact_match?).to be_truthy
@@ -1611,95 +1574,93 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
                   },
-                  {
-                    index_name: "sir_not_appearing_in_this_model",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
-                    },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
-                    }
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                },
+                {
+                  index_name: 'sir_not_appearing_in_this_model',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
+                    },
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
+                    }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
+                  }
+                }
+              ]
             }
           )
           expect(cfg.exact_match?).to be_falsy
@@ -1719,78 +1680,75 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_rk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 1,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 1,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           expect(cfg.exact_match?).to be_falsy
         end
-
       end
 
-      context "TTL Attributes" do
+      context 'TTL Attributes' do
         it 'raises an exception when TTL is applied to a missing attribute' do
           expect {
             TableConfig.define do |t|
@@ -1815,11 +1773,11 @@ module Aws
           stub_client.stub_responses(
             :describe_table,
             'ResourceNotFoundException',
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModelWithTtl",
+            table_name: 'TestModelWithTtl',
             provisioned_throughput:
             {
               read_capacity_units: 1,
@@ -1827,178 +1785,174 @@ module Aws
             },
             key_schema: [
               {
-                attribute_name: "hk",
-                key_type: "HASH"
+                attribute_name: 'hk',
+                key_type: 'HASH'
               },
               {
-                attribute_name: "rk",
-                key_type: "RANGE"
+                attribute_name: 'rk',
+                key_type: 'RANGE'
               }
             ],
             attribute_definitions: [
               {
-                attribute_name: "hk",
-                attribute_type: "S"
+                attribute_name: 'hk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "rk",
-                attribute_type: "S"
+                attribute_name: 'rk',
+                attribute_type: 'S'
               }
             ]
           )
           expect(api_requests[4]).to eq(
-            table_name: "TestModelWithTtl",
+            table_name: 'TestModelWithTtl',
             time_to_live_specification: {
               enabled: true,
-              attribute_name: "TimeToLive"
+              attribute_name: 'TimeToLive'
             }
           )
         end
       end
 
-      context "Pay Per Request Capacity" do
-        it "accepts billing mode in table config" do
+      context 'Pay Per Request Capacity' do
+        it 'accepts billing mode in table config' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
         end
 
-        it "accepts billing mode in table config with a GSI" do
+        it 'accepts billing mode in table config with a GSI' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModelWithGsi)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
         end
 
-        it "can create a table with ppr billing" do
+        it 'can create a table with ppr billing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
             'ResourceNotFoundException',
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModel",
-            billing_mode: "PAY_PER_REQUEST",
+            table_name: 'TestModel',
+            billing_mode: 'PAY_PER_REQUEST',
             key_schema: [
               {
-                attribute_name: "hk",
-                key_type: "HASH"
+                attribute_name: 'hk',
+                key_type: 'HASH'
               },
               {
-                attribute_name: "rk",
-                key_type: "RANGE"
+                attribute_name: 'rk',
+                key_type: 'RANGE'
               }
             ],
             attribute_definitions: [
               {
-                attribute_name: "hk",
-                attribute_type: "S"
+                attribute_name: 'hk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "rk",
-                attribute_type: "S"
+                attribute_name: 'rk',
+                attribute_type: 'S'
               }
             ]
           )
         end
 
-        it "confirms compatibility of tables with PPR billing" do
+        it 'confirms compatibility of tables with PPR billing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                billing_mode_summary: {
-                  billing_mode: "PAY_PER_REQUEST"
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              billing_mode_summary: {
+                billing_mode: 'PAY_PER_REQUEST'
               }
             }
           )
           expect(cfg.compatible?).to be_truthy
         end
 
-        it "registers incompatible when remote is provisioned" do
+        it 'registers incompatible when remote is provisioned' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                billing_mode_summary: {
-                  billing_mode: "PROVISIONED"
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                provisioned_throughput: {
-                  read_capacity_units: 1,
-                  write_capacity_units: 1
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              billing_mode_summary: {
+                billing_mode: 'PROVISIONED'
+              },
+              provisioned_throughput: {
+                read_capacity_units: 1,
+                write_capacity_units: 1
               }
             }
           )
           expect(cfg.compatible?).to be_falsey
         end
 
-        it "registers incompatible when remote is ppr" do
+        it 'registers incompatible when remote is ppr' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
             t.read_capacity_units(5)
@@ -2008,42 +1962,40 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                billing_mode_summary: {
-                  billing_mode: "PAY_PER_REQUEST"
+            table: {
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              billing_mode_summary: {
+                billing_mode: 'PAY_PER_REQUEST'
               }
             }
           )
           expect(cfg.compatible?).to be_falsey
         end
 
-        it "can transition from provisioned to ppr billing" do
+        it 'can transition from provisioned to ppr billing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
@@ -2053,23 +2005,23 @@ module Aws
               table: {
                 attribute_definitions: [
                   {
-                    attribute_name: "hk",
-                    attribute_type: "S"
+                    attribute_name: 'hk',
+                    attribute_type: 'S'
                   },
                   {
-                    attribute_name: "rk",
-                    attribute_type: "S"
+                    attribute_name: 'rk',
+                    attribute_type: 'S'
                   }
                 ],
-                table_name: "TestModel",
+                table_name: 'TestModel',
                 key_schema: [
                   {
-                    attribute_name: "hk",
-                    key_type: "HASH"
+                    attribute_name: 'hk',
+                    key_type: 'HASH'
                   },
                   {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
+                    attribute_name: 'rk',
+                    key_type: 'RANGE'
                   }
                 ],
                 provisioned_throughput: {
@@ -2077,19 +2029,19 @@ module Aws
                   write_capacity_units: 2,
                   number_of_decreases_today: 0
                 },
-                table_status: "ACTIVE"
+                table_status: 'ACTIVE'
               }
             },
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModel",
-            billing_mode: "PAY_PER_REQUEST"
+            table_name: 'TestModel',
+            billing_mode: 'PAY_PER_REQUEST'
           )
         end
 
-        it "can transition from ppr to provisioned billing" do
+        it 'can transition from ppr to provisioned billing' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
             t.read_capacity_units(1)
@@ -2103,42 +2055,42 @@ module Aws
               table: {
                 attribute_definitions: [
                   {
-                    attribute_name: "hk",
-                    attribute_type: "S"
+                    attribute_name: 'hk',
+                    attribute_type: 'S'
                   },
                   {
-                    attribute_name: "rk",
-                    attribute_type: "S"
+                    attribute_name: 'rk',
+                    attribute_type: 'S'
                   }
                 ],
-                table_name: "TestModel",
+                table_name: 'TestModel',
                 key_schema: [
                   {
-                    attribute_name: "hk",
-                    key_type: "HASH"
+                    attribute_name: 'hk',
+                    key_type: 'HASH'
                   },
                   {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
+                    attribute_name: 'rk',
+                    key_type: 'RANGE'
                   }
                 ],
                 billing_mode_summary: {
-                  billing_mode: "PAY_PER_REQUEST"
+                  billing_mode: 'PAY_PER_REQUEST'
                 },
                 provisioned_throughput: {
                   read_capacity_units: 0,
                   write_capacity_units: 0,
                   number_of_decreases_today: 0
                 },
-                table_status: "ACTIVE"
+                table_status: 'ACTIVE'
               }
             },
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModel",
-            billing_mode: "PROVISIONED",
+            table_name: 'TestModel',
+            billing_mode: 'PROVISIONED',
             provisioned_throughput: {
               read_capacity_units: 1,
               write_capacity_units: 1
@@ -2146,66 +2098,66 @@ module Aws
           )
         end
 
-        it "can create ppr global secondary indexes" do
+        it 'can create ppr global secondary indexes' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModelWithGsi)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
             'ResourceNotFoundException',
-            { table: { table_status: "ACTIVE" } }
+            table: { table_status: 'ACTIVE' }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModelWithGsi",
-            billing_mode: "PAY_PER_REQUEST",
+            table_name: 'TestModelWithGsi',
+            billing_mode: 'PAY_PER_REQUEST',
             key_schema: [
               {
-                attribute_name: "hk",
-                key_type: "HASH"
+                attribute_name: 'hk',
+                key_type: 'HASH'
               },
               {
-                attribute_name: "rk",
-                key_type: "RANGE"
+                attribute_name: 'rk',
+                key_type: 'RANGE'
               }
             ],
             attribute_definitions: [
               {
-                attribute_name: "hk",
-                attribute_type: "S"
+                attribute_name: 'hk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "rk",
-                attribute_type: "S"
+                attribute_name: 'rk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "gsi_pk",
-                attribute_type: "S"
+                attribute_name: 'gsi_pk',
+                attribute_type: 'S'
               },
               {
-                attribute_name: "gsi_sk",
-                attribute_type: "S"
+                attribute_name: 'gsi_sk',
+                attribute_type: 'S'
               }
             ],
             global_secondary_indexes: [
               {
-                index_name: "gsi",
+                index_name: 'gsi',
                 key_schema: [
                   {
-                    key_type: "HASH",
-                    attribute_name: "gsi_pk"
+                    key_type: 'HASH',
+                    attribute_name: 'gsi_pk'
                   },
                   {
-                    key_type: "RANGE",
-                    attribute_name: "gsi_sk"
+                    key_type: 'RANGE',
+                    attribute_name: 'gsi_sk'
                   }
                 ],
                 projection: {
-                  projection_type: "INCLUDE",
-                  non_key_attributes: ['a','b','c']
+                  projection_type: 'INCLUDE',
+                  non_key_attributes: ['a', 'b', 'c']
                 }
               }
             ]
@@ -2215,83 +2167,81 @@ module Aws
         it 'can transition from ppr to provisioned billing for global secondary indexes' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModelWithGsi2)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                table_status: "ACTIVE",
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 2,
-                  write_capacity_units: 2,
-                  number_of_decreases_today: 0
+            table: {
+              table_status: 'ACTIVE',
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 2,
+                write_capacity_units: 2,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 2,
-                      write_capacity_units: 1,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 2,
+                    write_capacity_units: 1,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModelWithGsi2",
-            billing_mode: "PAY_PER_REQUEST"
+            table_name: 'TestModelWithGsi2',
+            billing_mode: 'PAY_PER_REQUEST'
           )
         end
 
@@ -2309,80 +2259,78 @@ module Aws
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            {
-              table: {
-                table_status: "ACTIVE",
-                billing_mode_summary: {
-                  billing_mode: "PAY_PER_REQUEST"
+            table: {
+              table_status: 'ACTIVE',
+              billing_mode_summary: {
+                billing_mode: 'PAY_PER_REQUEST'
+              },
+              attribute_definitions: [
+                {
+                  attribute_name: 'hk',
+                  attribute_type: 'S'
                 },
-                attribute_definitions: [
-                  {
-                    attribute_name: "hk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "rk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_pk",
-                    attribute_type: "S"
-                  },
-                  {
-                    attribute_name: "gsi_sk",
-                    attribute_type: "S"
-                  }
-                ],
-                table_name: "TestModel",
-                key_schema: [
-                  {
-                    attribute_name: "hk",
-                    key_type: "HASH"
-                  },
-                  {
-                    attribute_name: "rk",
-                    key_type: "RANGE"
-                  }
-                ],
-                provisioned_throughput: {
-                  read_capacity_units: 0,
-                  write_capacity_units: 0,
-                  number_of_decreases_today: 0
+                {
+                  attribute_name: 'rk',
+                  attribute_type: 'S'
                 },
-                global_secondary_indexes: [
-                  {
-                    index_name: "gsi",
-                    key_schema: [
-                      {
-                        key_type: "RANGE",
-                        attribute_name: "gsi_sk"
-                      },
-                      {
-                        key_type: "HASH",
-                        attribute_name: "gsi_pk"
-                      }
-                    ],
-                    projection: {
-                      projection_type: "INCLUDE",
-                      non_key_attributes: ["a", "b", "c"]
+                {
+                  attribute_name: 'gsi_pk',
+                  attribute_type: 'S'
+                },
+                {
+                  attribute_name: 'gsi_sk',
+                  attribute_type: 'S'
+                }
+              ],
+              table_name: 'TestModel',
+              key_schema: [
+                {
+                  attribute_name: 'hk',
+                  key_type: 'HASH'
+                },
+                {
+                  attribute_name: 'rk',
+                  key_type: 'RANGE'
+                }
+              ],
+              provisioned_throughput: {
+                read_capacity_units: 0,
+                write_capacity_units: 0,
+                number_of_decreases_today: 0
+              },
+              global_secondary_indexes: [
+                {
+                  index_name: 'gsi',
+                  key_schema: [
+                    {
+                      key_type: 'RANGE',
+                      attribute_name: 'gsi_sk'
                     },
-                    item_count: 0,
-                    index_status: "ACTIVE",
-                    backfilling: false,
-                    provisioned_throughput: {
-                      read_capacity_units: 0,
-                      write_capacity_units: 0,
-                      number_of_decreases_today: 0
+                    {
+                      key_type: 'HASH',
+                      attribute_name: 'gsi_pk'
                     }
+                  ],
+                  projection: {
+                    projection_type: 'INCLUDE',
+                    non_key_attributes: ['a', 'b', 'c']
+                  },
+                  item_count: 0,
+                  index_status: 'ACTIVE',
+                  backfilling: false,
+                  provisioned_throughput: {
+                    read_capacity_units: 0,
+                    write_capacity_units: 0,
+                    number_of_decreases_today: 0
                   }
-                ]
-              }
+                }
+              ]
             }
           )
           cfg.migrate!
           expect(api_requests[1]).to eq(
-            table_name: "TestModelWithGsi2",
-            billing_mode: "PROVISIONED",
+            table_name: 'TestModelWithGsi2',
+            billing_mode: 'PROVISIONED',
             provisioned_throughput: {
               read_capacity_units: 2,
               write_capacity_units: 2
@@ -2390,7 +2338,7 @@ module Aws
             global_secondary_index_updates: [
               {
                 update: {
-                  index_name: "gsi",
+                  index_name: 'gsi',
                   provisioned_throughput: {
                     read_capacity_units: 2,
                     write_capacity_units: 2
@@ -2401,37 +2349,36 @@ module Aws
           )
         end
 
-        it "will raise an argument error when given a nonsense billing mode" do
+        it 'will raise an argument error when given a nonsense billing mode' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
-            t.billing_mode("FREE_LUNCH")
+            t.billing_mode('FREE_LUNCH')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            'ResourceNotFoundException',
+            'ResourceNotFoundException'
           )
-          expect { cfg.migrate! }.to raise_error(ArgumentError, "Unsupported billing mode FREE_LUNCH")
+          expect { cfg.migrate! }.to raise_error(ArgumentError, 'Unsupported billing mode FREE_LUNCH')
         end
 
-        it "will raise a validation error if ppr is set with throughput" do
+        it 'will raise a validation error if ppr is set with throughput' do
           cfg = TableConfig.define do |t|
             t.model_class(TestModel)
             t.read_capacity_units(5)
             t.write_capacity_units(3)
-            t.billing_mode("PAY_PER_REQUEST")
+            t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
           end
           stub_client = configure_test_client(cfg.client)
           stub_client.stub_responses(
             :describe_table,
-            'ResourceNotFoundException',
+            'ResourceNotFoundException'
           )
-          expect { cfg.migrate! }.to raise_error(ArgumentError, "Cannot have billing mode PAY_PER_REQUEST with provisioned capacity.")
+          expect { cfg.migrate! }.to raise_error(ArgumentError, 'Cannot have billing mode PAY_PER_REQUEST with provisioned capacity.')
         end
       end
-
     end
   end
 end
@@ -2458,8 +2405,8 @@ class TestModelWithGsi
     hash_key:  :gsi_pk,
     range_key: :gsi_sk,
     projection: {
-      projection_type: "INCLUDE",
-      non_key_attributes: ["c", "b", "a"]
+      projection_type: 'INCLUDE',
+      non_key_attributes: ['c', 'b', 'a']
     }
   )
 end
@@ -2475,7 +2422,7 @@ class TestModelWithGsi2
     hash_key:  :hk,
     range_key: :gsi_sk,
     projection: {
-      projection_type: "ALL"
+      projection_type: 'ALL'
     }
   )
 end
@@ -2492,7 +2439,7 @@ class TestModelWithGsi3
     hash_key:  :hk,
     range_key: :gsi_sk,
     projection: {
-      projection_type: "ALL"
+      projection_type: 'ALL'
     }
   )
   global_secondary_index(
@@ -2500,7 +2447,7 @@ class TestModelWithGsi3
     hash_key:  :gsi_pk,
     range_key: :gsi_sk,
     projection: {
-      projection_type: "ALL"
+      projection_type: 'ALL'
     }
   )
 end
@@ -2510,5 +2457,5 @@ class TestModelWithTtl
 
   string_attr :hk, hash_key: true
   string_attr :rk, range_key: true
-  epoch_time_attr :ttl, database_attribute_name: "TimeToLive"
+  epoch_time_attr :ttl, database_attribute_name: 'TimeToLive'
 end

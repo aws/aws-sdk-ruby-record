@@ -7,7 +7,6 @@ module Aws
   module Record
     module Marshalers
       describe DateMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = DateMarshaler.new
@@ -27,7 +26,7 @@ module Aws
 
             it 'casts timestamps to dates' do
               expected = Date.parse('2009-02-13')
-              input = 1234567890
+              input = 1_234_567_890
               expect(@marshaler.type_cast(input)).to be_within(1).of(expected)
             end
 
@@ -50,7 +49,7 @@ module Aws
           end
         end
 
-        context "bring your own format" do
+        context 'bring your own format' do
           let(:jisx0301_formatter) do
             Class.new do
               def self.format(date)
@@ -64,12 +63,11 @@ module Aws
           end
 
           it 'supports custom formatting' do
-            expected = "H28.07.21"
-            input = "2016-07-21"
+            expected = 'H28.07.21'
+            input = '2016-07-21'
             expect(@marshaler.serialize(input)).to eq(expected)
           end
         end
-
       end
     end
   end

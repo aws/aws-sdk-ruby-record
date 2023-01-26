@@ -6,7 +6,6 @@ module Aws
   module Record
     module Marshalers
       describe StringMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = StringMarshaler.new
@@ -22,21 +21,21 @@ module Aws
             end
 
             it 'type casts a string as a string' do
-              expect(@marshaler.type_cast("Hello")).to eq("Hello")
+              expect(@marshaler.type_cast('Hello')).to eq('Hello')
             end
 
             it 'type casts other types as a string' do
-              expect(@marshaler.type_cast(5)).to eq("5")
+              expect(@marshaler.type_cast(5)).to eq('5')
             end
           end
 
           describe 'serialization for storage' do
             it 'stores strings as themselves' do
-              expect(@marshaler.serialize("Hello")).to eq("Hello")
+              expect(@marshaler.serialize('Hello')).to eq('Hello')
             end
 
             it 'attempts to type cast before storage' do
-              expect(@marshaler.serialize(5)).to eq("5")
+              expect(@marshaler.serialize(5)).to eq('5')
             end
 
             it 'identifies nil objects as the NULL type' do
@@ -48,14 +47,18 @@ module Aws
             end
 
             it 'raises if #type_cast failed to create a string' do
-              impossible = Class.new { def to_s; 5; end }.new
+              impossible = Class.new do
+                def to_s
+                  5
+                end
+              end
+
               expect {
-                @marshaler.serialize(impossible)
+                @marshaler.serialize(impossible.new)
               }.to raise_error(ArgumentError)
             end
           end
         end
-
       end
     end
   end
