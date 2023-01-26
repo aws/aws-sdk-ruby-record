@@ -3,14 +3,12 @@
 module Aws
   module Record
     module Query
-
       # @api private
       def self.included(sub_class)
         sub_class.extend(QueryClassMethods)
       end
 
       module QueryClassMethods
-
         # This method calls
         # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#query-instance_method Aws::DynamoDB::Client#query},
         # populating the +:table_name+ parameter from the model class, and
@@ -140,7 +138,6 @@ module Aws
           )
         end
       end
-
     end
   end
 end

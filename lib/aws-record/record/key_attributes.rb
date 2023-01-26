@@ -2,7 +2,6 @@
 
 module Aws
   module Record
-
     # @api private
     class KeyAttributes
       attr_reader :keys
@@ -38,6 +37,5 @@ module Aws
         @range_key = value
       end
     end
-
   end
 end

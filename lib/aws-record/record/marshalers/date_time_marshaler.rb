@@ -5,7 +5,6 @@ require 'date'
 module Aws
   module Record
     module Marshalers
-
       class DateTimeMarshaler
         def initialize(opts = {})
           @formatter = opts[:formatter] || Iso8601Formatter
@@ -34,6 +33,7 @@ module Aws
         end
 
         private
+
         def _format(raw_value)
           case raw_value
           when nil
@@ -55,7 +55,6 @@ module Aws
           datetime.iso8601
         end
       end
-
     end
   end
 end

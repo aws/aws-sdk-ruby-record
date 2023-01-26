@@ -2,7 +2,6 @@
 
 module Aws
   module Record
-
     # @api private
     class ItemData
       def initialize(model_attributes, opts)
@@ -17,7 +16,6 @@ module Aws
 
         populate_default_values
       end
-      
       attr_accessor :new_record, :destroyed
 
       def get_attribute(name)
@@ -120,11 +118,10 @@ module Aws
       end
 
       private
+
       def _deep_copy(obj)
         Marshal.load(Marshal.dump(obj))
       end
-      
     end
-
   end
 end

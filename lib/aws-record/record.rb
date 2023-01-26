@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Aws
-
   # +Aws::Record+ is the module you include in your model classes in order to
   # decorate them with the Amazon DynamoDB integration methods provided by this
   # library. Methods you can use are shown below, in sub-modules organized by
@@ -84,17 +83,17 @@ module Aws
     end
 
     private
+
     def dynamodb_client
       self.class.dynamodb_client
     end
 
     def self.inherit_track_mutations(klass)
-      superclass_track_mutations = klass.superclass.instance_variable_get("@track_mutations")
-      klass.instance_variable_set("@track_mutations", superclass_track_mutations)
+      superclass_track_mutations = klass.superclass.instance_variable_get('@track_mutations')
+      klass.instance_variable_set('@track_mutations', superclass_track_mutations)
     end
 
     module RecordClassMethods
-
       # Returns the Amazon DynamoDB table name for this model class.
       #
       # By default, this will simply be the name of the class. However, you can
@@ -205,7 +204,7 @@ module Aws
       def table_exists?
         begin
           resp = dynamodb_client.describe_table(table_name: table_name)
-          if resp.table.table_status == "ACTIVE"
+          if resp.table.table_status == 'ACTIVE'
             true
           else
             false
@@ -246,17 +245,15 @@ module Aws
       end
 
       def model_valid?
-        if @keys.hash_key.nil?
-          raise Errors::InvalidModel.new("Table models must include a hash key")
-        end
+        raise Errors::InvalidModel, 'Table models must include a hash key' if @keys.hash_key.nil?
       end
 
       private
+
       def default_table_name(klass)
         return unless klass.name
-        klass.name.split("::").join("_")
+        klass.name.split('::').join('_')
       end
-
     end
   end
 end

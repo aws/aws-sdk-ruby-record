@@ -3,7 +3,6 @@
 module Aws
   module Record
     module ItemOperations
-
       # @api private
       def self.included(sub_class)
         sub_class.extend(ItemOperationsClassMethods)
@@ -38,7 +37,7 @@ module Aws
         if ret
           ret
         else
-          raise Errors::ValidationError.new("Validation hook returned false!")
+          raise Errors::ValidationError, 'Validation hook returned false!'
         end
       end
 
@@ -70,7 +69,6 @@ module Aws
         end
       end
 
-
       # Assigns the attributes provided onto the model.
       #
       # @example Usage Example
@@ -99,7 +97,7 @@ module Aws
         opts.each do |field, new_value|
           field = field.to_sym
           setter = "#{field}="
-          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?(setter)
+          raise ArgumentError, "Invalid field: #{field} for model" unless respond_to?(setter)
           public_send(setter, new_value)
         end
       end
@@ -181,7 +179,7 @@ module Aws
           table_name: self.class.table_name,
           key: key_values
         )
-        self.instance_variable_get("@data").destroyed = true
+        self.instance_variable_get('@data').destroyed = true
       end
 
       # Validates and generates the key values necessary for API operations such as the
@@ -192,9 +190,8 @@ module Aws
         attributes = self.class.attributes
         self.class.keys.values.each_with_object({}) do |attr_name, hash|
           db_name = attributes.storage_name_for(attr_name)
-          hash[db_name] = attributes
-            .attribute_for(attr_name)
-            .serialize(@data.raw_value(attr_name))
+          hash[db_name] = attributes.attribute_for(attr_name)
+                                    .serialize(@data.raw_value(attr_name))
         end
       end
 
@@ -207,6 +204,7 @@ module Aws
       end
 
       private
+
       def _invalid_record?(opts)
         if self.respond_to?(:valid?)
           if !self.valid?
@@ -234,12 +232,11 @@ module Aws
           }.merge(prevent_overwrite_expression)
           begin
             dynamodb_client.put_item(put_opts)
-          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
-            raise Errors::ConditionalWriteFailed.new(
-              "Conditional #put_item call failed! Check that conditional write"\
-                " conditions are met, or include the :force option to clobber"\
-                " the remote item."
-            )
+          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+            raise Errors::ConditionalWriteFailed,
+                  'Conditional #put_item call failed! Check that conditional write'\
+                  ' conditions are met, or include the :force option to clobber'\
+                  ' the remote item.'
           end
         else
           update_pairs = _dirty_changes_for_update
@@ -253,7 +250,7 @@ module Aws
               table_name: self.class.table_name,
               key: key_values,
               update_expression: uex,
-              expression_attribute_names: exp_attr_names,
+              expression_attribute_names: exp_attr_names
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
             dynamodb_client.update_item(request_opts)
@@ -264,7 +261,7 @@ module Aws
             )
           end
         end
-        data = self.instance_variable_get("@data")
+        data = self.instance_variable_get('@data')
         data.destroyed = false
         data.new_record = false
         true
@@ -279,9 +276,7 @@ module Aws
       def validate_key_values
         missing = missing_key_values
         unless missing.empty?
-          raise Errors::KeyMissing.new(
-            "Missing required keys: #{missing.join(', ')}"
-          )
+          raise Errors::KeyMissing, "Missing required keys: #{missing.join(', ')}"
         end
       end
 
@@ -302,23 +297,22 @@ module Aws
       def prevent_overwrite_expression
         conditions = []
         expression_attribute_names = {}
-        keys = self.class.instance_variable_get("@keys")
+        keys = self.class.instance_variable_get('@keys')
         # Hash Key
-        conditions << "attribute_not_exists(#H)"
-        expression_attribute_names["#H"] = keys.hash_key_attribute.database_name
+        conditions << 'attribute_not_exists(#H)'
+        expression_attribute_names['#H'] = keys.hash_key_attribute.database_name
         # Range Key
         if self.class.range_key
-          conditions << "attribute_not_exists(#R)"
-          expression_attribute_names["#R"] = keys.range_key_attribute.database_name
+          conditions << 'attribute_not_exists(#R)'
+          expression_attribute_names['#R'] = keys.range_key_attribute.database_name
         end
         {
-          condition_expression: conditions.join(" and "),
+          condition_expression: conditions.join(' and '),
           expression_attribute_names: expression_attribute_names
         }
       end
 
       def _dirty_changes_for_update
-        attributes = self.class.attributes
         ret = dirty.inject({}) do |acc, attr_name|
           acc[attr_name] = @data.raw_value(attr_name)
           acc
@@ -327,7 +321,6 @@ module Aws
       end
 
       module ItemOperationsClassMethods
-
         # @example Usage Example
         #   check_exp = Model.transact_check_expression(
         #     key: { uuid: "foo" },
@@ -359,13 +352,11 @@ module Aws
           check_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            check_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            check_key[attr_name] = attributes.attribute_for(attr_sym)
+                                             .serialize(key[attr_sym])
           end
           opts[:key] = check_key
           opts[:table_name] = table_name
@@ -385,13 +376,11 @@ module Aws
           request_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            request_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            request_key[attr_name] = attributes.attribute_for(attr_sym)
+                                               .serialize(key[attr_sym])
           end
           # this is a :get item used by #transact_get_items, with the exception
           # of :model_class which needs to be removed before passing along
@@ -492,13 +481,11 @@ module Aws
           request_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            request_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            request_key[attr_name] = attributes.attribute_for(attr_sym)
+                                               .serialize(key[attr_sym])
           end
           request_opts = {
             table_name: table_name,
@@ -511,7 +498,6 @@ module Aws
             build_item_from_resp(resp)
           end
         end
-
 
         # @example Usage Example
         #   class MyModel
@@ -573,12 +559,10 @@ module Aws
         #  not include all table keys.
         def update(opts)
           key = {}
-          updates = {}
           @keys.keys.each_value do |attr_sym|
             unless value = opts.delete(attr_sym)
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{opts}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
+
             end
             attr_name = attributes.storage_name_for(attr_sym)
             key[attr_name] = attributes.attribute_for(attr_sym).serialize(value)
@@ -598,16 +582,17 @@ module Aws
         end
 
         private
+
         def _build_update_expression(attr_value_pairs)
           set_expressions = []
           remove_expressions = []
           exp_attr_names = {}
           exp_attr_values = {}
-          name_sub_token = "UE_A"
-          value_sub_token = "ue_a"
+          name_sub_token = 'UE_A'
+          value_sub_token = 'ue_a'
           attr_value_pairs.each do |attr_sym, value|
-            name_sub = "#" + name_sub_token
-            value_sub = ":" + value_sub_token
+            name_sub = '#' + name_sub_token
+            value_sub = ':' + value_sub_token
             name_sub_token = name_sub_token.succ
             value_sub_token = value_sub_token.succ
 
@@ -623,21 +608,21 @@ module Aws
           end
           update_expressions = []
           unless set_expressions.empty?
-            update_expressions << "SET " + set_expressions.join(", ")
+            update_expressions << 'SET ' + set_expressions.join(', ')
           end
           unless remove_expressions.empty?
-            update_expressions << "REMOVE " + remove_expressions.join(", ")
+            update_expressions << 'REMOVE ' + remove_expressions.join(', ')
           end
           if update_expressions.empty?
             nil
           else
-            [update_expressions.join(" "), exp_attr_names, exp_attr_values]
+            [update_expressions.join(' '), exp_attr_names, exp_attr_values]
           end
         end
 
         def build_item_from_resp(resp)
           record = new
-          data = record.instance_variable_get("@data")
+          data = record.instance_variable_get('@data')
           attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(resp.item))
             data.new_record = false
@@ -649,7 +634,6 @@ module Aws
           value.nil? && !attribute.persist_nil?
         end
       end
-
     end
   end
 end

@@ -3,10 +3,8 @@
 module Aws
   module Record
     module Marshalers
-
       class NumericSetMarshaler
-        def initialize(opts = {})
-        end
+        def initialize(opts = {}); end
 
         def type_cast(raw_value)
           case raw_value
@@ -42,6 +40,7 @@ module Aws
         end
 
         private
+
         def _as_numeric(set)
           set.collect! do |item|
             if item.is_a?(Numeric)
@@ -52,7 +51,6 @@ module Aws
           end
         end
       end
-
     end
   end
 end

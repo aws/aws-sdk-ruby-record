@@ -64,7 +64,10 @@ module Aws
       def each
         return enum_for(:each) unless block_given?
 
-        @items.each { |item| yield item }
+        @items.each do |item|
+          yield item
+        end
+
         until complete?
           new_items = execute!
           new_items.each { |new_item| yield new_item }

@@ -60,9 +60,9 @@ module Aws
         #
         # @return [Aws::Record::BatchWrite] An instance that contains any
         #   unprocessed items and allows for a retry strategy.
-        def write(opts = {}, &block)
+        def write(opts = {})
           batch = BatchWrite.new(client: _build_client(opts))
-          block.call(batch)
+          yield(batch)
           batch.execute!
         end
 
@@ -133,13 +133,12 @@ module Aws
         # @return [Aws::Record::BatchRead] An instance that contains modeled items
         #  from the +BatchGetItem+ result and stores unprocessed keys to be
         #  manually processed later.
-        def read(opts = {}, &block)
+        def read(opts = {})
           batch = BatchRead.new(client: _build_client(opts))
-          block.call(batch)
+          yield(batch)
           batch.execute!
           batch
         end
-
       end
     end
   end

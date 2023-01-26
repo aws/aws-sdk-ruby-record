@@ -3,10 +3,8 @@
 module Aws
   module Record
     module Marshalers
-
       class FloatMarshaler
-        def initialize(opts = {})
-        end
+        def initialize(opts = {}); end
 
         def type_cast(raw_value)
           case raw_value
@@ -17,9 +15,7 @@ module Aws
           when Float
             raw_value
           else
-            raw_value.respond_to?(:to_f) ?
-              raw_value.to_f :
-              raw_value.to_s.to_f
+            raw_value.respond_to?(:to_f) ? raw_value.to_f : raw_value.to_s.to_f
           end
         end
 
@@ -35,7 +31,6 @@ module Aws
           end
         end
       end
-
     end
   end
 end

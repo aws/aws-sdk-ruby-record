@@ -6,7 +6,6 @@ module Aws
       extend ClientConfiguration
 
       class << self
-
         # @example Usage Example
         #   class TableOne
         #     include Aws::Record
@@ -71,7 +70,6 @@ module Aws
           client_resp = client.transact_get_items(
             request_opts
           )
-          responses = client_resp.responses
           index = -1
           ret = OpenStruct.new
           ret.consumed_capacity = client_resp.consumed_capacity
@@ -213,11 +211,12 @@ module Aws
           resp = client.transact_write_items(opts)
           # mark all items clean/destroyed as needed if we didn't raise an exception
           dirty_items.each { |i| i.clean! }
-          delete_items.each { |i| i.instance_variable_get("@data").destroyed = true }
+          delete_items.each { |i| i.instance_variable_get('@data').destroyed = true }
           resp
         end
 
         private
+
         def _transform_transact_write_items(transact_items, dirty_items, delete_items)
           transact_items.map do |item|
             # this code will assume users only provided one operation, and
@@ -237,10 +236,9 @@ module Aws
             elsif check_record = item.delete(:check)
               _transform_check_record(check_record, item)
             else
-              raise ArgumentError.new(
-                "Invalid transact write item, must include an operation of "\
-                  "type :save, :update, :delete, :update, or :check - #{item}"
-              )
+              raise ArgumentError, 'Invalid transact write item, must include an operation of '\
+                                   "type :save, :update, :delete, :update, or :check - #{item}"
+
             end
           end
         end
@@ -251,16 +249,15 @@ module Aws
           if save_record.send(:expect_new_item?)
             safety_expression = save_record.send(:prevent_overwrite_expression)
             if opts.include?(:condition_expression)
-              raise Errors::TransactionalSaveConditionCollision.new(
-                "Transactional write includes a :save operation that would "\
-                  "result in a 'safe put' for the given item, yet a "\
-                  "condition expression was also provided. This is not "\
-                  "currently supported. You should rewrite this case to use "\
-                  "a :put transaction, adding the existence check to your "\
-                  "own condition expression if desired.\n"\
-                  "\tItem: #{JSON.pretty_unparse(save_record.to_h)}\n"\
-                  "\tExtra Options: #{JSON.pretty_unparse(opts)}"
-              )
+              raise Errors::TransactionalSaveConditionCollision,
+                'Transactional write includes a :save operation that would '\
+                "result in a 'safe put' for the given item, yet a "\
+                'condition expression was also provided. This is not '\
+                'currently supported. You should rewrite this case to use '\
+                'a :put transaction, adding the existence check to your '\
+                "own condition expression if desired.\n"\
+                "\tItem: #{JSON.pretty_unparse(save_record.to_h)}\n"\
+                "\tExtra Options: #{JSON.pretty_unparse(opts)}"
             else
               opts = opts.merge(safety_expression)
               _transform_put_record(save_record, opts)

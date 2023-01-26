@@ -3,10 +3,8 @@
 module Aws
   module Record
     module Marshalers
-
       class StringMarshaler
-        def initialize(opts = {})
-        end
+        def initialize(opts = {}); end
 
         def type_cast(raw_value)
           case raw_value
@@ -35,7 +33,6 @@ module Aws
           end
         end
       end
-
     end
   end
 end

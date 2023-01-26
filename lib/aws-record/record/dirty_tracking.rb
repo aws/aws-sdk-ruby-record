@@ -3,7 +3,6 @@
 module Aws
   module Record
     module DirtyTracking
-
       def self.included(sub_class)
         sub_class.extend(DirtyTrackingClassMethods)
       end
@@ -26,7 +25,7 @@ module Aws
       # @return [Boolean] +true+ if the specified attribute has any dirty changes, +false+ otherwise.
       def attribute_dirty?(name)
         @data.attribute_dirty?(name)
-      end 
+      end
 
       # Returns the original value of the specified attribute.
       #
@@ -39,7 +38,7 @@ module Aws
       #
       #  model.name         # => 'Alex'
       #  model.name = 'Nick'
-      #  model.name_was     # => 'Alex'   
+      #  model.name_was     # => 'Alex'
       #
       # @param [String, Symbol] name The name of the attribute to retrieve the original value of.
       # @return [Object] The original value of the specified attribute.
@@ -47,8 +46,9 @@ module Aws
         @data.attribute_was(name)
       end
 
-      # Mark that an attribute is changing. This is useful in situations where it is necessary to track that the value of an 
-      # attribute is changing in-place. 
+      # Mark that an attribute is changing. This is useful in situations
+      # where it is necessary to track that the value of an
+      # attribute is changing in-place.
       #
       # @example
       #  class Model
@@ -63,9 +63,9 @@ module Aws
       #
       #  model.name << 'i'
       #  model.name        # => 'Alexi'
-      # 
-      #  # The change was made in place. Since the String instance representing 
-      #  # the value of name is the same as it was originally, the change is not 
+      #
+      #  # The change was made in place. Since the String instance representing
+      #  # the value of name is the same as it was originally, the change is not
       #  # detected.
       #  model.name_dirty? # => false
       #  model.name_was    # => 'Alexi'
@@ -79,7 +79,7 @@ module Aws
       #  model.name_dirty? # => true
       #  model.name_was    # => 'Alexi'
       #
-      # @param [String, Symbol] name The name of the attribute to mark as 
+      # @param [String, Symbol] name The name of the attribute to mark as
       #  changing.
       def attribute_dirty!(name)
         @data.attribute_dirty!(name)
@@ -118,7 +118,7 @@ module Aws
       #  model.name = 'Nick'
       #  model.dirty? # => true
       #
-      # @return [Boolean] +true+ if any attributes have dirty changes, +false+ 
+      # @return [Boolean] +true+ if any attributes have dirty changes, +false+
       #  otherwise.
       def dirty?
         @data.dirty?
@@ -140,7 +140,7 @@ module Aws
       #  model.delete!
       #  model.persisted? # => false
       #
-      # @return [Boolean] +true+ if the model is not new and has not been deleted, +false+ 
+      # @return [Boolean] +true+ if the model is not new and has not been deleted, +false+
       #  otherwise.
       def persisted?
         @data.persisted?
@@ -160,7 +160,7 @@ module Aws
       #  model.save
       #  model.new_record? # => false
       #
-      # @return [Boolean] +true+ if the model is newly initialized, +false+ 
+      # @return [Boolean] +true+ if the model is newly initialized, +false+
       #  otherwise.
       def new_record?
         @data.new_record?
@@ -179,34 +179,34 @@ module Aws
       #  model.destroyed? # => false
       #  model.save
       #  model.destroyed? # => false
-      #  model.delete! 
+      #  model.delete!
       #  model.destroyed? # => true
       #
-      # @return [Boolean] +true+ if the model has been destroyed, +false+ 
+      # @return [Boolean] +true+ if the model has been destroyed, +false+
       #  otherwise.
       def destroyed?
         @data.destroyed?
       end
 
-      # Fetches attributes for this instance of an item from Amazon DynamoDB 
+      # Fetches attributes for this instance of an item from Amazon DynamoDB
       # using its primary key and the +find(*)+ class method.
       #
-      # @raise [Aws::Record::Errors::NotFound] if no record exists in the 
+      # @raise [Aws::Record::Errors::NotFound] if no record exists in the
       #  database matching the primary key of the item instance.
-      # 
+
       # @return [self] Returns the item instance.
       def reload!
-        primary_key = self.class.keys.values.inject({}) do |memo, key| 
+        primary_key = self.class.keys.values.inject({}) { |memo, key|
           memo[key] = send(key)
-          memo 
-        end
+          memo
+        }
 
         record = self.class.find(primary_key)
 
         unless record.nil?
-          @data = record.instance_variable_get("@data")
+          @data = record.instance_variable_get('@data')
         else
-          raise Errors::NotFound.new("No record found")
+          raise Errors::NotFound, 'No record found'
         end
 
         clean!
@@ -247,7 +247,7 @@ module Aws
       #  model.rollback!
       #  model.name # => 'Alex'
       #
-      # @param [Array, String, Symbol] names The names of attributes to restore. 
+      # @param [Array, String, Symbol] names The names of attributes to restore.
       def rollback!(names = dirty)
         Array(names).each { |name| rollback_attribute!(name) }
       end
@@ -265,41 +265,38 @@ module Aws
       end
 
       module DirtyTrackingClassMethods
-
         private
 
         # @private
         #
         # @override build_item_from_resp(*)
         def build_item_from_resp(*)
-          super.tap { |item| item.clean! }
+          super.tap(&:clean!)
         end
 
         # @private
         #
         # @override define_attr_methods(*)
         def _define_attr_methods(name)
-          super.tap do 
-            define_method("#{name}_dirty?") do 
+          super.tap do
+            define_method("#{name}_dirty?") do
               attribute_dirty?(name)
             end
 
-            define_method("#{name}_dirty!") do 
+            define_method("#{name}_dirty!") do
               attribute_dirty!(name)
             end
 
-            define_method("#{name}_was") do 
+            define_method("#{name}_was") do
               attribute_was(name)
             end
 
-            define_method("rollback_#{name}!") do 
+            define_method("rollback_#{name}!") do
               rollback_attribute!(name)
             end
           end
         end
-
       end
-
     end
   end
 end

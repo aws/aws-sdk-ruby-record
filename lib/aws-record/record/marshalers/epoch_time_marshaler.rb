@@ -5,7 +5,6 @@ require 'time'
 module Aws
   module Record
     module Marshalers
-
       class EpochTimeMarshaler
         def initialize(opts = {})
           @use_local_time = opts[:use_local_time] ? true : false
@@ -51,7 +50,6 @@ module Aws
           end
         end
       end
-
     end
   end
 end

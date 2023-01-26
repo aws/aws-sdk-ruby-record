@@ -5,7 +5,6 @@ require 'time'
 module Aws
   module Record
     module Marshalers
-
       class TimeMarshaler
         def initialize(opts = {})
           @formatter = opts[:formatter] || Iso8601Formatter
@@ -56,7 +55,6 @@ module Aws
           time.iso8601
         end
       end
-
     end
   end
 end

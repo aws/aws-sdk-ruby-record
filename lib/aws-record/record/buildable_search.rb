@@ -3,7 +3,7 @@
 module Aws
   module Record
     class BuildableSearch
-      SUPPORTED_OPERATIONS = [:query, :scan]
+      SUPPORTED_OPERATIONS = [:query, :scan].freeze
 
       # This should never be called directly, rather it is called by the
       # #build_query or #build_scan methods of your aws-record model class.
@@ -13,12 +13,12 @@ module Aws
         if SUPPORTED_OPERATIONS.include?(operation)
           @operation = operation
         else
-          raise ArgumentError.new("Unsupported operation: #{operation}")
+          raise ArgumentError, "Unsupported operation: #{operation}"
         end
         @model = model
         @params = {}
-        @next_name = "BUILDERA"
-        @next_value = "buildera"
+        @next_name = 'BUILDERA'
+        @next_value = 'buildera'
       end
 
       # If you are querying or scanning on an index, you can specify it with
@@ -42,10 +42,10 @@ module Aws
       # the :segment number of this scan.
       def parallel_scan(opts)
         unless @operation == :scan
-          raise ArgumentError.new("parallel_scan is only supported for scans")
+          raise ArgumentError, 'parallel_scan is only supported for scans'
         end
         unless opts[:total_segments] && opts[:segment]
-          raise ArgumentError.new("Must specify :total_segments and :segment in a parallel scan.")
+          raise ArgumentError, 'Must specify :total_segments and :segment in a parallel scan.'
         end
         @params[:total_segments] = opts[:total_segments]
         @params[:segment] = opts[:segment]
@@ -57,7 +57,7 @@ module Aws
       # run in ascending order.
       def scan_ascending(b)
         unless @operation == :query
-          raise ArgumentError.new("scan_ascending is only supported for queries.")
+          raise ArgumentError, 'scan_ascending is only supported for queries.'
         end
         @params[:scan_index_forward] = b
         self
@@ -91,7 +91,7 @@ module Aws
       #   q.to_a # You can use this like any other query result in aws-record
       def key_expr(statement_str, *subs)
         unless @operation == :query
-          raise ArgumentError.new("key_expr is only supported for queries.")
+          raise ArgumentError, 'key_expr is only supported for queries.'
         end
         names = @params[:expression_attribute_names]
         if names.nil?
@@ -233,13 +233,14 @@ module Aws
       end
 
       private
+
       def _key_pass(statement, names)
         statement.gsub(/:(\w+)/) do |match|
-          key = match.gsub(':','').to_sym
+          key = match.gsub(':', '').to_sym
           key_name = @model.attributes.storage_name_for(key)
           if key_name
             sub_name = _next_name
-            raise "Substitution collision!" if names[sub_name]
+            raise 'Substitution collision!' if names[sub_name]
             names[sub_name] = key_name
             sub_name
           else
@@ -250,13 +251,14 @@ module Aws
 
       def _apply_values(statement, subs, values)
         count = 0
-        statement.gsub(/[?]/) do |match|
+        result = statement.gsub(/[?]/) do ||
           sub_value = _next_value
-          raise "Substitution collision!" if values[sub_value]
+          raise 'Substitution collision!' if values[sub_value]
           values[sub_value] = subs[count]
           count += 1
           sub_value
-        end.tap do
+        end
+        result.tap do
           unless count == subs.size
             raise "Expected #{count} values in the substitution set, but found #{subs.size}"
           end
@@ -264,13 +266,13 @@ module Aws
       end
 
       def _next_name
-        ret = "#" + @next_name
+        ret = '#' + @next_name
         @next_name = @next_name.next
         ret
       end
 
       def _next_value
-        ret = ":" + @next_value
+        ret = ':' + @next_value
         @next_value = @next_value.next
         ret
       end

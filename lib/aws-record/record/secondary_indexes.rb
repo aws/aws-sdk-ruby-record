@@ -3,27 +3,26 @@
 module Aws
   module Record
     module SecondaryIndexes
-
       # @api private
       def self.included(sub_class)
-        sub_class.instance_variable_set("@local_secondary_indexes", {})
-        sub_class.instance_variable_set("@global_secondary_indexes", {})
+        sub_class.instance_variable_set('@local_secondary_indexes', {})
+        sub_class.instance_variable_set('@global_secondary_indexes', {})
         sub_class.extend(SecondaryIndexesClassMethods)
         if Aws::Record.extends_record?(sub_class)
           inherit_indexes(sub_class)
         end
       end
 
-      private
       def self.inherit_indexes(klass)
-        superclass_lsi = klass.superclass.instance_variable_get("@local_secondary_indexes").dup
-        superclass_gsi = klass.superclass.instance_variable_get("@global_secondary_indexes").dup
-        klass.instance_variable_set("@local_secondary_indexes", superclass_lsi)
-        klass.instance_variable_set("@global_secondary_indexes", superclass_gsi)
+        superclass_lsi = klass.superclass.instance_variable_get('@local_secondary_indexes').dup
+        superclass_gsi = klass.superclass.instance_variable_get('@global_secondary_indexes').dup
+        klass.instance_variable_set('@local_secondary_indexes', superclass_lsi)
+        klass.instance_variable_set('@global_secondary_indexes', superclass_gsi)
       end
 
-      module SecondaryIndexesClassMethods
+      private_class_method :inherit_indexes
 
+      module SecondaryIndexesClassMethods
         # Creates a local secondary index for the model. Learn more about Local
         # Secondary Indexes in the
         # {http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LSI.html Amazon DynamoDB Developer Guide}.
@@ -74,7 +73,7 @@ module Aws
           @local_secondary_indexes
         end
 
-        # Returns hash of global secondary index names to the index’s attributes.
+        # Returns hash of global secondary index names to the index's attributes.
         #
         # *Note*: +global_secondary_indexes+ is inherited from a parent model when {#global_secondary_index}
         # is explicitly specified in the parent.
@@ -99,6 +98,7 @@ module Aws
         end
 
         private
+
         def _migration_format_indexes(indexes)
           return nil if indexes.empty?
           mfi = indexes.collect do |name, opts|
@@ -116,12 +116,12 @@ module Aws
 
         def _si_key_schema(opts)
           key_schema = [{
-            key_type: "HASH",
+            key_type: 'HASH',
             attribute_name: @attributes.storage_name_for(opts[:hash_key])
           }]
           if opts[:range_key]
             key_schema << {
-              key_type: "RANGE",
+              key_type: 'RANGE',
               attribute_name: @attributes.storage_name_for(opts[:range_key])
             }
           end
@@ -132,9 +132,7 @@ module Aws
           if params[:hash_key] && params[:range_key]
             _validate_attributes_exist(params[:hash_key], params[:range_key])
           else
-            raise ArgumentError.new(
-              "Local Secondary Indexes require a hash and range key!"
-            )
+            raise ArgumentError, 'Local Secondary Indexes require a hash and range key!'
           end
         end
 
@@ -146,9 +144,7 @@ module Aws
               _validate_attributes_exist(params[:hash_key])
             end
           else
-            raise ArgumentError.new(
-              "Global Secondary Indexes require at least a hash key!"
-            )
+            raise ArgumentError, 'Global Secondary Indexes require at least a hash key!'
           end
         end
 
@@ -157,15 +153,13 @@ module Aws
             !@attributes.present?(attr_name)
           end
           unless missing.empty?
-            raise ArgumentError.new(
-              "#{missing.join(", ")} not present in model attributes."\
-                " Please ensure that attributes are defined in the model"\
-                " class BEFORE defining an index on those attributes."
-            )
+            raise ArgumentError, "#{missing.join(', ')} not present in model attributes."\
+                                 ' Please ensure that attributes are defined in the model'\
+                                 ' class BEFORE defining an index on those attributes.'
+
           end
         end
       end
-
     end
   end
 end

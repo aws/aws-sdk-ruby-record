@@ -3,7 +3,6 @@
 module Aws
   module Record
     module Errors
-
       # RecordErrors relate to the persistence of items. They include both
       # client errors and certain validation errors.
       class RecordError < RuntimeError; end
