@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 Given(/^a TableConfig of:$/) do |code_block|
-  TableConfigTestModel = @model
+  TableConfigTestModel = @model # rubocop:disable Naming/ConstantName
   @table_config = eval(code_block)
 end
 

@@ -36,7 +36,7 @@ Then(/^we should receive an aws\-record page with 2 values from members:$/) do |
   # This is definitely a hack which takes advantage of an accident in test
   # design. In the future, we'll need to have some sort of shared collection
   # state to cope with the fact that scan order is not guaranteed.
-  page.size == 2
+  page.size == 2 # rubocop:disable Void
   # Results do not have guaranteed order, check each expected value individually
   page.each do |item|
     h = item.to_h
@@ -49,7 +49,7 @@ When(/^we call the 'scan' class method using the page's pagination token$/) do
 end
 
 When('we run the following search:') do |code|
-  SearchTestModel = @model
+  SearchTestModel = @model # rubocop:disable Naming/ConstantName
   @collection = eval(code)
 end
 
