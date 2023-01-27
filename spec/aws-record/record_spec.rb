@@ -113,7 +113,7 @@ module Aws
           include(Aws::Record)
           set_table_name('TestTable')
           string_attr(:uuid, hash_key: true)
-          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new)
+          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new) # rubocop:disable Style/Attr
         end
       end
 

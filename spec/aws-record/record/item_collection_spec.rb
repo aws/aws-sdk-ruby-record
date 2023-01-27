@@ -239,7 +239,7 @@ module Aws
               case raw_item_attributes['class_name']
               when 'A' then model_a
               when 'B' then model_b
-              else
+              else # rubocop:disable Style/EmptyElse
                 nil
               end
             }

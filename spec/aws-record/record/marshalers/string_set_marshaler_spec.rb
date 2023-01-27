@@ -21,20 +21,20 @@ module Aws
             end
 
             it 'type casts string sets as themselves' do
-              input = Set.new(['1', '2', '3'])
-              expected = Set.new(['1', '2', '3'])
+              input = Set.new(%w[1 2 3])
+              expected = Set.new(%w[1 2 3])
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'type casts arrays to sets for you' do
-              input = ['1', '2', '3', '2']
-              expected = Set.new(['1', '2', '3'])
+              input = %w[1 2 3 2]
+              expected = Set.new(%w[1 2 3])
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'attempts to stringify all contents of a set' do
               input = Set.new([1, '2', 3])
-              expected = Set.new(['1', '2', '3'])
+              expected = Set.new(%w[1 2 3])
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
@@ -51,8 +51,8 @@ module Aws
             end
 
             it 'serializes string sets as themselves' do
-              input = Set.new(['1', '2', '3'])
-              expected = Set.new(['1', '2', '3'])
+              input = Set.new(%w[1 2 3])
+              expected = Set.new(%w[1 2 3])
               expect(@marshaler.serialize(input)).to eq(expected)
             end
           end

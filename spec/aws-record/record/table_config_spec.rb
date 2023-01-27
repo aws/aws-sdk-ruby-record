@@ -17,7 +17,7 @@ module Aws
       end
 
       it 'accepts a minimal set of table configuration inputs' do
-        cfg = TableConfig.define do |t|
+        TableConfig.define do |t|
           t.model_class(TestModel)
           t.read_capacity_units(1)
           t.write_capacity_units(1)
@@ -26,7 +26,7 @@ module Aws
       end
 
       it 'accepts global secondary indexes in the definition' do
-        cfg = TableConfig.define do |t|
+        TableConfig.define do |t|
           t.model_class(TestModelWithGsi)
           t.read_capacity_units(2)
           t.write_capacity_units(2)
@@ -239,7 +239,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['c', 'b', 'a']
+                    non_key_attributes: %w[c b a]
                   },
                   provisioned_throughput: {
                     read_capacity_units: 1,
@@ -326,7 +326,7 @@ module Aws
                     ],
                     projection: {
                       projection_type: 'INCLUDE',
-                      non_key_attributes: ['c', 'b', 'a']
+                      non_key_attributes: %w[c b a]
                     },
                     provisioned_throughput: {
                       read_capacity_units: 1,
@@ -421,7 +421,7 @@ module Aws
                     ],
                     projection: {
                       projection_type: 'INCLUDE',
-                      non_key_attributes: ['c', 'b', 'a']
+                      non_key_attributes: %w[c b a]
                     },
                     provisioned_throughput: {
                       read_capacity_units: 1,
@@ -585,7 +585,7 @@ module Aws
                     ],
                     projection: {
                       projection_type: 'INCLUDE',
-                      non_key_attributes: ['a', 'b', 'c']
+                      non_key_attributes: %w[a b c]
                     },
                     item_count: 0,
                     index_status: 'ACTIVE',
@@ -1043,7 +1043,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1124,7 +1124,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1149,7 +1149,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1230,7 +1230,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1543,7 +1543,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1624,7 +1624,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1649,7 +1649,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1730,7 +1730,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -1816,7 +1816,7 @@ module Aws
 
       context 'Pay Per Request Capacity' do
         it 'accepts billing mode in table config' do
-          cfg = TableConfig.define do |t|
+          TableConfig.define do |t|
             t.model_class(TestModel)
             t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
@@ -1824,7 +1824,7 @@ module Aws
         end
 
         it 'accepts billing mode in table config with a GSI' do
-          cfg = TableConfig.define do |t|
+          TableConfig.define do |t|
             t.model_class(TestModelWithGsi)
             t.billing_mode('PAY_PER_REQUEST')
             t.client_options(stub_responses: true)
@@ -2157,7 +2157,7 @@ module Aws
                 ],
                 projection: {
                   projection_type: 'INCLUDE',
-                  non_key_attributes: ['a', 'b', 'c']
+                  non_key_attributes: %w[a b c]
                 }
               }
             ]
@@ -2224,7 +2224,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -2313,7 +2313,7 @@ module Aws
                   ],
                   projection: {
                     projection_type: 'INCLUDE',
-                    non_key_attributes: ['a', 'b', 'c']
+                    non_key_attributes: %w[a b c]
                   },
                   item_count: 0,
                   index_status: 'ACTIVE',
@@ -2376,7 +2376,9 @@ module Aws
             :describe_table,
             'ResourceNotFoundException'
           )
-          expect { cfg.migrate! }.to raise_error(ArgumentError, 'Cannot have billing mode PAY_PER_REQUEST with provisioned capacity.')
+          expect { cfg.migrate! }.to raise_error(ArgumentError,
+                                                 'Cannot have billing mode PAY_PER_REQUEST'\
+                                                 ' with provisioned capacity.')
         end
       end
     end
@@ -2406,7 +2408,7 @@ class TestModelWithGsi
     range_key: :gsi_sk,
     projection: {
       projection_type: 'INCLUDE',
-      non_key_attributes: ['c', 'b', 'a']
+      non_key_attributes: %w[c b a]
     }
   )
 end

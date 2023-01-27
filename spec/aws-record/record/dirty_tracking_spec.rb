@@ -107,7 +107,7 @@ describe Aws::Record::DirtyTracking do
       expect(instance.dirty).to match_array [:mykey]
 
       instance.body = SecureRandom.uuid
-      expect(instance.dirty).to match_array [:mykey, :body]
+      expect(instance.dirty).to match_array %i[mykey body]
     end
   end
 
@@ -134,8 +134,10 @@ describe Aws::Record::DirtyTracking do
     end
 
     it 'can reload an item using find' do
-      expect(klass).to receive(:find).with({ mykey: reloaded_instance.mykey })
-                                     .and_return(reloaded_instance)
+      expect(klass)
+        .to receive(:find)
+        .with({ mykey: reloaded_instance.mykey }) # rubocop:disable Style/BracesAroundHashParameters
+        .and_return(reloaded_instance)
 
       instance.mykey = reloaded_instance.mykey
       instance.body = SecureRandom.uuid
@@ -148,7 +150,10 @@ describe Aws::Record::DirtyTracking do
     it 'raises an error when find returns nil' do
       instance.mykey = SecureRandom.uuid
 
-      expect(klass).to receive(:find).with({ mykey: instance.mykey }).and_return(nil)
+      expect(klass)
+        .to receive(:find)
+        .with({ mykey: instance.mykey }) # rubocop:disable Style/BracesAroundHashParameters
+        .and_return(nil)
       expect { instance.reload! }.to raise_error Aws::Record::Errors::NotFound
     end
 
@@ -539,7 +544,7 @@ describe Aws::Record::DirtyTracking do
         item.clean!
         item.body = 'body'
         item.dirty_list << 4
-        expect(item.dirty).to eq([:body, :dirty_list])
+        expect(item.dirty).to eq(%i[body dirty_list])
       end
 
       it 'correctly unmarks attributes as dirty when rolling back from copy' do
@@ -612,7 +617,7 @@ describe Aws::Record::DirtyTracking do
         item.clean!
         item.body = 'body'
         item.dirty_map[:c] = 3.0
-        expect(item.dirty).to eq([:body, :dirty_map])
+        expect(item.dirty).to eq(%i[body dirty_map])
       end
 
       it 'correctly unmarks attributes as dirty when rolling back from copy' do
@@ -675,33 +680,33 @@ describe Aws::Record::DirtyTracking do
 
     describe 'Sets' do
       it 'marks mutated sets as dirty' do
-        item = klass.new(mykey: '1', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.dirty_set.add('d')
-        expect(item.dirty_set).to eq(Set.new(['a', 'b', 'c', 'd']))
+        expect(item.dirty_set).to eq(Set.new(%w[a b c d]))
         expect(item.dirty?).to be_truthy
         expect(item.attribute_dirty?(:dirty_set)).to be_truthy
       end
 
       it 'has a copy of the mutated set to reference and can roll back' do
-        item = klass.new(mykey: '1', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.dirty_set.add('d')
-        expect(item.dirty_set_was).to eq(Set.new(['a', 'b', 'c']))
+        expect(item.dirty_set_was).to eq(Set.new(%w[a b c]))
         item.rollback!(:dirty_set)
-        expect(item.dirty_set).to eq(Set.new(['a', 'b', 'c']))
+        expect(item.dirty_set).to eq(Set.new(%w[a b c]))
       end
 
       it 'includes the mutated set in the list of dirty attributes' do
-        item = klass.new(mykey: '1', body: 'b', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', body: 'b', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.body = 'body'
         item.dirty_set.add('d')
-        expect(item.dirty).to eq([:body, :dirty_set])
+        expect(item.dirty).to eq(%i[body dirty_set])
       end
 
       it 'correctly unmarks attributes as dirty when rolling back from copy' do
-        item = klass.new(mykey: '1', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.attribute_dirty!(:dirty_set)
         expect(item.dirty).to eq([:dirty_set])
@@ -712,21 +717,21 @@ describe Aws::Record::DirtyTracking do
       end
 
       it 'correctly handles #clean! with a mutated set' do
-        item = klass.new(mykey: '1', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.dirty_set.add('d')
         expect(item.dirty?).to be_truthy
         item.clean!
         expect(item.dirty?).to be_falsy
-        expect(item.attribute_was(:dirty_set)).to eq(Set.new(['a', 'b', 'c', 'd']))
+        expect(item.attribute_was(:dirty_set)).to eq(Set.new(%w[a b c d]))
       end
 
       it 'correctly handles set equality through assignment' do
-        item = klass.new(mykey: '1', dirty_set: Set.new(['a', 'b', 'c']))
+        item = klass.new(mykey: '1', dirty_set: Set.new(%w[a b c]))
         item.clean!
         item.dirty_set.add('d')
         expect(item.dirty?).to be_truthy
-        item.dirty_set = Set.new(['a', 'b', 'c'])
+        item.dirty_set = Set.new(%w[a b c])
         expect(item.dirty?).to be_falsy
       end
     end

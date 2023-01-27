@@ -386,7 +386,7 @@ module Aws
         it 'passes the correct class and key arguments to BatchRead' do
           mock_batch_read = double
           expect(Batch).to receive(:read).and_yield(mock_batch_read).and_return(mock_batch_read)
-          keys.each do |key|
+          keys.each do |key| # rubocop:disable Style/HashEachMethods
             expect(mock_batch_read).to receive(:find).with(klass, key)
           end
           result = klass.find_all(keys)
