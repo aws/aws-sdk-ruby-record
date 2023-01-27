@@ -3,18 +3,16 @@
 module Aws
   module Record
     module Query
-
       # @api private
       def self.included(sub_class)
         sub_class.extend(QueryClassMethods)
       end
 
       module QueryClassMethods
-
         # This method calls
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#query-instance_method Aws::DynamoDB::Client#query},
-        # populating the +:table_name+ parameter from the model class, and
-        # combining this with the other parameters you provide.
+        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#query-instance_method
+        # Aws::DynamoDB::Client#query}, populating the +:table_name+ parameter from the model
+        # class, and combining this with the other parameters you provide.
         #
         # @example A query with key and filter expressions:
         #   # Example model class
@@ -55,9 +53,9 @@ module Aws
         end
 
         # This method calls
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#scan-instance_method Aws::DynamoDB::Client#scan},
-        # populating the +:table_name+ parameter from the model class, and
-        # combining this with the other parameters you provide.
+        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#scan-instance_method
+        # Aws::DynamoDB::Client#scan}, populating the +:table_name+ parameter from the model
+        # class, and combining this with the other parameters you provide.
         #
         # @example A scan with a filter expression:
         #   # Example model class
@@ -140,7 +138,6 @@ module Aws
           )
         end
       end
-
     end
   end
 end

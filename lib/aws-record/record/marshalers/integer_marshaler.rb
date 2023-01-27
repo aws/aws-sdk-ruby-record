@@ -3,10 +3,8 @@
 module Aws
   module Record
     module Marshalers
-
       class IntegerMarshaler
-        def initialize(opts = {})
-        end
+        def initialize(opts = {}); end
 
         def type_cast(raw_value)
           case raw_value
@@ -17,9 +15,7 @@ module Aws
           when Integer
             raw_value
           else
-            raw_value.respond_to?(:to_i) ?
-              raw_value.to_i :
-              raw_value.to_s.to_i
+            raw_value.respond_to?(:to_i) ? raw_value.to_i : raw_value.to_s.to_i
           end
         end
 
@@ -35,7 +31,6 @@ module Aws
           end
         end
       end
-
     end
   end
 end

@@ -3,15 +3,12 @@
 module Aws
   module Record
     module Attributes
-
       def self.included(sub_class)
         sub_class.extend(ClassMethods)
         model_attributes = ModelAttributes.new(self)
-        sub_class.instance_variable_set("@attributes", model_attributes)
-        sub_class.instance_variable_set("@keys", KeyAttributes.new(model_attributes))
-        if Aws::Record.extends_record?(sub_class)
-          inherit_attributes(sub_class)
-        end
+        sub_class.instance_variable_set('@attributes', model_attributes)
+        sub_class.instance_variable_set('@keys', KeyAttributes.new(model_attributes))
+        inherit_attributes(sub_class) if Aws::Record.extends_record?(sub_class)
       end
 
       # Base initialization method for a new item. Optionally, allows you to
@@ -80,29 +77,24 @@ module Aws
         @data.hash_copy
       end
 
-      private
       def self.inherit_attributes(klass)
-        superclass_attributes = klass.superclass.instance_variable_get("@attributes")
+        superclass_attributes = klass.superclass.instance_variable_get('@attributes')
 
         superclass_attributes.attributes.each do |name, attribute|
-          subclass_attributes = klass.instance_variable_get("@attributes")
+          subclass_attributes = klass.instance_variable_get('@attributes')
           subclass_attributes.register_superclass_attribute(name, attribute)
         end
 
-        superclass_keys = klass.superclass.instance_variable_get("@keys")
-        subclass_keys = klass.instance_variable_get("@keys")
+        superclass_keys = klass.superclass.instance_variable_get('@keys')
+        subclass_keys = klass.instance_variable_get('@keys')
 
-        if superclass_keys.hash_key
-          subclass_keys.hash_key = superclass_keys.hash_key
-        end
-
-        if superclass_keys.range_key
-          subclass_keys.range_key = superclass_keys.range_key
-        end
+        subclass_keys.hash_key = superclass_keys.hash_key if superclass_keys.hash_key
+        subclass_keys.range_key = superclass_keys.range_key if superclass_keys.range_key
       end
 
-      module ClassMethods
+      private_class_method :inherit_attributes
 
+      module ClassMethods
         # Define an attribute for your model, providing your own attribute type.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
@@ -157,7 +149,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def string_attr(name, opts = {})
-          opts[:dynamodb_type] = "S"
+          opts[:dynamodb_type] = 'S'
           attr(name, Marshalers::StringMarshaler.new(opts), opts)
         end
 
@@ -179,7 +171,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def boolean_attr(name, opts = {})
-          opts[:dynamodb_type] = "BOOL"
+          opts[:dynamodb_type] = 'BOOL'
           attr(name, Marshalers::BooleanMarshaler.new(opts), opts)
         end
 
@@ -201,7 +193,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def integer_attr(name, opts = {})
-          opts[:dynamodb_type] = "N"
+          opts[:dynamodb_type] = 'N'
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
         end
 
@@ -223,7 +215,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def float_attr(name, opts = {})
-          opts[:dynamodb_type] = "N"
+          opts[:dynamodb_type] = 'N'
           attr(name, Marshalers::FloatMarshaler.new(opts), opts)
         end
 
@@ -245,7 +237,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def date_attr(name, opts = {})
-          opts[:dynamodb_type] = "S"
+          opts[:dynamodb_type] = 'S'
           attr(name, Marshalers::DateMarshaler.new(opts), opts)
         end
 
@@ -267,7 +259,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def datetime_attr(name, opts = {})
-          opts[:dynamodb_type] = "S"
+          opts[:dynamodb_type] = 'S'
           attr(name, Marshalers::DateTimeMarshaler.new(opts), opts)
         end
 
@@ -289,7 +281,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def time_attr(name, opts = {})
-          opts[:dynamodb_type] = "S"
+          opts[:dynamodb_type] = 'S'
           attr(name, Marshalers::TimeMarshaler.new(opts), opts)
         end
 
@@ -312,7 +304,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def epoch_time_attr(name, opts = {})
-          opts[:dynamodb_type] = "N"
+          opts[:dynamodb_type] = 'N'
           attr(name, Marshalers::EpochTimeMarshaler.new(opts), opts)
         end
 
@@ -348,7 +340,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def list_attr(name, opts = {})
-          opts[:dynamodb_type] = "L"
+          opts[:dynamodb_type] = 'L'
           attr(name, Marshalers::ListMarshaler.new(opts), opts)
         end
 
@@ -384,7 +376,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def map_attr(name, opts = {})
-          opts[:dynamodb_type] = "M"
+          opts[:dynamodb_type] = 'M'
           attr(name, Marshalers::MapMarshaler.new(opts), opts)
         end
 
@@ -410,7 +402,7 @@ module Aws
         #   item is nil or not set at persistence time. Additionally, lambda
         #   can be used as a default value.
         def string_set_attr(name, opts = {})
-          opts[:dynamodb_type] = "SS"
+          opts[:dynamodb_type] = 'SS'
           attr(name, Marshalers::StringSetMarshaler.new(opts), opts)
         end
 
@@ -436,7 +428,7 @@ module Aws
         #   item is nil or not set at persistence time.  Additionally, lambda
         #   can be used as a default value.
         def numeric_set_attr(name, opts = {})
-          opts[:dynamodb_type] = "NS"
+          opts[:dynamodb_type] = 'NS'
           attr(name, Marshalers::NumericSetMarshaler.new(opts), opts)
         end
 
@@ -452,8 +444,8 @@ module Aws
         # * None of the attributes have dirty changes.
         # * If there is a value passed in, it must be an integer.
         # For more information, see
-        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters Atomic counter}
-        # in the Amazon DynamoDB Developer Guide.
+        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters
+        # Atomic counter} in the Amazon DynamoDB Developer Guide.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.
@@ -476,14 +468,13 @@ module Aws
         #   record.increment_counter!(2) #=> 3
         # @see #attr #attr method for additional hash options.
         def atomic_counter(name, opts = {})
-          opts[:dynamodb_type] = "N"
+          opts[:dynamodb_type] = 'N'
           opts[:default_value] ||= 0
           attr(name, Marshalers::IntegerMarshaler.new(opts), opts)
 
-          define_method("increment_#{name}!") do |increment=1|
-
+          define_method("increment_#{name}!") do |increment = 1|
             if dirty?
-              msg = "Attributes need to be saved before atomic counter can be incremented"
+              msg = 'Attributes need to be saved before atomic counter can be incremented'
               raise Errors::RecordError, msg
             end
 
@@ -492,23 +483,22 @@ module Aws
               raise ArgumentError, msg
             end
 
-            resp = dynamodb_client.update_item({
+            resp = dynamodb_client.update_item(
               table_name: self.class.table_name,
               key: key_values,
               expression_attribute_values: {
-                ":i" => increment
+                ':i' => increment
               },
               expression_attribute_names: {
-                "#n" => name
+                '#n' => name
               },
-              update_expression: "SET #n = #n + :i",
-              return_values: "UPDATED_NEW"
-            })
+              update_expression: 'SET #n = #n + :i',
+              return_values: 'UPDATED_NEW'
+            )
             assign_attributes(resp[:attributes])
             @data.clean!
             @data.get_attribute(name)
           end
-
         end
 
         # @return [Symbol,nil] The symbolic name of the table's hash key.
@@ -532,6 +522,7 @@ module Aws
         end
 
         private
+
         def _define_attr_methods(name)
           define_method(name) do
             @data.get_attribute(name)
@@ -544,18 +535,14 @@ module Aws
 
         def _key_attributes(id, opts)
           if opts[:hash_key] == true && opts[:range_key] == true
-            raise ArgumentError.new(
-              "Cannot have the same attribute be a hash and range key."
-            )
+            raise ArgumentError, 'Cannot have the same attribute be a hash and range key.'
           elsif opts[:hash_key] == true
             @keys.hash_key = id
           elsif opts[:range_key] == true
             @keys.range_key = id
           end
         end
-
       end
-
     end
   end
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Aws
-
   # +Aws::Record+ is the module you include in your model classes in order to
   # decorate them with the Amazon DynamoDB integration methods provided by this
   # library. Methods you can use are shown below, in sub-modules organized by
@@ -73,9 +72,7 @@ module Aws
       sub_class.send(:include, DirtyTracking)
       sub_class.send(:include, Query)
       sub_class.send(:include, SecondaryIndexes)
-      if Aws::Record.extends_record?(sub_class)
-        inherit_track_mutations(sub_class)
-      end
+      inherit_track_mutations(sub_class) if Aws::Record.extends_record?(sub_class)
     end
 
     # @api private
@@ -83,18 +80,21 @@ module Aws
       klass.superclass.include?(Aws::Record)
     end
 
+    # @api private
+    def self.inherit_track_mutations(klass)
+      superclass_track_mutations = klass.superclass.instance_variable_get('@track_mutations')
+      klass.instance_variable_set('@track_mutations', superclass_track_mutations)
+    end
+
+    private_class_method :inherit_track_mutations
+
     private
+
     def dynamodb_client
       self.class.dynamodb_client
     end
 
-    def self.inherit_track_mutations(klass)
-      superclass_track_mutations = klass.superclass.instance_variable_get("@track_mutations")
-      klass.instance_variable_set("@track_mutations", superclass_track_mutations)
-    end
-
     module RecordClassMethods
-
       # Returns the Amazon DynamoDB table name for this model class.
       #
       # By default, this will simply be the name of the class. However, you can
@@ -116,14 +116,16 @@ module Aws
       #   MyTable.table_name      # => "MyTable"
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
+        # rubocop:disable Style/RedundantSelf
         @table_name ||= begin
           if Aws::Record.extends_record?(self) &&
-              default_table_name(self.superclass) != self.superclass.table_name
+             default_table_name(self.superclass) != self.superclass.table_name
             self.superclass.instance_variable_get('@table_name')
           else
             default_table_name(self)
           end
         end
+        # rubocop:enable Style/RedundantSelf
       end
 
       # Allows you to set a custom Amazon DynamoDB table name for this model
@@ -175,7 +177,7 @@ module Aws
       #   end
       #
       #   Dog.table_name      # => "DogTable"
-      def set_table_name(name)
+      def set_table_name(name) # rubocop:disable Naming/AccessorMethodName
         @table_name = name
       end
 
@@ -187,32 +189,24 @@ module Aws
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table name does
       #   not exist in DynamoDB.
       def provisioned_throughput
-        begin
-          resp = dynamodb_client.describe_table(table_name: table_name)
-          throughput = resp.table.provisioned_throughput
-          return {
-            read_capacity_units: throughput.read_capacity_units,
-            write_capacity_units: throughput.write_capacity_units
-          }
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          raise Record::Errors::TableDoesNotExist
-        end
+        resp = dynamodb_client.describe_table(table_name: table_name)
+        throughput = resp.table.provisioned_throughput
+        {
+          read_capacity_units: throughput.read_capacity_units,
+          write_capacity_units: throughput.write_capacity_units
+        }
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        raise Record::Errors::TableDoesNotExist
       end
 
       # Checks if the model's table name exists in Amazon DynamoDB.
       #
       # @return [Boolean] true if the table does exist, false if it does not.
       def table_exists?
-        begin
-          resp = dynamodb_client.describe_table(table_name: table_name)
-          if resp.table.table_status == "ACTIVE"
-            true
-          else
-            false
-          end
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          false
-        end
+        resp = dynamodb_client.describe_table(table_name: table_name)
+        resp.table.table_status == 'ACTIVE'
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        false
       end
 
       # Turns off mutation tracking for all attributes in the model.
@@ -246,17 +240,15 @@ module Aws
       end
 
       def model_valid?
-        if @keys.hash_key.nil?
-          raise Errors::InvalidModel.new("Table models must include a hash key")
-        end
+        raise Errors::InvalidModel, 'Table models must include a hash key' if @keys.hash_key.nil?
       end
 
       private
+
       def default_table_name(klass)
         return unless klass.name
-        klass.name.split("::").join("_")
+        klass.name.split('::').join('_')
       end
-
     end
   end
 end

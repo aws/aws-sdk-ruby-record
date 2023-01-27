@@ -168,16 +168,14 @@ describe Aws::Record::Batch do
       before(:each) do
         stub_client.stub_responses(
           :batch_get_item,
-          {
-            responses: {
-              'FoodTable' => response_array
-            },
-            unprocessed_keys: {
-              'FoodTable' => {
-                keys: [
-                  { 'Food ID' => 100, 'dish' => 'Food100' }
-                ]
-              }
+          responses: {
+            'FoodTable' => response_array
+          },
+          unprocessed_keys: {
+            'FoodTable' => {
+              keys: [
+                { 'Food ID' => 100, 'dish' => 'Food100' }
+              ]
             }
           }
         )
@@ -233,7 +231,6 @@ describe Aws::Record::Batch do
         end
         expect(result.to_a.size).to eq(101)
       end
-
     end
 
     it 'raises when a record is missing a key' do

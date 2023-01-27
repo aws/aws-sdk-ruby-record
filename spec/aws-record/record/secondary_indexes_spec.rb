@@ -4,12 +4,11 @@ require 'spec_helper'
 
 module Aws
   module Record
-    describe "SecondaryIndexes" do
-
+    describe 'SecondaryIndexes' do
       let(:klass) do
         Class.new do
           include(Aws::Record)
-          set_table_name("TestTable")
+          set_table_name('TestTable')
           integer_attr(:forum_id, hash_key: true)
           integer_attr(:post_id, range_key: true)
           string_attr(:forum_name)
@@ -32,15 +31,14 @@ module Aws
         client
       end
 
-      context "Local Secondary Index" do
-
-        describe "#local_secondary_index" do
+      context 'Local Secondary Index' do
+        describe '#local_secondary_index' do
           it 'allows you to define a local secondary index on the model' do
             klass.local_secondary_index(
               :title,
               range_key: :post_title,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             expect(klass.local_secondary_indexes[:title]).not_to eq(nil)
@@ -50,7 +48,7 @@ module Aws
             expect {
               klass.local_secondary_index(
                 :fail,
-                projection: { projection_type: "ALL" }
+                projection: { projection_type: 'ALL' }
               )
             }.to raise_error(ArgumentError)
           end
@@ -60,46 +58,44 @@ module Aws
               klass.local_secondary_index(
                 :fail,
                 range_key: :missingno,
-                projection: { projection_type: "ALL" }
+                projection: { projection_type: 'ALL' }
               )
             }.to raise_error(ArgumentError)
           end
         end
 
-        describe "#local_secondary_indexes_for_migration" do
+        describe '#local_secondary_indexes_for_migration' do
           it 'correctly translates database names for migration' do
             klass.local_secondary_index(
               :author,
               range_key: :author_id,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             migration = klass.local_secondary_indexes_for_migration
             expect(migration.size).to eq(1)
-            expect(migration.first).to eq({
+            expect(migration.first).to eq(
               index_name: :author,
               key_schema: [
-                { key_type: "HASH", attribute_name: "forum_id" },
-                { key_type: "RANGE", attribute_name: "a_id" }
+                { key_type: 'HASH', attribute_name: 'forum_id' },
+                { key_type: 'RANGE', attribute_name: 'a_id' }
               ],
-              projection: { projection_type: "ALL" }
-            })
+              projection: { projection_type: 'ALL' }
+            )
           end
         end
-
       end
 
-      context "Global Secondary Indexes" do
-
-        describe "#global_secondary_index" do
+      context 'Global Secondary Indexes' do
+        describe '#global_secondary_index' do
           it 'allows you to define a global secondary index on the model' do
             klass.global_secondary_index(
               :author,
               hash_key: :forum_name,
               range_key: :author_name,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             expect(klass.global_secondary_indexes[:author]).not_to eq(nil)
@@ -109,7 +105,7 @@ module Aws
             expect {
               klass.global_secondary_index(
                 :fail,
-                projection: { projection_type: "ALL" }
+                projection: { projection_type: 'ALL' }
               )
             }.to raise_error(ArgumentError)
           end
@@ -119,7 +115,7 @@ module Aws
               klass.global_secondary_index(
                 :fail,
                 hash_key: :missingno,
-                projection: { projection_type: "ALL" }
+                projection: { projection_type: 'ALL' }
               )
             }.to raise_error(ArgumentError)
           end
@@ -130,37 +126,35 @@ module Aws
                 :fail,
                 hash_key: :forum_name,
                 range_key: :missingno,
-                projection: { projection_type: "ALL" }
+                projection: { projection_type: 'ALL' }
               )
             }.to raise_error(ArgumentError)
           end
         end
 
-        describe "#global_secondary_indexes_for_migration" do
+        describe '#global_secondary_indexes_for_migration' do
           it 'correctly translates database names for migration' do
             klass.global_secondary_index(
               :author,
               hash_key: :forum_name,
               range_key: :author_name,
               projection: {
-                projection_type: "ALL"
+                projection_type: 'ALL'
               }
             )
             migration = klass.global_secondary_indexes_for_migration
             expect(migration.size).to eq(1)
-            expect(migration.first).to eq({
+            expect(migration.first).to eq(
               index_name: :author,
               key_schema: [
-                { key_type: "HASH", attribute_name: "forum_name" },
-                { key_type: "RANGE", attribute_name: "a_name" }
+                { key_type: 'HASH', attribute_name: 'forum_name' },
+                { key_type: 'RANGE', attribute_name: 'a_name' }
               ],
-              projection: { projection_type: "ALL" }
-            })
+              projection: { projection_type: 'ALL' }
+            )
           end
         end
-
       end
-
     end
 
     describe 'inheritance support' do
@@ -182,23 +176,22 @@ module Aws
       end
 
       it 'should have child model inherit secondary indexes from parent model' do
-        parent_model.local_secondary_index( :local_index, hash_key: :id, range_key: :message)
-        parent_model.global_secondary_index( :global_index, hash_key: :name, range_key: :message)
+        parent_model.local_secondary_index(:local_index, hash_key: :id, range_key: :message)
+        parent_model.global_secondary_index(:global_index, hash_key: :name, range_key: :message)
 
         expect(child_model.local_secondary_indexes).to eq(parent_model.local_secondary_indexes)
         expect(child_model.global_secondary_indexes).to eq(parent_model.global_secondary_indexes)
       end
 
       it 'allows the child model override parent indexes' do
-        parent_model.local_secondary_index( :local_index, hash_key: :id, range_key: :message)
-        parent_model.global_secondary_index( :global_index, hash_key: :name, range_key: :message)
-        child_model.local_secondary_index( :local_index, hash_key: :id, range_key: :foo)
-        child_model.global_secondary_index( :global_index, hash_key: :bar, range_key: :foo)
+        parent_model.local_secondary_index(:local_index, hash_key: :id, range_key: :message)
+        parent_model.global_secondary_index(:global_index, hash_key: :name, range_key: :message)
+        child_model.local_secondary_index(:local_index, hash_key: :id, range_key: :foo)
+        child_model.global_secondary_index(:global_index, hash_key: :bar, range_key: :foo)
 
-        expect(child_model.local_secondary_indexes).to eq({:local_index=>{:hash_key=>:id, :range_key=>:foo}})
-        expect(child_model.global_secondary_indexes).to eq(:global_index=>{:hash_key=>:bar, :range_key=>:foo})
+        expect(child_model.local_secondary_indexes).to eq(local_index: { hash_key: :id, range_key: :foo })
+        expect(child_model.global_secondary_indexes).to eq(global_index: { hash_key: :bar, range_key: :foo })
       end
     end
-
   end
 end

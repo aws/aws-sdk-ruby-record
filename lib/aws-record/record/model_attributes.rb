@@ -2,7 +2,6 @@
 
 module Aws
   module Record
-
     # @api private
     class ModelAttributes
       attr_reader :attributes, :storage_attributes
@@ -21,7 +20,7 @@ module Aws
         attribute
       end
 
-      def register_superclass_attribute (name, attribute)
+      def register_superclass_attribute(name, attribute)
         _new_attr_validation(name, attribute)
         @attributes[name] = attribute.dup
         @storage_attributes[attribute.database_name] = name
@@ -45,6 +44,7 @@ module Aws
       end
 
       private
+
       def _new_attr_validation(name, attribute)
         _validate_attr_name(name)
         _check_for_naming_collisions(name, attribute.database_name)
@@ -53,43 +53,33 @@ module Aws
 
       def _validate_attr_name(name)
         unless name.is_a?(Symbol)
-          raise ArgumentError.new("Must use symbolized :name attribute.")
+          raise ArgumentError, 'Must use symbolized :name attribute.'
         end
         if @attributes[name]
-          raise Errors::NameCollision.new(
-            "Cannot overwrite existing attribute #{name}"
-          )
+          raise Errors::NameCollision, "Cannot overwrite existing attribute #{name}"
         end
       end
 
       def _check_if_reserved(name)
         if @model_class.instance_methods.include?(name)
-          raise Errors::ReservedName.new(
-            "Cannot name an attribute #{name}, that would collide with an"\
-              " existing instance method."
-          )
+          raise Errors::ReservedName, "Cannot name an attribute #{name}, that would collide with an"\
+                                      ' existing instance method.'
         end
       end
 
       def _check_for_naming_collisions(name, storage_name)
         if @attributes[storage_name.to_sym]
-          raise Errors::NameCollision.new(
-            "Custom storage name #{storage_name} already exists as an"\
-              " attribute name in #{@attributes}"
-          )
+          raise Errors::NameCollision, "Custom storage name #{storage_name} already exists as an"\
+                                       " attribute name in #{@attributes}"
         elsif @storage_attributes[name.to_s]
-          raise Errors::NameCollision.new(
-            "Attribute name #{name} already exists as a custom storage"\
-              " name in #{@storage_attributes}"
-          )
+          raise Errors::NameCollision, "Attribute name #{name} already exists as a custom storage"\
+                                       " name in #{@storage_attributes}"
         elsif @storage_attributes[storage_name]
-          raise Errors::NameCollision.new(
-            "Custom storage name #{storage_name} already in use in"\
-              " #{@storage_attributes}"
-          )
+          raise Errors::NameCollision, "Custom storage name #{storage_name} already in use in"\
+                                       " #{@storage_attributes}"
+
         end
       end
     end
-
   end
 end

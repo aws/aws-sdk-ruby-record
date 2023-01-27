@@ -3,7 +3,6 @@
 module Aws
   module Record
     module ItemOperations
-
       # @api private
       def self.included(sub_class)
         sub_class.extend(ItemOperationsClassMethods)
@@ -12,12 +11,12 @@ module Aws
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      # call, which will not overwrite an existing item. If the item only has
-      # altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      # call. Uses this item instance's attributes in order to build the
-      # request on your behalf.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call, which will not overwrite an existing
+      # item. If the item only has altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
+      # in order to build the request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
@@ -38,19 +37,19 @@ module Aws
         if ret
           ret
         else
-          raise Errors::ValidationError.new("Validation hook returned false!")
+          raise Errors::ValidationError, 'Validation hook returned false!'
         end
       end
 
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      # call, which will not overwrite an existing item. If the item only has
-      # altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      # call. Uses this item instance's attributes in order to build the
-      # request on your behalf.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call, which will not overwrite an
+      # existing item. If the item only has altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
+      # in order to build the request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
@@ -69,7 +68,6 @@ module Aws
           _perform_save(opts)
         end
       end
-
 
       # Assigns the attributes provided onto the model.
       #
@@ -99,7 +97,7 @@ module Aws
         opts.each do |field, new_value|
           field = field.to_sym
           setter = "#{field}="
-          raise ArgumentError.new "Invalid field: #{field} for model" unless respond_to?(setter)
+          raise ArgumentError, "Invalid field: #{field} for model" unless respond_to?(setter)
           public_send(setter, new_value)
         end
       end
@@ -174,42 +172,42 @@ module Aws
 
       # Deletes the item instance that matches the key values of this item
       # instance in Amazon DynamoDB. Uses the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
-      # API.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # Aws::DynamoDB::Client#delete_item} API.
       def delete!
         dynamodb_client.delete_item(
           table_name: self.class.table_name,
           key: key_values
         )
-        self.instance_variable_get("@data").destroyed = true
+        instance_variable_get('@data').destroyed = true
       end
 
       # Validates and generates the key values necessary for API operations such as the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
-      # operation.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # Aws::DynamoDB::Client#delete_item} operation.
       def key_values
         validate_key_values
         attributes = self.class.attributes
         self.class.keys.values.each_with_object({}) do |attr_name, hash|
           db_name = attributes.storage_name_for(attr_name)
-          hash[db_name] = attributes
-            .attribute_for(attr_name)
-            .serialize(@data.raw_value(attr_name))
+          hash[db_name] = attributes.attribute_for(attr_name)
+                                    .serialize(@data.raw_value(attr_name))
         end
       end
 
       # Validates key values and returns a hash consisting of the parameters
       # to save the record using the
-      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
-      # operation.
+      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method
+      # Aws::DynamoDB::Client#batch_write_item} operation.
       def save_values
         _build_item_for_save
       end
 
       private
-      def _invalid_record?(opts)
-        if self.respond_to?(:valid?)
-          if !self.valid?
+
+      def _invalid_record?(_opts)
+        if respond_to?(:valid?)
+          if !valid?
             true
           else
             false
@@ -234,12 +232,11 @@ module Aws
           }.merge(prevent_overwrite_expression)
           begin
             dynamodb_client.put_item(put_opts)
-          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
-            raise Errors::ConditionalWriteFailed.new(
-              "Conditional #put_item call failed! Check that conditional write"\
-                " conditions are met, or include the :force option to clobber"\
-                " the remote item."
-            )
+          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
+            raise Errors::ConditionalWriteFailed,
+                  'Conditional #put_item call failed! Check that conditional write'\
+                  ' conditions are met, or include the :force option to clobber'\
+                  ' the remote item.'
           end
         else
           update_pairs = _dirty_changes_for_update
@@ -253,7 +250,7 @@ module Aws
               table_name: self.class.table_name,
               key: key_values,
               update_expression: uex,
-              expression_attribute_names: exp_attr_names,
+              expression_attribute_names: exp_attr_names
             }
             request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
             dynamodb_client.update_item(request_opts)
@@ -264,7 +261,7 @@ module Aws
             )
           end
         end
-        data = self.instance_variable_get("@data")
+        data = instance_variable_get('@data')
         data.destroyed = false
         data.new_record = false
         true
@@ -278,15 +275,11 @@ module Aws
 
       def validate_key_values
         missing = missing_key_values
-        unless missing.empty?
-          raise Errors::KeyMissing.new(
-            "Missing required keys: #{missing.join(', ')}"
-          )
-        end
+        raise Errors::KeyMissing, "Missing required keys: #{missing.join(', ')}" unless missing.empty?
       end
 
       def missing_key_values
-        self.class.keys.inject([]) do |acc, key|
+        self.class.keys.each_with_object([]) do |key, acc|
           acc << key.last if @data.raw_value(key.last).nil?
           acc
         end
@@ -302,24 +295,23 @@ module Aws
       def prevent_overwrite_expression
         conditions = []
         expression_attribute_names = {}
-        keys = self.class.instance_variable_get("@keys")
+        keys = self.class.instance_variable_get('@keys')
         # Hash Key
-        conditions << "attribute_not_exists(#H)"
-        expression_attribute_names["#H"] = keys.hash_key_attribute.database_name
+        conditions << 'attribute_not_exists(#H)'
+        expression_attribute_names['#H'] = keys.hash_key_attribute.database_name
         # Range Key
         if self.class.range_key
-          conditions << "attribute_not_exists(#R)"
-          expression_attribute_names["#R"] = keys.range_key_attribute.database_name
+          conditions << 'attribute_not_exists(#R)'
+          expression_attribute_names['#R'] = keys.range_key_attribute.database_name
         end
         {
-          condition_expression: conditions.join(" and "),
+          condition_expression: conditions.join(' and '),
           expression_attribute_names: expression_attribute_names
         }
       end
 
       def _dirty_changes_for_update
-        attributes = self.class.attributes
-        ret = dirty.inject({}) do |acc, attr_name|
+        ret = dirty.each_with_object({}) do |attr_name, acc|
           acc[attr_name] = @data.raw_value(attr_name)
           acc
         end
@@ -327,7 +319,6 @@ module Aws
       end
 
       module ItemOperationsClassMethods
-
         # @example Usage Example
         #   check_exp = Model.transact_check_expression(
         #     key: { uuid: "foo" },
@@ -347,9 +338,10 @@ module Aws
         #
         # @param [Hash] opts Options matching the :condition_check contents in
         #   the
-        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}
-        #   API, with the exception that keys will be marshalled for you, and
-        #   the table name will be provided for you by the operation.
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method
+        #   Aws::DynamoDB::Client#transact_write_items} API, with the exception that
+        #   keys will be marshalled for you, and the table name will be provided
+        #   for you by the operation.
         # @return [Hash] Options suitable to be used as a check expression when
         #   calling the +#transact_write+ operation.
         def transact_check_expression(opts)
@@ -359,13 +351,11 @@ module Aws
           check_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            check_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            check_key[attr_name] = attributes.attribute_for(attr_sym)
+                                             .serialize(key[attr_sym])
           end
           opts[:key] = check_key
           opts[:table_name] = table_name
@@ -385,13 +375,11 @@ module Aws
           request_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            request_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            request_key[attr_name] = attributes.attribute_for(attr_sym)
+                                               .serialize(key[attr_sym])
           end
           # this is a :get item used by #transact_get_items, with the exception
           # of :model_class which needs to be removed before passing along
@@ -422,10 +410,11 @@ module Aws
         # or virtual tables.
         #
         # @param [Hash] opts Options to pass through to
-        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
-        #   with the exception of the :transact_items array, which uses the
-        #   +#tfind_opts+ operation on your model class to provide extra
-        #   metadata used to marshal your items after retrieval.
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method
+        #   Aws::DynamoDB::Client#transact_get_items}, with the exception of the
+        #   :transact_items array, which uses the +#tfind_opts+ operation on
+        #   your model class to provide extra metadata used to marshal your
+        #   items after retrieval.
         # @option opts [Array] :transact_items A set of options describing
         #   instances of the model class to return.
         # @return [OpenStruct] Structured like the client API response from
@@ -492,13 +481,11 @@ module Aws
           request_key = {}
           @keys.keys.each_value do |attr_sym|
             unless key[attr_sym]
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{key}"
-              )
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
             end
             attr_name = attributes.storage_name_for(attr_sym)
-            request_key[attr_name] = attributes.attribute_for(attr_sym).
-              serialize(key[attr_sym])
+            request_key[attr_name] = attributes.attribute_for(attr_sym)
+                                               .serialize(key[attr_sym])
           end
           request_opts = {
             table_name: table_name,
@@ -511,7 +498,6 @@ module Aws
             build_item_from_resp(resp)
           end
         end
-
 
         # @example Usage Example
         #   class MyModel
@@ -561,9 +547,9 @@ module Aws
         #   MyModel.update(id: 1, name: "First", body: "Hello!")
         #
         # Performs an
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-        # call immediately on the table, using the attribute key/value pairs
-        # provided.
+        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        # Aws::DynamoDB::Client#update_item} call immediately on the table,
+        # using the attribute key/value pairs provided.
         #
         # @param [Hash] opts attribute-value pairs for the update operation you
         #  wish to perform. You must include all key attributes for a valid
@@ -573,12 +559,10 @@ module Aws
         #  not include all table keys.
         def update(opts)
           key = {}
-          updates = {}
           @keys.keys.each_value do |attr_sym|
-            unless value = opts.delete(attr_sym)
-              raise Errors::KeyMissing.new(
-                "Missing required key #{attr_sym} in #{opts}"
-              )
+            unless (value = opts.delete(attr_sym))
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
+
             end
             attr_name = attributes.storage_name_for(attr_sym)
             key[attr_name] = attributes.attribute_for(attr_sym).serialize(value)
@@ -598,16 +582,17 @@ module Aws
         end
 
         private
+
         def _build_update_expression(attr_value_pairs)
           set_expressions = []
           remove_expressions = []
           exp_attr_names = {}
           exp_attr_values = {}
-          name_sub_token = "UE_A"
-          value_sub_token = "ue_a"
+          name_sub_token = 'UE_A'
+          value_sub_token = 'ue_a'
           attr_value_pairs.each do |attr_sym, value|
-            name_sub = "#" + name_sub_token
-            value_sub = ":" + value_sub_token
+            name_sub = '#' + name_sub_token
+            value_sub = ':' + value_sub_token
             name_sub_token = name_sub_token.succ
             value_sub_token = value_sub_token.succ
 
@@ -615,7 +600,7 @@ module Aws
             attr_name = attributes.storage_name_for(attr_sym)
             exp_attr_names[name_sub] = attr_name
             if _update_type_remove?(attribute, value)
-              remove_expressions << "#{name_sub}"
+              remove_expressions << name_sub.to_s
             else
               set_expressions << "#{name_sub} = #{value_sub}"
               exp_attr_values[value_sub] = attribute.serialize(value)
@@ -623,21 +608,21 @@ module Aws
           end
           update_expressions = []
           unless set_expressions.empty?
-            update_expressions << "SET " + set_expressions.join(", ")
+            update_expressions << 'SET ' + set_expressions.join(', ')
           end
           unless remove_expressions.empty?
-            update_expressions << "REMOVE " + remove_expressions.join(", ")
+            update_expressions << 'REMOVE ' + remove_expressions.join(', ')
           end
           if update_expressions.empty?
             nil
           else
-            [update_expressions.join(" "), exp_attr_names, exp_attr_values]
+            [update_expressions.join(' '), exp_attr_names, exp_attr_values]
           end
         end
 
         def build_item_from_resp(resp)
           record = new
-          data = record.instance_variable_get("@data")
+          data = record.instance_variable_get('@data')
           attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(resp.item))
             data.new_record = false
@@ -649,7 +634,6 @@ module Aws
           value.nil? && !attribute.persist_nil?
         end
       end
-
     end
   end
 end

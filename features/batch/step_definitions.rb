@@ -3,9 +3,9 @@
 And(/^a (Parent|Child) model with TableConfig of:$/) do |model, code_block|
   case model
   when 'Parent'
-    ParentTableModel = @parent
+    ParentTableModel = @parent # rubocop:disable Naming/ConstantName
   when 'Child'
-    ChildTableModel = @model
+    ChildTableModel = @model # rubocop:disable Naming/ConstantName
   else
     raise 'Model must be either a Parent or Child'
   end

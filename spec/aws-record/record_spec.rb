@@ -4,7 +4,6 @@ require 'spec_helper'
 
 module Aws
   describe 'Record' do
-
     let(:api_requests) { [] }
 
     let(:stub_client) do
@@ -22,11 +21,11 @@ module Aws
         ::UnitTestModel = Class.new do
           include(Aws::Record)
         end
-        expect(UnitTestModel.table_name).to eq("UnitTestModel")
+        expect(UnitTestModel.table_name).to eq('UnitTestModel')
       end
 
       it 'should allow a custom table name to be specified' do
-        expected = "ExpectedTableName"
+        expected = 'ExpectedTableName'
         ::UnitTestModelTwo = Class.new do
           include(Aws::Record)
           set_table_name(expected)
@@ -35,7 +34,7 @@ module Aws
       end
 
       it 'should transform outer modules for default table name' do
-        expected = "OuterOne_OuterTwo_ClassTableName"
+        expected = 'OuterOne_OuterTwo_ClassTableName'
         ::OuterOne = Module.new
         ::OuterOne::OuterTwo = Module.new
         ::OuterOne::OuterTwo::ClassTableName = Class.new do
@@ -46,32 +45,30 @@ module Aws
     end
 
     describe '#provisioned_throughput' do
-      let(:model) {
+      let(:model) do
         Class.new do
           include(Aws::Record)
-          set_table_name("TestTable")
+          set_table_name('TestTable')
         end
-      }
+      end
 
       it 'should fetch the provisioned throughput for the table on request' do
-        stub_client.stub_responses(:describe_table,
-          {
-            table: {
-              provisioned_throughput: {
-                read_capacity_units: 25,
-                write_capacity_units: 10
-              }
+        stub_client.stub_responses(
+          :describe_table,
+          table: {
+            provisioned_throughput: {
+              read_capacity_units: 25,
+              write_capacity_units: 10
             }
-          })
+          }
+        )
         model.configure_client(client: stub_client)
         resp = model.provisioned_throughput
-        expect(api_requests).to eq([{
-          table_name: "TestTable"
-        }])
-        expect(resp).to eq({
+        expect(api_requests).to eq([{ table_name: 'TestTable' }])
+        expect(resp).to eq(
           read_capacity_units: 25,
           write_capacity_units: 10
-        })
+        )
       end
 
       it 'should raise a TableDoesNotExist error if the table does not exist' do
@@ -84,27 +81,21 @@ module Aws
     end
 
     describe '#table_exists' do
-      let(:model) {
+      let(:model) do
         Class.new do
           include(Aws::Record)
-          set_table_name("TestTable")
+          set_table_name('TestTable')
         end
-      }
+      end
 
       it 'can check if the table exists' do
-        stub_client.stub_responses(:describe_table,
-          {
-            table: { table_status: "ACTIVE" }
-          })
+        stub_client.stub_responses(:describe_table, table: { table_status: 'ACTIVE' })
         model.configure_client(client: stub_client)
         expect(model.table_exists?).to eq(true)
       end
 
       it 'will not recognize a table as existing if it is not active' do
-        stub_client.stub_responses(:describe_table,
-          {
-            table: { table_status: "CREATING" }
-          })
+        stub_client.stub_responses(:describe_table, table: { table_status: 'CREATING' })
         model.configure_client(client: stub_client)
         expect(model.table_exists?).to eq(false)
       end
@@ -114,18 +105,17 @@ module Aws
         model.configure_client(client: stub_client)
         expect(model.table_exists?).to eq(false)
       end
-
     end
 
-    describe "#track_mutations" do
-      let(:model) {
+    describe '#track_mutations' do
+      let(:model) do
         Class.new do
           include(Aws::Record)
-          set_table_name("TestTable")
+          set_table_name('TestTable')
           string_attr(:uuid, hash_key: true)
-          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new)
+          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new) # rubocop:disable Style/Attr
         end
-      }
+      end
 
       it 'is on by default' do
         expect(model.mutation_tracking_enabled?).to be_truthy
@@ -138,14 +128,14 @@ module Aws
     end
 
     describe 'default_value' do
-      let(:model) {
+      let(:model) do
         Class.new do
           include(Aws::Record)
-          set_table_name("TestTable")
+          set_table_name('TestTable')
           string_attr(:uuid, hash_key: true)
           map_attr(:things, default_value: {})
         end
-      }
+      end
 
       it 'uses a deep copy of the default_value' do
         model.new.things['foo'] = 'bar'
@@ -167,7 +157,7 @@ module Aws
         end
       end
 
-      it 'should have child model inherit table name from parent model if it is defined in parent model'  do
+      it 'should have child model inherit table name from parent model if it is defined in parent model' do
         expect(parent_model.table_name).to eq('ParentTable')
         expect(child_model.table_name).to eq('ParentTable')
       end
@@ -186,10 +176,9 @@ module Aws
           include(Aws::Record)
         end
 
-        expect(ParentModel.table_name).to eq("ParentModel")
-        expect(ChildModel.table_name). to eq("ChildModel")
+        expect(ParentModel.table_name).to eq('ParentModel')
+        expect(ChildModel.table_name). to eq('ChildModel')
       end
-
     end
 
     describe 'inheritance support for track mutations' do
@@ -219,6 +208,5 @@ module Aws
         expect(child_model.mutation_tracking_enabled?). to be_falsy
       end
     end
-
   end
 end

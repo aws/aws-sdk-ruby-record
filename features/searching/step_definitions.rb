@@ -36,7 +36,7 @@ Then(/^we should receive an aws\-record page with 2 values from members:$/) do |
   # This is definitely a hack which takes advantage of an accident in test
   # design. In the future, we'll need to have some sort of shared collection
   # state to cope with the fact that scan order is not guaranteed.
-  page.size == 2
+  page.size == 2 # rubocop:disable Void
   # Results do not have guaranteed order, check each expected value individually
   page.each do |item|
     h = item.to_h
@@ -48,19 +48,19 @@ When(/^we call the 'scan' class method using the page's pagination token$/) do
   @collection = @model.scan(exclusive_start_key: @last_evaluated_key)
 end
 
-When("we run the following search:") do |code|
-  SearchTestModel = @model
+When('we run the following search:') do |code|
+  SearchTestModel = @model # rubocop:disable Naming/ConstantName
   @collection = eval(code)
 end
 
 When(/^we run a heterogeneous query$/) do
-  @model_1 = @model.dup
-  @model_2 = @model.dup
+  @model1 = @model.dup
+  @model2 = @model.dup
   scan = @model.build_scan.multi_model_filter do |raw_item_attributes|
-    if raw_item_attributes['id'] == "1"
-      @model_1
-    elsif raw_item_attributes['id'] == "2"
-      @model_2
+    if raw_item_attributes['id'] == '1'
+      @model1
+    elsif raw_item_attributes['id'] == '2'
+      @model2
     end
   end
   @collection = scan.complete!

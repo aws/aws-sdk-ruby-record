@@ -5,24 +5,23 @@ require 'spec_helper'
 module Aws
   module Record
     describe Attribute do
-
       context 'database_attribute_name' do
         it 'can have a custom DB name' do
-          a = Attribute.new(:foo, database_attribute_name: "bar")
+          a = Attribute.new(:foo, database_attribute_name: 'bar')
           expect(a.name).to eq(:foo)
-          expect(a.database_name).to eq("bar")
+          expect(a.database_name).to eq('bar')
         end
 
         it 'can accept a symbol as a custom DB name' do
           a = Attribute.new(:foo, database_attribute_name: :bar)
           expect(a.name).to eq(:foo)
-          expect(a.database_name).to eq("bar")
+          expect(a.database_name).to eq('bar')
         end
 
         it 'uses the attribute name by default for the DB name' do
           a = Attribute.new(:foo)
           expect(a.name).to eq(:foo)
-          expect(a.database_name).to eq("foo")
+          expect(a.database_name).to eq('foo')
         end
       end
 
@@ -35,7 +34,7 @@ module Aws
         it 'does not type_cast lambdas' do
           m = Marshalers::DateTimeMarshaler.new
           a = Attribute.new(:foo, marshaler: m, default_value: -> { Time.now })
-          dv = a.instance_variable_get("@default_value_or_lambda")
+          dv = a.instance_variable_get('@default_value_or_lambda')
           expect(dv.respond_to?(:call)).to eq(true)
         end
 
@@ -52,7 +51,6 @@ module Aws
           expect(a.default_value).to eq({})
         end
       end
-
     end
   end
 end

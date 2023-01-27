@@ -5,7 +5,6 @@ require 'spec_helper'
 module Aws
   module Record
     describe 'ClientConfiguration' do
-
       context 'inheritance support for dynamodb client' do
         let(:parent_model) do
           Class.new do
@@ -33,7 +32,6 @@ module Aws
           expect(child_model.dynamodb_client).not_to eql(parent_model.dynamodb_client)
         end
       end
-
     end
   end
 end

@@ -3,7 +3,6 @@
 module Aws
   module Record
     class TableMigration
-
       # @!attribute [rw] client
       #   @return [Aws::DynamoDB::Client] the
       #     {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
@@ -24,9 +23,10 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method Aws::DynamoDB::Client#create_table},
-      # populating the attribute definitions and key schema based on your model
-      # class, as well as passing through other parameters as provided by you.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method
+      # Aws::DynamoDB::Client#create_table}, populating the attribute definitions and
+      # key schema based on your model class, as well as passing through other
+      # parameters as provided by you.
       #
       # @example Creating a table with a global secondary index named +:gsi+
       #   migration.create!(
@@ -63,22 +63,20 @@ module Aws
         gsit = opts.delete(:global_secondary_index_throughput)
         _validate_billing(opts)
 
-        create_opts = opts.merge({
+        create_opts = opts.merge(
           table_name: @model.table_name,
           attribute_definitions: _attribute_definitions,
           key_schema: _key_schema
-        })
-        if lsis = @model.local_secondary_indexes_for_migration
+        )
+        if (lsis = @model.local_secondary_indexes_for_migration)
           create_opts[:local_secondary_indexes] = lsis
           _append_to_attribute_definitions(lsis, create_opts)
         end
-        if gsis = @model.global_secondary_indexes_for_migration
+        if (gsis = @model.global_secondary_indexes_for_migration)
           unless gsit || opts[:billing_mode] == 'PAY_PER_REQUEST'
-            raise ArgumentError.new(
-              'If you define global secondary indexes, you must also define'\
-                ' :global_secondary_index_throughput on table creation,'\
-                " unless :billing_mode is set to 'PAY_PER_REQUEST'."
-            )
+            raise ArgumentError, 'If you define global secondary indexes, you must also define'\
+                                 ' :global_secondary_index_throughput on table creation,'\
+                                 " unless :billing_mode is set to 'PAY_PER_REQUEST'."
           end
           gsis_opts = if opts[:billing_mode] == 'PAY_PER_REQUEST'
                         gsis
@@ -92,8 +90,8 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_table-instance_method Aws::DynamoDB::Client#update_table}
-      # using the parameters that you provide.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_table-instance_method
+      # Aws::DynamoDB::Client#update_table} using the parameters that you provide.
       #
       # @param [Hash] opts options to pass on to the client call to
       #  +#update_table+. See the documentation above in the AWS SDK for Ruby
@@ -101,28 +99,24 @@ module Aws
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table does not
       #  currently exist in Amazon DynamoDB.
       def update!(opts)
-        begin
-          update_opts = opts.merge({
-            table_name: @model.table_name
-          })
-          @client.update_table(update_opts)
-        rescue DynamoDB::Errors::ResourceNotFoundException => e
-          raise Errors::TableDoesNotExist.new(e)
-        end
+        update_opts = opts.merge(
+          table_name: @model.table_name
+        )
+        @client.update_table(update_opts)
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        raise Errors::TableDoesNotExist
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_table-instance_method Aws::DynamoDB::Client#delete_table}
-      # using the table name of your model.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_table-instance_method
+      # Aws::DynamoDB::Client#delete_table} using the table name of your model.
       #
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table did not
       #  exist in Amazon DynamoDB at the time of calling.
       def delete!
-        begin
-          @client.delete_table(table_name: @model.table_name)
-        rescue DynamoDB::Errors::ResourceNotFoundException => e
-          raise Errors::TableDoesNotExist.new(e)
-        end
+        @client.delete_table(table_name: @model.table_name)
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        raise Errors::TableDoesNotExist
       end
 
       # This method waits on the table specified in the model to exist and be
@@ -134,6 +128,7 @@ module Aws
       end
 
       private
+
       def _assert_model_valid(model)
         _assert_required_include(model)
         model.model_valid?
@@ -141,7 +136,7 @@ module Aws
 
       def _assert_required_include(model)
         unless model.include?(::Aws::Record)
-          raise Errors::InvalidModel.new("Table models must include Aws::Record")
+          raise Errors::InvalidModel, 'Table models must include Aws::Record'
         end
       end
 
@@ -149,31 +144,25 @@ module Aws
         valid_modes = %w[PAY_PER_REQUEST PROVISIONED]
         if opts.key?(:billing_mode)
           unless valid_modes.include?(opts[:billing_mode])
-            raise ArgumentError.new(
-              ":billing_mode option must be one of #{valid_modes.join(', ')}"\
-                " current value is: #{opts[:billing_mode]}"
-            )
+            raise ArgumentError, ":billing_mode option must be one of #{valid_modes.join(', ')}"\
+                                 " current value is: #{opts[:billing_mode]}"
           end
         end
         if opts.key?(:provisioned_throughput)
           if opts[:billing_mode] == 'PAY_PER_REQUEST'
-            raise ArgumentError.new(
-              'when :provisioned_throughput option is specified, :billing_mode'\
-                " must either be unspecified or have a value of 'PROVISIONED'"
-            )
+            raise ArgumentError, 'when :provisioned_throughput option is specified, :billing_mode'\
+                                 " must either be unspecified or have a value of 'PROVISIONED'"
           end
         else
           if opts[:billing_mode] != 'PAY_PER_REQUEST'
-            raise ArgumentError.new(
-              'when :provisioned_throughput option is not specified,'\
-                " :billing_mode must be set to 'PAY_PER_REQUEST'"
-            )
+            raise ArgumentError, 'when :provisioned_throughput option is not specified,'\
+                                 " :billing_mode must be set to 'PAY_PER_REQUEST'"
           end
         end
       end
 
       def _attribute_definitions
-        _keys.map do |type, attr|
+        _keys.map do |_type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
@@ -186,9 +175,9 @@ module Aws
         attr_def = create_opts[:attribute_definitions]
         secondary_indexes.each do |si|
           si[:key_schema].each do |key_schema|
-            exists = attr_def.find { |a|
+            exists = attr_def.find do |a|
               a[:attribute_name] == key_schema[:attribute_name]
-            }
+            end
             unless exists
               attr = attributes.attribute_for(
                 attributes.db_to_attribute_name(key_schema[:attribute_name])
@@ -212,12 +201,10 @@ module Aws
           params.merge(provisioned_throughput: throughput)
         end
         unless missing_throughput.empty?
-          raise ArgumentError.new(
-            "Missing provisioned throughput for the following global secondary"\
-              " indexes: #{missing_throughput.join(", ")}. GSIs:"\
-              " #{global_secondary_indexes} and defined throughput:"\
-              " #{gsi_throughput}"
-          )
+          raise ArgumentError, 'Missing provisioned throughput for the following global secondary'\
+                               " indexes: #{missing_throughput.join(', ')}. GSIs:"\
+                               " #{global_secondary_indexes} and defined throughput:"\
+                               " #{gsi_throughput}"
         end
         ret
       end
@@ -226,13 +213,13 @@ module Aws
         _keys.map do |type, attr|
           {
             attribute_name: attr.database_name,
-            key_type: type == :hash ? "HASH" : "RANGE"
+            key_type: type == :hash ? 'HASH' : 'RANGE'
           }
         end
       end
 
       def _keys
-        @model.keys.inject({}) do |acc, (type, name)|
+        @model.keys.each_with_object({}) do |(type, name), acc|
           acc[type] = @model.attributes.attribute_for(name)
           acc
         end

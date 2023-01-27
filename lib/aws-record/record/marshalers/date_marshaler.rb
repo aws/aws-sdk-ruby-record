@@ -5,7 +5,6 @@ require 'date'
 module Aws
   module Record
     module Marshalers
-
       class DateMarshaler
         def initialize(opts = {})
           @formatter = opts[:formatter] || Iso8601Formatter
@@ -36,7 +35,6 @@ module Aws
             raise ArgumentError, "expected a Date value or nil, got #{date.class}"
           end
         end
-
       end
 
       module Iso8601Formatter
@@ -44,7 +42,6 @@ module Aws
           date.iso8601
         end
       end
-
     end
   end
 end

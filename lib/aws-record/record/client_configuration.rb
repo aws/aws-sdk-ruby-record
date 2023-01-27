@@ -20,16 +20,19 @@ module Aws
       # @param [Hash] opts the options you wish to use to create the client.
       #  Note that if you include the option +:client+, all other options
       #  will be ignored. See the documentation for other options in the
-      #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby}.
+      #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method
+      #  AWS SDK for Ruby}.
       # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
       #  own pre-configured client.
       def configure_client(opts = {})
+        # rubocop:disable Style/RedundantSelf
         if self.class != Module && Aws::Record.extends_record?(self) && opts.empty? &&
-          self.superclass.instance_variable_get('@dynamodb_client')
-            @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
+           self.superclass.instance_variable_get('@dynamodb_client')
+          @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
         else
           @dynamodb_client = _build_client(opts)
         end
+        # rubocop:enable Style/RedundantSelf
       end
 
       # Gets the

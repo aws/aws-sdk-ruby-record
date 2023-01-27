@@ -1,0 +1,40 @@
+AllCops:
+  TargetRubyVersion: 2.0.0
+
+Documentation:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'features/*'
+    - 'spec/**/*'
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Security/Eval:
+  Exclude:
+    - 'features/**/*'
+
+Style/Attr:
+  Exclude:
+    - 'lib/aws-record/record/attributes.rb'
+
+Style/BlockDelimiters:
+  Exclude:
+    - 'spec/**/*'
+
+Style/TrivialAccessors:
+  Enabled: false

@@ -2,7 +2,6 @@
 
 module Aws
   module Record
-
     # +Aws::Record::TableConfig+ provides a DSL for describing and modifying
     # the remote configuration of your DynamoDB tables. A table configuration
     # object can perform intelligent comparisons and incremental migrations
@@ -90,11 +89,9 @@ module Aws
     #   end
     #
     class TableConfig
-
       attr_accessor :client
 
       class << self
-
         # Creates a new table configuration, using a DSL in the provided block.
         # The DSL has the following methods:
         # * +#model_class+ A class name reference to the +Aws::Record+ model
@@ -158,7 +155,7 @@ module Aws
       def initialize
         @client_options = {}
         @global_secondary_indexes = {}
-        @billing_mode = "PROVISIONED" # default
+        @billing_mode = 'PROVISIONED' # default
       end
 
       # @api private
@@ -231,9 +228,9 @@ module Aws
             unless _gsi_superset(resp)
               @client.update_table(_update_index_opts(resp))
               @client.wait_until(
-              :table_exists,
-              table_name: @model_class.table_name
-            )
+                :table_exists,
+                table_name: @model_class.table_name
+              )
             end
           end
         rescue DynamoDB::Errors::ResourceNotFoundException
@@ -248,7 +245,7 @@ module Aws
         # we will only alter TTL status if we have a TTL attribute defined. We
         # may someday support explicit TTL deletion, but we do not yet do this.
         if @ttl_attribute
-          if !_ttl_compatibility_check
+          unless _ttl_compatibility_check
             client.update_time_to_live(
               table_name: @model_class.table_name,
               time_to_live_specification: {
@@ -270,12 +267,10 @@ module Aws
       #
       # @return [Boolean] true if remote is compatible, false otherwise.
       def compatible?
-        begin
-          resp = @client.describe_table(table_name: @model_class.table_name)
-          _compatible_check(resp) && _ttl_compatibility_check
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          false
-        end
+        resp = @client.describe_table(table_name: @model_class.table_name)
+        _compatible_check(resp) && _ttl_compatibility_check
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        false
       end
 
       # Checks against the remote table's configuration. If the remote table
@@ -285,26 +280,25 @@ module Aws
       #
       # @return [Boolean] true if remote is an exact match, false otherwise.
       def exact_match?
-        begin
-          resp = @client.describe_table(table_name: @model_class.table_name)
-          _throughput_equal(resp) &&
-            _keys_equal(resp) &&
-            _ad_equal(resp) &&
-            _gsi_equal(resp) &&
-            _ttl_match_check
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          false
-        end
+        resp = @client.describe_table(table_name: @model_class.table_name)
+        _throughput_equal(resp) &&
+          _keys_equal(resp) &&
+          _ad_equal(resp) &&
+          _gsi_equal(resp) &&
+          _ttl_match_check
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        false
       end
 
       private
+
       def _ttl_compatibility_check
         if @ttl_attribute
           ttl_status = @client.describe_time_to_live(
             table_name: @model_class.table_name
           )
           desc = ttl_status.time_to_live_description
-          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+          %w[ENABLED ENABLING].include?(desc.time_to_live_status) &&
             desc.attribute_name == @ttl_attribute
         else
           true
@@ -317,11 +311,11 @@ module Aws
         )
         desc = ttl_status.time_to_live_description
         if @ttl_attribute
-          ["ENABLED", "ENABLING"].include?(desc.time_to_live_status) &&
+          %w[ENABLED ENABLING].include?(desc.time_to_live_status) &&
             desc.attribute_name == @ttl_attribute
         else
-          !["ENABLED", "ENABLING"].include?(desc.time_to_live_status) ||
-            desc.attribute_name == nil
+          !%w[ENABLED ENABLING].include?(desc.time_to_live_status) ||
+            desc.attribute_name.nil?
         end
       end
 
@@ -336,30 +330,25 @@ module Aws
         opts = {
           table_name: @model_class.table_name
         }
-        if @billing_mode == "PROVISIONED"
+        if @billing_mode == 'PROVISIONED'
           opts[:provisioned_throughput] = {
             read_capacity_units: @read_capacity_units,
             write_capacity_units: @write_capacity_units
           }
-        elsif @billing_mode == "PAY_PER_REQUEST"
+        elsif @billing_mode == 'PAY_PER_REQUEST'
           opts[:billing_mode] = @billing_mode
         else
           raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
         end
-          
         opts[:key_schema] = _key_schema
         opts[:attribute_definitions] = _attribute_definitions
         gsi = _global_secondary_indexes
-        unless gsi.empty?
-          opts[:global_secondary_indexes] = gsi 
-        end
+        opts[:global_secondary_indexes] = gsi unless gsi.empty?
         opts
       end
 
       def _add_global_secondary_index_throughput(opts, resp_gsis)
-        gsis = resp_gsis.map do |g|
-          g.index_name
-        end
+        gsis = resp_gsis.map(&:index_name)
         gsi_updates = []
         gsis.each do |index_name|
           lgsi = @global_secondary_indexes[index_name.to_sym]
@@ -375,7 +364,7 @@ module Aws
       end
 
       def _update_throughput_opts(resp)
-        if @billing_mode == "PROVISIONED"
+        if @billing_mode == 'PROVISIONED'
           opts = {
             table_name: @model_class.table_name,
             provisioned_throughput: {
@@ -386,7 +375,7 @@ module Aws
           # special case: we have global secondary indexes existing, and they
           # need provisioned capacity to be set within this call
           if !resp.table.billing_mode_summary.nil? &&
-              resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST"
+             resp.table.billing_mode_summary.billing_mode == 'PAY_PER_REQUEST'
             opts[:billing_mode] = @billing_mode
             if resp.table.global_secondary_indexes
               resp_gsis = resp.table.global_secondary_indexes
@@ -394,10 +383,10 @@ module Aws
             end
           end # else don't include billing mode
           opts
-        elsif @billing_mode == "PAY_PER_REQUEST"
+        elsif @billing_mode == 'PAY_PER_REQUEST'
           {
             table_name: @model_class.table_name,
-            billing_mode: "PAY_PER_REQUEST"
+            billing_mode: 'PAY_PER_REQUEST'
           }
         else
           raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
@@ -431,7 +420,7 @@ module Aws
           gsi[:key_schema].each do |k|
             attributes_referenced.add(k[:attribute_name])
           end
-          if @billing_mode == "PROVISIONED"
+          if @billing_mode == 'PROVISIONED'
             lgsi = @global_secondary_indexes[index_name.to_sym]
             gsi[:provisioned_throughput] = lgsi.provisioned_throughput
           end
@@ -440,7 +429,7 @@ module Aws
           }
         end
         # we don't currently update anything other than throughput
-        if @billing_mode == "PROVISIONED"
+        if @billing_mode == 'PROVISIONED'
           update_candidates.each do |index_name|
             lgsi = @global_secondary_indexes[index_name.to_sym]
             gsi_updates << {
@@ -464,19 +453,19 @@ module Aws
         _keys.map do |type, attr|
           {
             attribute_name: attr.database_name,
-            key_type: type == :hash ? "HASH" : "RANGE"
+            key_type: type == :hash ? 'HASH' : 'RANGE'
           }
         end
       end
 
       def _attribute_definitions
-        attribute_definitions = _keys.map do |type, attr|
+        attribute_definitions = _keys.map do |_type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
           }
         end
-        @model_class.global_secondary_indexes.each do |_, attributes|
+        @model_class.global_secondary_indexes.each_value do |attributes|
           gsi_keys = [attributes[:hash_key]]
           gsi_keys << attributes[:range_key] if attributes[:range_key]
           gsi_keys.each do |name|
@@ -496,40 +485,40 @@ module Aws
       end
 
       def _keys
-        @model_class.keys.inject({}) do |acc, (type, name)|
+        @model_class.keys.each_with_object({}) do |(type, name), acc|
           acc[type] = @model_class.attributes.attribute_for(name)
           acc
         end
       end
 
       def _throughput_equal(resp)
-        if @billing_mode == "PAY_PER_REQUEST"
+        if @billing_mode == 'PAY_PER_REQUEST'
           !resp.table.billing_mode_summary.nil? &&
-            resp.table.billing_mode_summary.billing_mode == "PAY_PER_REQUEST"
+            resp.table.billing_mode_summary.billing_mode == 'PAY_PER_REQUEST'
         else
           expected = resp.table.provisioned_throughput.to_h
           actual = {
             read_capacity_units: @read_capacity_units,
             write_capacity_units: @write_capacity_units
           }
-          actual.all? do |k,v|
+          actual.all? do |k, v|
             expected[k] == v
           end
         end
       end
 
       def _keys_equal(resp)
-        remote_key_schema = resp.table.key_schema.map { |i| i.to_h }
+        remote_key_schema = resp.table.key_schema.map(&:to_h)
         _array_unsorted_eql(remote_key_schema, _key_schema)
       end
 
       def _ad_equal(resp)
-        remote_ad = resp.table.attribute_definitions.map { |i| i.to_h }
+        remote_ad = resp.table.attribute_definitions.map(&:to_h)
         _array_unsorted_eql(remote_ad, _attribute_definitions)
       end
 
       def _ad_superset(resp)
-        remote_ad = resp.table.attribute_definitions.map { |i| i.to_h }
+        remote_ad = resp.table.attribute_definitions.map(&:to_h)
         _attribute_definitions.all? do |attribute_definition|
           remote_ad.include?(attribute_definition)
         end
@@ -540,7 +529,7 @@ module Aws
         local_gsis = _global_secondary_indexes
         remote_idx, local_idx = _gsi_index_names(remote_gsis, local_gsis)
         if local_idx.subset?(remote_idx)
-           _gsi_set_compare(remote_gsis, local_gsis)
+          _gsi_set_compare(remote_gsis, local_gsis)
         else
           # If we have any local indexes not on the remote table,
           # guaranteed false.
@@ -565,17 +554,17 @@ module Aws
             r.index_name == lgsi[:index_name].to_s
           end
 
-          remote_key_schema = rgsi.key_schema.map { |i| i.to_h }
+          remote_key_schema = rgsi.key_schema.map(&:to_h)
           ks_match = _array_unsorted_eql(remote_key_schema, lgsi[:key_schema])
 
           # Throughput Check: Dependent on Billing Mode
           rpt = rgsi.provisioned_throughput.to_h
           lpt = lgsi[:provisioned_throughput]
-          if @billing_mode == "PROVISIONED"
-            pt_match = lpt.all? do |k,v|
+          if @billing_mode == 'PROVISIONED'
+            pt_match = lpt.all? do |k, v|
               rpt[k] == v
             end
-          elsif @billing_mode == "PAY_PER_REQUEST"
+          elsif @billing_mode == 'PAY_PER_REQUEST'
             pt_match = lpt.nil? ? true : false
           else
             raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
@@ -614,7 +603,7 @@ module Aws
         if model_gsis
           model_gsis.each do |mgsi|
             config = gsi_config[mgsi[:index_name]]
-            if @billing_mode == "PROVISIONED"
+            if @billing_mode == 'PROVISIONED'
               gsis << mgsi.merge(
                 provisioned_throughput: config.provisioned_throughput
               )
@@ -633,12 +622,12 @@ module Aws
       def _validate_required_configuration
         missing_config = []
         missing_config << 'model_class' unless @model_class
-        if @billing_mode == "PROVISIONED"
+        if @billing_mode == 'PROVISIONED'
           missing_config << 'read_capacity_units' unless @read_capacity_units
           missing_config << 'write_capacity_units' unless @write_capacity_units
         else
           if @read_capacity_units || @write_capacity_units
-            raise ArgumentError.new("Cannot have billing mode #{@billing_mode} with provisioned capacity.")
+            raise ArgumentError, "Cannot have billing mode #{@billing_mode} with provisioned capacity."
           end
         end
         unless missing_config.empty?
@@ -663,7 +652,6 @@ module Aws
           @provisioned_throughput[:write_capacity_units] = units
         end
       end
-
     end
   end
 end

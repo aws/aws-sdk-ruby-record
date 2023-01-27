@@ -6,7 +6,6 @@ module Aws
   module Record
     module Marshalers
       describe ListMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = ListMarshaler.new
@@ -22,7 +21,7 @@ module Aws
             end
 
             it 'type casts Arrays as themselves' do
-              expect(@marshaler.type_cast([1,"Two",3])).to eq([1, "Two", 3])
+              expect(@marshaler.type_cast([1, 'Two', 3])).to eq([1, 'Two', 3])
             end
 
             it 'type casts enumerables as an Array' do
@@ -40,7 +39,7 @@ module Aws
 
           describe 'serialization' do
             it 'serializes an array as itself' do
-              expect(@marshaler.serialize([1,2,3])).to eq([1,2,3])
+              expect(@marshaler.serialize([1, 2, 3])).to eq([1, 2, 3])
             end
 
             it 'serializes nil as nil' do
@@ -48,7 +47,6 @@ module Aws
             end
           end
         end
-
       end
     end
   end

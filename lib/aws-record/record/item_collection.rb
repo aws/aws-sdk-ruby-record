@@ -25,7 +25,7 @@ module Aws
       # @return [Enumerable<Aws::Record>] an enumeration over the results of
       #   your query or scan request. These results are automatically converted
       #   into items on your behalf.
-      def each(&block)
+      def each
         return enum_for(:each) unless block_given?
         items.each_page do |page|
           @last_evaluated_key = page.last_evaluated_key
@@ -72,19 +72,20 @@ module Aws
       #   otherwise.
       def empty?
         items.each_page do |page|
-          return false if !page.items.empty?
+          return false unless page.items.empty?
         end
         true
       end
 
       private
+
       def _build_items_from_response(items, model)
         ret = []
         items.each do |item|
           model_class = @model_filter ? @model_filter.call(item) : model
           next unless model_class
           record = model_class.new
-          data = record.instance_variable_get("@data")
+          data = record.instance_variable_get('@data')
           model_class.attributes.attributes.each do |name, attr|
             data.set_attribute(name, attr.extract(item))
           end
@@ -98,7 +99,6 @@ module Aws
       def items
         @_items ||= @client.send(@search_method, @search_params)
       end
-
     end
   end
 end

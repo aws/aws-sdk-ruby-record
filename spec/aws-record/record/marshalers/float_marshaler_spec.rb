@@ -6,7 +6,6 @@ module Aws
   module Record
     module Marshalers
       describe FloatMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = FloatMarshaler.new
@@ -19,7 +18,7 @@ module Aws
             end
 
             it 'casts stringy floats to a float' do
-              expect(@marshaler.type_cast("5.5")).to eq(5.5)
+              expect(@marshaler.type_cast('5.5')).to eq(5.5)
             end
 
             it 'passes through float values' do
@@ -27,8 +26,13 @@ module Aws
             end
 
             it 'handles classes which do not directly serialize to floats' do
-              indirect = Class.new { def to_s; "5"; end }.new
-              expect(@marshaler.type_cast(indirect)).to eq(5.0)
+              indirect = Class.new do
+                def to_s
+                  '5'
+                end
+              end
+
+              expect(@marshaler.type_cast(indirect.new)).to eq(5.0)
             end
           end
 
@@ -42,16 +46,19 @@ module Aws
             end
 
             it 'raises when type_cast does not do what it is expected to do' do
-              impossible = Class.new { def to_f; "wrong"; end }.new
+              impossible = Class.new do
+                def to_f
+                  'wrong'
+                end
+              end
+
               expect {
-                @marshaler.serialize(impossible)
+                @marshaler.serialize(impossible.new)
               }.to raise_error(ArgumentError)
             end
           end
         end
-
       end
     end
   end
 end
-

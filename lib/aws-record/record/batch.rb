@@ -7,10 +7,10 @@ module Aws
 
       class << self
         # Provides a thin wrapper to the
-        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
-        # method. Up to 25 +PutItem+ or +DeleteItem+ operations are supported.
-        # A single request may write up to 16 MB of data, with each item having a
-        # write limit of 400 KB.
+        # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method
+        # Aws::DynamoDB::Client#batch_write_item} method. Up to 25 +PutItem+ or +DeleteItem+
+        # operations are supported. A single request may write up to 16 MB of data, with each
+        # item having a write limit of 400 KB.
         #
         # *Note*: this operation does not support dirty attribute handling,
         # nor does it enforce safe write operations (i.e. update vs new record
@@ -25,8 +25,9 @@ module Aws
         # when all operations have been completed.
         #
         # Please see
-        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations Batch Operations and Error Handling}
-        # in the DynamoDB Developer Guide for more details.
+        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html#Programming.Errors.BatchOperations
+        # Batch Operations and Error Handling} in the DynamoDB Developer Guide for
+        # more details.
         #
         # @example Usage Example
         #   class Breakfast
@@ -54,15 +55,16 @@ module Aws
         # @param [Hash] opts the options you wish to use to create the client.
         #  Note that if you include the option +:client+, all other options
         #  will be ignored. See the documentation for other options in the
-        #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method AWS SDK for Ruby}.
+        #  {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#initialize-instance_method
+        #  AWS SDK for Ruby}.
         # @option opts [Aws::DynamoDB::Client] :client allows you to pass in your
         #  own pre-configured client.
         #
         # @return [Aws::Record::BatchWrite] An instance that contains any
         #   unprocessed items and allows for a retry strategy.
-        def write(opts = {}, &block)
+        def write(opts = {})
           batch = BatchWrite.new(client: _build_client(opts))
-          block.call(batch)
+          yield(batch)
           batch.execute!
         end
 
@@ -133,13 +135,12 @@ module Aws
         # @return [Aws::Record::BatchRead] An instance that contains modeled items
         #  from the +BatchGetItem+ result and stores unprocessed keys to be
         #  manually processed later.
-        def read(opts = {}, &block)
+        def read(opts = {})
           batch = BatchRead.new(client: _build_client(opts))
-          block.call(batch)
+          yield(batch)
           batch.execute!
           batch
         end
-
       end
     end
   end

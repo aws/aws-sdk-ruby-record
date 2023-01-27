@@ -7,7 +7,6 @@ module Aws
   module Record
     module Marshalers
       describe TimeMarshaler do
-
         context 'default settings' do
           before(:each) do
             @marshaler = TimeMarshaler.new
@@ -26,32 +25,32 @@ module Aws
             end
 
             it 'converts timestamps to Time' do
-              expected = Time.parse("2009-02-13 23:31:30 UTC")
-              input = 1234567890
+              expected = Time.parse('2009-02-13 23:31:30 UTC')
+              input = 1_234_567_890
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'converts DateTimes to Time' do
-              expected = Time.parse("2009-02-13 23:31:30 UTC")
-              input = DateTime.parse("2009-02-13 23:31:30 UTC")
+              expected = Time.parse('2009-02-13 23:31:30 UTC')
+              input = DateTime.parse('2009-02-13 23:31:30 UTC')
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'converts strings to Time' do
-              expected = Time.parse("2009-02-13 23:31:30 UTC")
-              input = "2009-02-13 23:31:30 UTC"
+              expected = Time.parse('2009-02-13 23:31:30 UTC')
+              input = '2009-02-13 23:31:30 UTC'
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'converts automatically to utc' do
-              expected = Time.parse("2016-07-20 23:31:10 UTC")
-              input = "2016-07-20 16:31:10 -0700"
+              expected = Time.parse('2016-07-20 23:31:10 UTC')
+              input = '2016-07-20 16:31:10 -0700'
               expect(@marshaler.type_cast(input)).to eq(expected)
             end
 
             it 'raises when unable to parse as a Time' do
               expect {
-                @marshaler.type_cast("that time when")
+                @marshaler.type_cast('that time when')
               }.to raise_error(ArgumentError)
             end
           end
@@ -64,25 +63,25 @@ module Aws
             it 'serializes Time as a string' do
               t = Time.parse('2009-02-13 23:31:30 UTC')
               expect(@marshaler.serialize(t)).to eq(
-                "2009-02-13T23:31:30Z"
+                '2009-02-13T23:31:30Z'
               )
             end
           end
         end
 
-        context "use local time" do
+        context 'use local time' do
           before(:each) do
             @marshaler = TimeMarshaler.new(use_local_time: true)
           end
 
           it 'does not automatically convert to utc' do
-            expected = Time.parse("2016-07-20 16:31:10 -0700")
-            input = "2016-07-20 16:31:10 -0700"
+            expected = Time.parse('2016-07-20 16:31:10 -0700')
+            input = '2016-07-20 16:31:10 -0700'
             expect(@marshaler.type_cast(input)).to eq(expected)
           end
         end
 
-        context "bring your own format" do
+        context 'bring your own format' do
           let(:rfc2822_formatter) do
             Class.new do
               def self.format(time)
@@ -96,12 +95,11 @@ module Aws
           end
 
           it 'supports custom formatting' do
-            expected = "Wed, 20 Jul 2016 23:34:36 -0000"
-            input = "2016-07-20T16:34:36-07:00"
+            expected = 'Wed, 20 Jul 2016 23:34:36 -0000'
+            input = '2016-07-20T16:34:36-07:00'
             expect(@marshaler.serialize(input)).to eq(expected)
           end
         end
-
       end
     end
   end
