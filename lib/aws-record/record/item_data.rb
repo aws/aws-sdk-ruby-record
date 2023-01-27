@@ -73,7 +73,7 @@ module Aws
       end
 
       def dirty
-        @model_attributes.attributes.keys.inject([]) do |acc, name|
+        @model_attributes.attributes.keys.each_with_object([]) do |name, acc|
           acc << name if attribute_dirty?(name)
           acc
         end
@@ -96,7 +96,7 @@ module Aws
       end
 
       def build_save_hash
-        @data.inject({}) do |acc, name_value_pair|
+        @data.each_with_object({}) do |name_value_pair, acc|
           attr_name, raw_value = name_value_pair
           attribute = @model_attributes.attribute_for(attr_name)
           if !raw_value.nil? || attribute.persist_nil?

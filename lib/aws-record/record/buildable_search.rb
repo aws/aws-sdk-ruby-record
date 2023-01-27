@@ -3,7 +3,7 @@
 module Aws
   module Record
     class BuildableSearch
-      SUPPORTED_OPERATIONS = [:query, :scan].freeze
+      SUPPORTED_OPERATIONS = %i[query scan].freeze
 
       # This should never be called directly, rather it is called by the
       # #build_query or #build_scan methods of your aws-record model class.
@@ -145,10 +145,10 @@ module Aws
 
       # Allows you to define a projection expression for the values returned by
       # a query or scan. See
-      # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ProjectionExpressions.html the Amazon DynamoDB Developer Guide}
-      # for more details on projection expressions. You can use the symbols from
-      # your aws-record model class in a projection expression. Keys are always
-      # retrieved.
+      # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ProjectionExpressions.html
+      # the Amazon DynamoDB Developer Guide} for more details on projection expressions.
+      # You can use the symbols from your aws-record model class in a projection expression.
+      # Keys are always retrieved.
       #
       # @example Scan with a projection expression:
       #   # Example model class
@@ -238,14 +238,15 @@ module Aws
         statement.gsub(/:(\w+)/) do |match|
           key = match.gsub(':', '').to_sym
           key_name = @model.attributes.storage_name_for(key)
-          if key_name
-            sub_name = _next_name
-            raise 'Substitution collision!' if names[sub_name]
-            names[sub_name] = key_name
-            sub_name
-          else
-            raise "No such key #{key}"
-          end
+
+          raise "No such key #{key}" unless key_name
+
+          sub_name = _next_name
+
+          raise 'Substitution collision!' if names[sub_name]
+
+          names[sub_name] = key_name
+          sub_name
         end
       end
 

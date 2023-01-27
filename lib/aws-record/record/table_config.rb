@@ -245,7 +245,7 @@ module Aws
         # we will only alter TTL status if we have a TTL attribute defined. We
         # may someday support explicit TTL deletion, but we do not yet do this.
         if @ttl_attribute
-          if !_ttl_compatibility_check
+          unless _ttl_compatibility_check
             client.update_time_to_live(
               table_name: @model_class.table_name,
               time_to_live_specification: {
@@ -267,12 +267,10 @@ module Aws
       #
       # @return [Boolean] true if remote is compatible, false otherwise.
       def compatible?
-        begin
-          resp = @client.describe_table(table_name: @model_class.table_name)
-          _compatible_check(resp) && _ttl_compatibility_check
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          false
-        end
+        resp = @client.describe_table(table_name: @model_class.table_name)
+        _compatible_check(resp) && _ttl_compatibility_check
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        false
       end
 
       # Checks against the remote table's configuration. If the remote table
@@ -282,16 +280,14 @@ module Aws
       #
       # @return [Boolean] true if remote is an exact match, false otherwise.
       def exact_match?
-        begin
-          resp = @client.describe_table(table_name: @model_class.table_name)
-          _throughput_equal(resp) &&
-            _keys_equal(resp) &&
-            _ad_equal(resp) &&
-            _gsi_equal(resp) &&
-            _ttl_match_check
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          false
-        end
+        resp = @client.describe_table(table_name: @model_class.table_name)
+        _throughput_equal(resp) &&
+          _keys_equal(resp) &&
+          _ad_equal(resp) &&
+          _gsi_equal(resp) &&
+          _ttl_match_check
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        false
       end
 
       private
@@ -302,7 +298,7 @@ module Aws
             table_name: @model_class.table_name
           )
           desc = ttl_status.time_to_live_description
-          ['ENABLED', 'ENABLING'].include?(desc.time_to_live_status) &&
+          %w[ENABLED ENABLING].include?(desc.time_to_live_status) &&
             desc.attribute_name == @ttl_attribute
         else
           true
@@ -315,11 +311,11 @@ module Aws
         )
         desc = ttl_status.time_to_live_description
         if @ttl_attribute
-          ['ENABLED', 'ENABLING'].include?(desc.time_to_live_status) &&
+          %w[ENABLED ENABLING].include?(desc.time_to_live_status) &&
             desc.attribute_name == @ttl_attribute
         else
-          !['ENABLED', 'ENABLING'].include?(desc.time_to_live_status) ||
-            desc.attribute_name == nil
+          !%w[ENABLED ENABLING].include?(desc.time_to_live_status) ||
+            desc.attribute_name.nil?
         end
       end
 
@@ -347,16 +343,12 @@ module Aws
         opts[:key_schema] = _key_schema
         opts[:attribute_definitions] = _attribute_definitions
         gsi = _global_secondary_indexes
-        unless gsi.empty?
-          opts[:global_secondary_indexes] = gsi
-        end
+        opts[:global_secondary_indexes] = gsi unless gsi.empty?
         opts
       end
 
       def _add_global_secondary_index_throughput(opts, resp_gsis)
-        gsis = resp_gsis.map do |g|
-          g.index_name
-        end
+        gsis = resp_gsis.map(&:index_name)
         gsi_updates = []
         gsis.each do |index_name|
           lgsi = @global_secondary_indexes[index_name.to_sym]
@@ -467,13 +459,13 @@ module Aws
       end
 
       def _attribute_definitions
-        attribute_definitions = _keys.map do |type, attr|
+        attribute_definitions = _keys.map do |_type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
           }
         end
-        @model_class.global_secondary_indexes.each do |_, attributes|
+        @model_class.global_secondary_indexes.each_value do |attributes|
           gsi_keys = [attributes[:hash_key]]
           gsi_keys << attributes[:range_key] if attributes[:range_key]
           gsi_keys.each do |name|
@@ -493,7 +485,7 @@ module Aws
       end
 
       def _keys
-        @model_class.keys.inject({}) do |acc, (type, name)|
+        @model_class.keys.each_with_object({}) do |(type, name), acc|
           acc[type] = @model_class.attributes.attribute_for(name)
           acc
         end
@@ -516,17 +508,17 @@ module Aws
       end
 
       def _keys_equal(resp)
-        remote_key_schema = resp.table.key_schema.map { |i| i.to_h }
+        remote_key_schema = resp.table.key_schema.map(&:to_h)
         _array_unsorted_eql(remote_key_schema, _key_schema)
       end
 
       def _ad_equal(resp)
-        remote_ad = resp.table.attribute_definitions.map { |i| i.to_h }
+        remote_ad = resp.table.attribute_definitions.map(&:to_h)
         _array_unsorted_eql(remote_ad, _attribute_definitions)
       end
 
       def _ad_superset(resp)
-        remote_ad = resp.table.attribute_definitions.map { |i| i.to_h }
+        remote_ad = resp.table.attribute_definitions.map(&:to_h)
         _attribute_definitions.all? do |attribute_definition|
           remote_ad.include?(attribute_definition)
         end
@@ -562,7 +554,7 @@ module Aws
             r.index_name == lgsi[:index_name].to_s
           end
 
-          remote_key_schema = rgsi.key_schema.map { |i| i.to_h }
+          remote_key_schema = rgsi.key_schema.map(&:to_h)
           ks_match = _array_unsorted_eql(remote_key_schema, lgsi[:key_schema])
 
           # Throughput Check: Dependent on Billing Mode

@@ -72,7 +72,7 @@ module Aws
       #   otherwise.
       def empty?
         items.each_page do |page|
-          return false if !page.items.empty?
+          return false unless page.items.empty?
         end
         true
       end

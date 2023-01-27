@@ -444,8 +444,8 @@ module Aws
         # * None of the attributes have dirty changes.
         # * If there is a value passed in, it must be an integer.
         # For more information, see
-        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters Atomic counter}
-        # in the Amazon DynamoDB Developer Guide.
+        # {https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.AtomicCounters
+        # Atomic counter} in the Amazon DynamoDB Developer Guide.
         #
         # @param [Symbol] name Name of this attribute.  It should be a name that
         #   is safe to use as a method.

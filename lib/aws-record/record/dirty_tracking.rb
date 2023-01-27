@@ -196,14 +196,14 @@ module Aws
 
       # @return [self] Returns the item instance.
       def reload!
-        primary_key = self.class.keys.values.inject({}) { |memo, key|
+        primary_key = self.class.keys.values.each_with_object({}) do |key, memo|
           memo[key] = send(key)
           memo
-        }
+        end
 
         record = self.class.find(primary_key)
 
-        unless record.nil?
+        if record.present?
           @data = record.instance_variable_get('@data')
         else
           raise Errors::NotFound, 'No record found'

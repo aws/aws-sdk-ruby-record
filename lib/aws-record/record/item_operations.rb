@@ -11,12 +11,12 @@ module Aws
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      # call, which will not overwrite an existing item. If the item only has
-      # altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      # call. Uses this item instance's attributes in order to build the
-      # request on your behalf.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call, which will not overwrite an existing
+      # item. If the item only has altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
+      # in order to build the request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
@@ -44,12 +44,12 @@ module Aws
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method Aws::DynamoDB::Client#put_item}
-      # call, which will not overwrite an existing item. If the item only has
-      # altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-      # call. Uses this item instance's attributes in order to build the
-      # request on your behalf.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call, which will not overwrite an
+      # existing item. If the item only has altered non-key attributes, will perform an
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
+      # in order to build the request on your behalf.
       #
       # You can use the +:force+ option to perform a simple put/overwrite
       # without conditional validation or update logic.
@@ -172,19 +172,19 @@ module Aws
 
       # Deletes the item instance that matches the key values of this item
       # instance in Amazon DynamoDB. Uses the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
-      # API.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # Aws::DynamoDB::Client#delete_item} API.
       def delete!
         dynamodb_client.delete_item(
           table_name: self.class.table_name,
           key: key_values
         )
-        self.instance_variable_get('@data').destroyed = true
+        instance_variable_get('@data').destroyed = true
       end
 
       # Validates and generates the key values necessary for API operations such as the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method Aws::DynamoDB::Client#delete_item}
-      # operation.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # Aws::DynamoDB::Client#delete_item} operation.
       def key_values
         validate_key_values
         attributes = self.class.attributes
@@ -197,17 +197,17 @@ module Aws
 
       # Validates key values and returns a hash consisting of the parameters
       # to save the record using the
-      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method Aws::DynamoDB::Client#batch_write_item}
-      # operation.
+      # {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#batch_write_item-instance_method
+      # Aws::DynamoDB::Client#batch_write_item} operation.
       def save_values
         _build_item_for_save
       end
 
       private
 
-      def _invalid_record?(opts)
-        if self.respond_to?(:valid?)
-          if !self.valid?
+      def _invalid_record?(_opts)
+        if respond_to?(:valid?)
+          if !valid?
             true
           else
             false
@@ -261,7 +261,7 @@ module Aws
             )
           end
         end
-        data = self.instance_variable_get('@data')
+        data = instance_variable_get('@data')
         data.destroyed = false
         data.new_record = false
         true
@@ -275,13 +275,11 @@ module Aws
 
       def validate_key_values
         missing = missing_key_values
-        unless missing.empty?
-          raise Errors::KeyMissing, "Missing required keys: #{missing.join(', ')}"
-        end
+        raise Errors::KeyMissing, "Missing required keys: #{missing.join(', ')}" unless missing.empty?
       end
 
       def missing_key_values
-        self.class.keys.inject([]) do |acc, key|
+        self.class.keys.each_with_object([]) do |key, acc|
           acc << key.last if @data.raw_value(key.last).nil?
           acc
         end
@@ -313,7 +311,7 @@ module Aws
       end
 
       def _dirty_changes_for_update
-        ret = dirty.inject({}) do |acc, attr_name|
+        ret = dirty.each_with_object({}) do |attr_name, acc|
           acc[attr_name] = @data.raw_value(attr_name)
           acc
         end
@@ -340,9 +338,10 @@ module Aws
         #
         # @param [Hash] opts Options matching the :condition_check contents in
         #   the
-        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method Aws::DynamoDB::Client#transact_write_items}
-        #   API, with the exception that keys will be marshalled for you, and
-        #   the table name will be provided for you by the operation.
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_write_items-instance_method
+        #   Aws::DynamoDB::Client#transact_write_items} API, with the exception that
+        #   keys will be marshalled for you, and the table name will be provided
+        #   for you by the operation.
         # @return [Hash] Options suitable to be used as a check expression when
         #   calling the +#transact_write+ operation.
         def transact_check_expression(opts)
@@ -411,10 +410,11 @@ module Aws
         # or virtual tables.
         #
         # @param [Hash] opts Options to pass through to
-        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method Aws::DynamoDB::Client#transact_get_items},
-        #   with the exception of the :transact_items array, which uses the
-        #   +#tfind_opts+ operation on your model class to provide extra
-        #   metadata used to marshal your items after retrieval.
+        #   {https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#transact_get_items-instance_method
+        #   Aws::DynamoDB::Client#transact_get_items}, with the exception of the
+        #   :transact_items array, which uses the +#tfind_opts+ operation on
+        #   your model class to provide extra metadata used to marshal your
+        #   items after retrieval.
         # @option opts [Array] :transact_items A set of options describing
         #   instances of the model class to return.
         # @return [OpenStruct] Structured like the client API response from
@@ -547,9 +547,9 @@ module Aws
         #   MyModel.update(id: 1, name: "First", body: "Hello!")
         #
         # Performs an
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method Aws::DynamoDB::Client#update_item}
-        # call immediately on the table, using the attribute key/value pairs
-        # provided.
+        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        # Aws::DynamoDB::Client#update_item} call immediately on the table,
+        # using the attribute key/value pairs provided.
         #
         # @param [Hash] opts attribute-value pairs for the update operation you
         #  wish to perform. You must include all key attributes for a valid
@@ -560,7 +560,7 @@ module Aws
         def update(opts)
           key = {}
           @keys.keys.each_value do |attr_sym|
-            unless value = opts.delete(attr_sym)
+            unless (value = opts.delete(attr_sym))
               raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
 
             end
@@ -600,7 +600,7 @@ module Aws
             attr_name = attributes.storage_name_for(attr_sym)
             exp_attr_names[name_sub] = attr_name
             if _update_type_remove?(attribute, value)
-              remove_expressions << "#{name_sub}"
+              remove_expressions << name_sub.to_s
             else
               set_expressions << "#{name_sub} = #{value_sub}"
               exp_attr_values[value_sub] = attribute.serialize(value)

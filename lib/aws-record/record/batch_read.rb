@@ -65,7 +65,7 @@ module Aws
         return enum_for(:each) unless block_given?
 
         @items.each do |item|
-          yield item
+          yield(item)
         end
 
         until complete?
@@ -159,7 +159,7 @@ module Aws
 
       def update_unprocessed_keys(keys)
         keys.each do |table_name, table_values|
-          table_values.keys.each do |key|
+          table_values.keys.each do |key| # rubocop:disable Style/HashEachMethods
             unprocessed_keys << { keys: key, table_name: table_name }
           end
         end

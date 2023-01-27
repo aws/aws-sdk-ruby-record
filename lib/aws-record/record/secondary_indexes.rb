@@ -8,9 +8,7 @@ module Aws
         sub_class.instance_variable_set('@local_secondary_indexes', {})
         sub_class.instance_variable_set('@global_secondary_indexes', {})
         sub_class.extend(SecondaryIndexesClassMethods)
-        if Aws::Record.extends_record?(sub_class)
-          inherit_indexes(sub_class)
-        end
+        inherit_indexes(sub_class) if Aws::Record.extends_record?(sub_class)
       end
 
       def self.inherit_indexes(klass)
@@ -63,7 +61,7 @@ module Aws
           global_secondary_indexes[name] = opts
         end
 
-        # Returns hash of local secondary index names to the index’s attributes.
+        # Returns hash of local secondary index names to the index's attributes.
         #
         # *Note*: +local_secondary_indexes+ is inherited from a parent model when {#local_secondary_index}
         # is explicitly specified in the parent.
@@ -149,8 +147,8 @@ module Aws
         end
 
         def _validate_attributes_exist(*attr_names)
-          missing = attr_names.select do |attr_name|
-            !@attributes.present?(attr_name)
+          missing = attr_names.reject do |attr_name|
+            @attributes.present?(attr_name)
           end
           unless missing.empty?
             raise ArgumentError, "#{missing.join(', ')} not present in model attributes."\

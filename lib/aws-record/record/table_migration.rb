@@ -23,9 +23,10 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method Aws::DynamoDB::Client#create_table},
-      # populating the attribute definitions and key schema based on your model
-      # class, as well as passing through other parameters as provided by you.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method
+      # Aws::DynamoDB::Client#create_table}, populating the attribute definitions and
+      # key schema based on your model class, as well as passing through other
+      # parameters as provided by you.
       #
       # @example Creating a table with a global secondary index named +:gsi+
       #   migration.create!(
@@ -67,11 +68,11 @@ module Aws
           attribute_definitions: _attribute_definitions,
           key_schema: _key_schema
         )
-        if lsis = @model.local_secondary_indexes_for_migration
+        if (lsis = @model.local_secondary_indexes_for_migration)
           create_opts[:local_secondary_indexes] = lsis
           _append_to_attribute_definitions(lsis, create_opts)
         end
-        if gsis = @model.global_secondary_indexes_for_migration
+        if (gsis = @model.global_secondary_indexes_for_migration)
           unless gsit || opts[:billing_mode] == 'PAY_PER_REQUEST'
             raise ArgumentError, 'If you define global secondary indexes, you must also define'\
                                  ' :global_secondary_index_throughput on table creation,'\
@@ -89,8 +90,8 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_table-instance_method Aws::DynamoDB::Client#update_table}
-      # using the parameters that you provide.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_table-instance_method
+      # Aws::DynamoDB::Client#update_table} using the parameters that you provide.
       #
       # @param [Hash] opts options to pass on to the client call to
       #  +#update_table+. See the documentation above in the AWS SDK for Ruby
@@ -98,28 +99,24 @@ module Aws
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table does not
       #  currently exist in Amazon DynamoDB.
       def update!(opts)
-        begin
-          update_opts = opts.merge(
-            table_name: @model.table_name
-          )
-          @client.update_table(update_opts)
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          raise Errors::TableDoesNotExist
-        end
+        update_opts = opts.merge(
+          table_name: @model.table_name
+        )
+        @client.update_table(update_opts)
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        raise Errors::TableDoesNotExist
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_table-instance_method Aws::DynamoDB::Client#delete_table}
-      # using the table name of your model.
+      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_table-instance_method
+      # Aws::DynamoDB::Client#delete_table} using the table name of your model.
       #
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table did not
       #  exist in Amazon DynamoDB at the time of calling.
       def delete!
-        begin
-          @client.delete_table(table_name: @model.table_name)
-        rescue DynamoDB::Errors::ResourceNotFoundException
-          raise Errors::TableDoesNotExist
-        end
+        @client.delete_table(table_name: @model.table_name)
+      rescue DynamoDB::Errors::ResourceNotFoundException
+        raise Errors::TableDoesNotExist
       end
 
       # This method waits on the table specified in the model to exist and be
@@ -165,7 +162,7 @@ module Aws
       end
 
       def _attribute_definitions
-        _keys.map do |type, attr|
+        _keys.map do |_type, attr|
           {
             attribute_name: attr.database_name,
             attribute_type: attr.dynamodb_type
@@ -222,7 +219,7 @@ module Aws
       end
 
       def _keys
-        @model.keys.inject({}) do |acc, (type, name)|
+        @model.keys.each_with_object({}) do |(type, name), acc|
           acc[type] = @model.attributes.attribute_for(name)
           acc
         end
