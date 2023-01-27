@@ -29,3 +29,9 @@ end
 group :release do
   gem 'octokit'
 end
+
+group :development do
+  # rubocop's TargetRubyVersion is 2.0.0
+  # Ruby version required less than 3.0
+  # gem 'rubocop', '0.50.0'
+end
