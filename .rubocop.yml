@@ -16,13 +16,17 @@ Metrics/ClassLength:
   Enabled: false
 
 Metrics/LineLength:
-  Enabled: false
+  Max: 120
 
 Metrics/MethodLength:
-  Max: 50
+  Enabled: false
 
 Metrics/ModuleLength:
   Enabled: false
+
+Security/Eval:
+  Exclude:
+    - 'features/**/*'
 
 Style/Attr:
   Exclude:
@@ -32,8 +36,5 @@ Style/BlockDelimiters:
   Exclude:
     - 'spec/**/*'
 
-Style/SymbolArray:
-  EnforcedStyle: brackets
-
-Style/WordArray:
-  EnforcedStyle: brackets
+Style/TrivialAccessors:
+  Enabled: false
