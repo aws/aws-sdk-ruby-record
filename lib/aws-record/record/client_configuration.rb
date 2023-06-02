@@ -53,12 +53,9 @@ module Aws
 
       def _build_client(opts = {})
         provided_client = opts.delete(:client)
-        opts[:user_agent_suffix] = _user_agent(opts.delete(:user_agent_suffix))
-        provided_client || Aws::DynamoDB::Client.new(opts)
-      end
-
-      def _user_agent(custom)
-        custom || " aws-record/#{VERSION}"
+        client = provided_client || Aws::DynamoDB::Client.new(opts)
+        client.config.user_agent_frameworks << 'aws-record'
+        client
       end
     end
   end

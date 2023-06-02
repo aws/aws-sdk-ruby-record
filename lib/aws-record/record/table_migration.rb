@@ -20,6 +20,7 @@ module Aws
         _assert_model_valid(model)
         @model = model
         @client = opts[:client] || model.dynamodb_client || Aws::DynamoDB::Client.new
+        @client.config.user_agent_frameworks << 'aws-record'
       end
 
       # This method calls

@@ -188,6 +188,7 @@ module Aws
       # @api private
       def configure_client
         @client = Aws::DynamoDB::Client.new(@client_options)
+        @client.config.user_agent_frameworks << 'aws-record'
       end
 
       # @api private

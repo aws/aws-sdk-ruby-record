@@ -1,6 +1,8 @@
 Unreleased Changes
 ------------------
 
+* Issue - Improve User-Agent tracking and bump minimum DynamoDB version.
+
 2.10.1 (2023-01-17)
 ------------------
 
