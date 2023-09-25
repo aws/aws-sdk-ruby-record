@@ -40,8 +40,12 @@ module Aws
         @dynamodb_type = options[:dynamodb_type]
         @marshaler = options[:marshaler] || DefaultMarshaler
         @persist_nil = options[:persist_nil]
-        dv = options[:default_value]
-        @default_value_or_lambda = _is_lambda?(dv) ? dv : type_cast(dv)
+        @default_value_or_lambda = if options.key?(:default_value)
+          dv = options[:default_value]
+          _is_lambda?(dv) ? dv : type_cast(dv)
+        else
+          nil
+        end
       end
 
       # Attempts to type cast a raw value into the attribute's type. This call

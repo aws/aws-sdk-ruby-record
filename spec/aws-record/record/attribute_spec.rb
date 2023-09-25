@@ -50,6 +50,18 @@ module Aws
 
           expect(a.default_value).to eq({})
         end
+
+        it 'does not type_cast unset value' do
+          m = Marshalers::StringSetMarshaler.new
+          a = Attribute.new(:foo, marshaler: m)
+          expect(a.default_value).to be_nil
+        end
+
+        it 'type casts nil value' do
+          m = Marshalers::StringSetMarshaler.new
+          a = Attribute.new(:foo, marshaler: m, default_value: nil)
+          expect(a.default_value).to be_a(Set)
+        end
       end
     end
   end
