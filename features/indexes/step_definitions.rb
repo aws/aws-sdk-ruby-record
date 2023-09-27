@@ -10,7 +10,7 @@ end
 Then(/^the table should have a local secondary index named "([^"]*)"$/) do |expected|
   resp = @client.describe_table(table_name: @table_name)
   lsis = resp.table.local_secondary_indexes
-  exists = lsis && lsis.any? { |index| index.index_name == expected }
+  exists = lsis&.any? { |index| index.index_name == expected }
   expect(exists).to eq(true)
 end
 
@@ -25,6 +25,6 @@ end
 Then(/^the table should have a global secondary index named "([^"]*)"$/) do |expected|
   resp = @client.describe_table(table_name: @table_name)
   gsis = resp.table.global_secondary_indexes
-  exists = gsis && gsis.any? { |index| index.index_name == expected }
+  exists = gsis&.any? { |index| index.index_name == expected }
   expect(exists).to eq(true)
 end

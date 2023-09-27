@@ -36,9 +36,7 @@ module Aws
 
         def _format(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when ::DateTime
             raw_value

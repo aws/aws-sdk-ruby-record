@@ -44,7 +44,7 @@ module Aws
         #   end
         #
         # @param [Hash] opts options to pass on to the client call to +#query+.
-        #   See the documentation above in the AWS SDK for Ruby V2.
+        #   See the documentation above in the AWS SDK for Ruby V3.
         # @return [Aws::Record::ItemCollection] an enumerable collection of the
         #   query result.
         def query(opts)
@@ -82,7 +82,7 @@ module Aws
         #   end
         #
         # @param [Hash] opts options to pass on to the client call to +#scan+.
-        #   See the documentation above in the AWS SDK for Ruby V2.
+        #   See the documentation above in the AWS SDK for Ruby V3.
         # @return [Aws::Record::ItemCollection] an enumerable collection of the
         #   scan result.
         def scan(opts = {})

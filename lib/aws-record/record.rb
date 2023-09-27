@@ -117,14 +117,13 @@ module Aws
       #   MyOtherTable.table_name # => "test_MyTable"
       def table_name
         # rubocop:disable Style/RedundantSelf
-        @table_name ||= begin
-          if Aws::Record.extends_record?(self) &&
-             default_table_name(self.superclass) != self.superclass.table_name
-            self.superclass.instance_variable_get('@table_name')
-          else
-            default_table_name(self)
-          end
-        end
+        @table_name ||= if Aws::Record.extends_record?(self) &&
+                           default_table_name(self.superclass) != self.superclass.table_name
+                          self.superclass.instance_variable_get('@table_name')
+                        else
+                          default_table_name(self)
+                        end
+
         # rubocop:enable Style/RedundantSelf
       end
 
@@ -247,6 +246,7 @@ module Aws
 
       def default_table_name(klass)
         return unless klass.name
+
         klass.name.split('::').join('_')
       end
     end

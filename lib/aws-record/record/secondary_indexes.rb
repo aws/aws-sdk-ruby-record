@@ -30,11 +30,11 @@ module Aws
         # @param [Symbol] name index name for this local secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :range_key the range key used by this local
-        #   secondary index. Note that the hash key MUST be the table's hash
-        #   key, and so that value will be filled in for you.
+        #  secondary index. Note that the hash key MUST be the table's hash
+        #  key, and so that value will be filled in for you.
         # @option opts [Hash] :projection a hash which defines which attributes
-        #   are copied from the table to the index. See shape details in the
-        #   {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
+        #  are copied from the table to the index. See shape details in the
+        #  {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V3 docs}.
         def local_secondary_index(name, opts)
           opts[:hash_key] = hash_key
           _validate_required_lsi_keys(opts)
@@ -50,12 +50,12 @@ module Aws
         # @param [Symbol] name index name for this global secondary index
         # @param [Hash] opts
         # @option opts [Symbol] :hash_key the hash key used by this global
-        #   secondary index.
+        #  secondary index.
         # @option opts [Symbol] :range_key the range key used by this global
-        #   secondary index.
+        #  secondary index.
         # @option opts [Hash] :projection a hash which defines which attributes
-        #   are copied from the table to the index. See shape details in the
-        #   {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
+        #  are copied from the table to the index. See shape details in the
+        #  {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V3 docs}.
         def global_secondary_index(name, opts)
           _validate_required_gsi_keys(opts)
           global_secondary_indexes[name] = opts
@@ -99,7 +99,8 @@ module Aws
 
         def _migration_format_indexes(indexes)
           return nil if indexes.empty?
-          mfi = indexes.collect do |name, opts|
+
+          indexes.collect do |name, opts|
             h = { index_name: name }
             h[:key_schema] = _si_key_schema(opts)
             hk = opts.delete(:hash_key)
@@ -109,7 +110,6 @@ module Aws
             opts[:range_key] = rk if rk
             h
           end
-          mfi
         end
 
         def _si_key_schema(opts)
@@ -127,22 +127,20 @@ module Aws
         end
 
         def _validate_required_lsi_keys(params)
-          if params[:hash_key] && params[:range_key]
-            _validate_attributes_exist(params[:hash_key], params[:range_key])
-          else
+          unless params[:hash_key] && params[:range_key]
             raise ArgumentError, 'Local Secondary Indexes require a hash and range key!'
           end
+
+          _validate_attributes_exist(params[:hash_key], params[:range_key])
         end
 
         def _validate_required_gsi_keys(params)
-          if params[:hash_key]
-            if params[:range_key]
-              _validate_attributes_exist(params[:hash_key], params[:range_key])
-            else
-              _validate_attributes_exist(params[:hash_key])
-            end
+          raise ArgumentError, 'Global Secondary Indexes require at least a hash key!' unless params[:hash_key]
+
+          if params[:range_key]
+            _validate_attributes_exist(params[:hash_key], params[:range_key])
           else
-            raise ArgumentError, 'Global Secondary Indexes require at least a hash key!'
+            _validate_attributes_exist(params[:hash_key])
           end
         end
 
@@ -150,12 +148,11 @@ module Aws
           missing = attr_names.reject do |attr_name|
             @attributes.present?(attr_name)
           end
-          unless missing.empty?
-            raise ArgumentError, "#{missing.join(', ')} not present in model attributes."\
-                                 ' Please ensure that attributes are defined in the model'\
-                                 ' class BEFORE defining an index on those attributes.'
+          return if missing.empty?
 
-          end
+          raise ArgumentError, "#{missing.join(', ')} not present in model attributes. " \
+                               'Please ensure that attributes are defined in the model ' \
+                               'class BEFORE defining an index on those attributes.'
         end
       end
     end

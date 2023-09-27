@@ -203,11 +203,9 @@ module Aws
 
         record = self.class.find(primary_key)
 
-        if record.present?
-          @data = record.instance_variable_get('@data')
-        else
-          raise Errors::NotFound, 'No record found'
-        end
+        raise Errors::NotFound, 'No record found' unless record.present?
+
+        @data = record.instance_variable_get('@data')
 
         clean!
 

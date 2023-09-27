@@ -4,13 +4,13 @@ module Aws
   module Record
     module Marshalers
       class StringSetMarshaler
-        def initialize(opts = {}); end
+        def initialize(opts = {})
+          # pass
+        end
 
         def type_cast(raw_value)
           case raw_value
-          when nil
-            Set.new
-          when ''
+          when nil, ''
             Set.new
           when Set
             _as_strings(raw_value)
@@ -18,8 +18,8 @@ module Aws
             if raw_value.respond_to?(:to_set)
               _as_strings(raw_value.to_set)
             else
-              msg = "Don't know how to make #{raw_value} of type"\
-                " #{raw_value.class} into a String Set!"
+              msg = "Don't know how to make #{raw_value} of type " \
+                    "#{raw_value.class} into a String Set!"
               raise ArgumentError, msg
             end
           end

@@ -2377,8 +2377,8 @@ module Aws
             'ResourceNotFoundException'
           )
           expect { cfg.migrate! }.to raise_error(ArgumentError,
-                                                 'Cannot have billing mode PAY_PER_REQUEST'\
-                                                 ' with provisioned capacity.')
+                                                 'Cannot have billing mode PAY_PER_REQUEST ' \
+                                                 'with provisioned capacity.')
         end
       end
     end
@@ -2404,7 +2404,7 @@ class TestModelWithGsi
   string_attr :c
   global_secondary_index(
     :gsi,
-    hash_key:  :gsi_pk,
+    hash_key: :gsi_pk,
     range_key: :gsi_sk,
     projection: {
       projection_type: 'INCLUDE',
@@ -2421,7 +2421,7 @@ class TestModelWithGsi2
   string_attr :gsi_sk
   global_secondary_index(
     :gsi,
-    hash_key:  :hk,
+    hash_key: :hk,
     range_key: :gsi_sk,
     projection: {
       projection_type: 'ALL'
@@ -2438,7 +2438,7 @@ class TestModelWithGsi3
   string_attr :gsi_sk
   global_secondary_index(
     :gsi,
-    hash_key:  :hk,
+    hash_key: :hk,
     range_key: :gsi_sk,
     projection: {
       projection_type: 'ALL'
@@ -2446,7 +2446,7 @@ class TestModelWithGsi3
   )
   global_secondary_index(
     :gsi2,
-    hash_key:  :gsi_pk,
+    hash_key: :gsi_pk,
     range_key: :gsi_sk,
     projection: {
       projection_type: 'ALL'

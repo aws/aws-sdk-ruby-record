@@ -12,6 +12,8 @@ Unreleased Changes
 
 * Issue - Fix default value for String/Numeric Sets to be unset. (#133)
 
+* Issue - Run Rubocop on all files. (#135)
+
 2.11.0 (2023-06-02)
 ------------------
 

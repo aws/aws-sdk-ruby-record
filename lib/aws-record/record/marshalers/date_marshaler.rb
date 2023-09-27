@@ -12,9 +12,7 @@ module Aws
 
         def type_cast(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when Date
             raw_value

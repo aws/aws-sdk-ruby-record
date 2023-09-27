@@ -196,7 +196,7 @@ module Aws
             item.increment_counter!
 
             expect(item.counter).to eq(1)
-            expect(api_requests[1]). to eq(
+            expect(api_requests[1]).to eq(
               expression_attribute_names: { '#n' => 'counter' },
               expression_attribute_values: { ':i' => { n: '1' } },
               key: { 'id' => { n: '1' } },
@@ -213,7 +213,7 @@ module Aws
             item.increment_counter!(2)
 
             expect(item.counter).to eq(2)
-            expect(api_requests[1]). to eq(
+            expect(api_requests[1]).to eq(
               expression_attribute_names: { '#n' => 'counter' },
               expression_attribute_values: { ':i' => { n: '2' } },
               key: { 'id' => { n: '1' } },
@@ -264,7 +264,7 @@ module Aws
           end
         end
 
-        it 'should have instances of child models with parent attributes '\
+        it 'should have instances of child models with parent attributes ' \
            'and an instance of parent model with its own attributes' do
           parent_item = parent_model.new(id: 1, date: '2022-10-10', list: [])
           child_item = child_model.new(id: 2, date: '2022-10-21', list: [1, 2, 3], body: 'Hello')

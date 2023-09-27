@@ -57,8 +57,8 @@ module Aws
                   'map_nil_to_empty' => { m: {} },
                   'ttl' => { n: '1531173732' }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -138,8 +138,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -253,8 +253,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -441,7 +441,7 @@ module Aws
         it 'passes the correct class and key arguments to BatchRead' do
           mock_batch_read = double
           expect(Batch).to receive(:read).and_yield(mock_batch_read).and_return(mock_batch_read)
-          keys.each do |key| # rubocop:disable Style/HashEachMethods
+          keys.each do |key|
             expect(mock_batch_read).to receive(:find).with(klass, key)
           end
           result = klass.find_all(keys)
@@ -618,8 +618,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -648,8 +648,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -679,8 +679,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -712,8 +712,8 @@ module Aws
                   'list_nil_to_empty' => { l: [] },
                   'map_nil_to_empty' => { m: {} }
                 },
-                condition_expression: 'attribute_not_exists(#H)'\
-                  ' and attribute_not_exists(#R)',
+                condition_expression: 'attribute_not_exists(#H) ' \
+                                      'and attribute_not_exists(#R)',
                 expression_attribute_names: {
                   '#H' => 'id',
                   '#R' => 'MyDate'
@@ -747,7 +747,7 @@ module Aws
 
       describe 'validations with ActiveModel::Validations' do
         let(:klass_amv) do
-          ::TESTTABLE ||= Class.new do
+          ::TEST_TABLE = Class.new do
             include(Aws::Record)
             include(ActiveModel::Validations)
             set_table_name('TestTable')
@@ -758,6 +758,8 @@ module Aws
             validates_presence_of(:id, :date)
           end
         end
+
+        after { Object.send(:remove_const, :TEST_TABLE) }
 
         it 'will use ActiveModel::Validations :valid? method' do
           klass_amv.configure_client(client: stub_client)
