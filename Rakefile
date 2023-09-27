@@ -24,7 +24,7 @@ end
 
 # Ensure the test:integration task behaves as it always has
 desc 'run integration tests'
-task 'test:integration' do |_t|
+task 'test:integration' do
   if ENV['AWS_INTEGRATION']
     Rake::Task['cucumber'].invoke
   else
