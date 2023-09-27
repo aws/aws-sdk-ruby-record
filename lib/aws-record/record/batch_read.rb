@@ -45,9 +45,7 @@ module Aws
         new_items = build_items(result.responses)
         items.concat(new_items)
 
-        unless result.unprocessed_keys.nil?
-          update_unprocessed_keys(result.unprocessed_keys)
-        end
+        update_unprocessed_keys(result.unprocessed_keys) unless result.unprocessed_keys.nil?
 
         new_items
       end
@@ -62,16 +60,14 @@ module Aws
       # @yieldparam [Aws::Record] item a modeled item
       # @return [Enumerable<BatchRead>] an enumeration over the results of
       #  +batch_get_item+ request.
-      def each
+      def each(&block)
         return enum_for(:each) unless block_given?
 
-        @items.each do |item|
-          yield(item)
-        end
+        @items.each(&block)
 
         until complete?
           new_items = execute!
-          new_items.each { |new_item| yield new_item }
+          new_items.each(&block)
         end
       end
 
@@ -106,9 +102,7 @@ module Aws
         item_key = {}
         attributes = klass.attributes
         klass.keys.each_value do |attr_sym|
-          unless key[attr_sym]
-            raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
-          end
+          raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}" unless key[attr_sym]
 
           attr_name = attributes.storage_name_for(attr_sym)
           item_key[attr_name] = attributes.attribute_for(attr_sym)
@@ -147,7 +141,7 @@ module Aws
             item_class = find_item_class(table, item)
             if item_class.nil? && @client.config.logger
               @client.config.logger.warn(
-                'Unexpected response from service.'\
+                'Unexpected response from service.' \
                 "Received: #{item}. Skipping above item and continuing"
               )
             else

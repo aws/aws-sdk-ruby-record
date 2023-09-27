@@ -136,7 +136,7 @@ describe Aws::Record::DirtyTracking do
     it 'can reload an item using find' do
       expect(klass)
         .to receive(:find)
-        .with({ mykey: reloaded_instance.mykey }) # rubocop:disable Style/BracesAroundHashParameters
+        .with({ mykey: reloaded_instance.mykey })
         .and_return(reloaded_instance)
 
       instance.mykey = reloaded_instance.mykey
@@ -152,7 +152,7 @@ describe Aws::Record::DirtyTracking do
 
       expect(klass)
         .to receive(:find)
-        .with({ mykey: instance.mykey }) # rubocop:disable Style/BracesAroundHashParameters
+        .with({ mykey: instance.mykey })
         .and_return(nil)
       expect { instance.reload! }.to raise_error Aws::Record::Errors::NotFound
     end

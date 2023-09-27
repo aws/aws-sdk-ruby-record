@@ -52,31 +52,29 @@ module Aws
       end
 
       def _validate_attr_name(name)
-        unless name.is_a?(Symbol)
-          raise ArgumentError, 'Must use symbolized :name attribute.'
-        end
-        if @attributes[name]
-          raise Errors::NameCollision, "Cannot overwrite existing attribute #{name}"
-        end
+        raise ArgumentError, 'Must use symbolized :name attribute.' unless name.is_a?(Symbol)
+        return unless @attributes[name]
+
+        raise Errors::NameCollision, "Cannot overwrite existing attribute #{name}"
       end
 
       def _check_if_reserved(name)
-        if @model_class.instance_methods.include?(name)
-          raise Errors::ReservedName, "Cannot name an attribute #{name}, that would collide with an"\
-                                      ' existing instance method.'
-        end
+        return unless @model_class.instance_methods.include?(name)
+
+        raise Errors::ReservedName, "Cannot name an attribute #{name}, that would collide with an " \
+                                    'existing instance method.'
       end
 
       def _check_for_naming_collisions(name, storage_name)
         if @attributes[storage_name.to_sym]
-          raise Errors::NameCollision, "Custom storage name #{storage_name} already exists as an"\
-                                       " attribute name in #{@attributes}"
+          raise Errors::NameCollision, "Custom storage name #{storage_name} already exists as an " \
+                                       "attribute name in #{@attributes}"
         elsif @storage_attributes[name.to_s]
-          raise Errors::NameCollision, "Attribute name #{name} already exists as a custom storage"\
-                                       " name in #{@storage_attributes}"
+          raise Errors::NameCollision, "Attribute name #{name} already exists as a custom storage " \
+                                       "name in #{@storage_attributes}"
         elsif @storage_attributes[storage_name]
-          raise Errors::NameCollision, "Custom storage name #{storage_name} already in use in"\
-                                       " #{@storage_attributes}"
+          raise Errors::NameCollision, "Custom storage name #{storage_name} already in use in " \
+                                       "#{@storage_attributes}"
 
         end
       end

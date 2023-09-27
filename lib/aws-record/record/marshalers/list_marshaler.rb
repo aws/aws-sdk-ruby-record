@@ -4,13 +4,13 @@ module Aws
   module Record
     module Marshalers
       class ListMarshaler
-        def initialize(opts = {}); end
+        def initialize(opts = {})
+          # pass
+        end
 
         def type_cast(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when Array
             raw_value
@@ -18,8 +18,8 @@ module Aws
             if raw_value.respond_to?(:to_a)
               raw_value.to_a
             else
-              msg = "Don't know how to make #{raw_value} of type"\
-                " #{raw_value.class} into an array!"
+              msg = "Don't know how to make #{raw_value} of type " \
+                    "#{raw_value.class} into an array!"
               raise ArgumentError, msg
             end
           end

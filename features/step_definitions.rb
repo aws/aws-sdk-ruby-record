@@ -93,7 +93,7 @@ Then(/^the DynamoDB table should not have an object with key values:$/) do |stri
   expect(resp.item).to eq(nil)
 end
 
-Given(/^an aws\-record model with data:$/) do |string|
+Given(/^an aws-record model with data:$/) do |string|
   data = JSON.parse(string)
   @model = Class.new do
     include(Aws::Record)
@@ -115,7 +115,7 @@ Then(/^calling "([^"]*)" on the model should return:$/) do |method, retval|
   expect(@model.send(method)).to eq(expected)
 end
 
-Given(/^an aws\-record model with definition:$/) do |string|
+Given(/^an aws-record model with definition:$/) do |string|
   @model = Class.new do
     include(Aws::Record)
   end

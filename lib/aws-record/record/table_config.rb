@@ -194,11 +194,9 @@ module Aws
       # @api private
       def ttl_attribute(attribute_symbol)
         attribute = @model_class.attributes.attribute_for(attribute_symbol)
-        if attribute
-          @ttl_attribute = attribute.database_name
-        else
-          raise ArgumentError, "Invalid attribute #{attribute_symbol} for #{@model_class}"
-        end
+        raise ArgumentError, "Invalid attribute #{attribute_symbol} for #{@model_class}" unless attribute
+
+        @ttl_attribute = attribute.database_name
       end
 
       # @api private
@@ -245,17 +243,18 @@ module Aws
         # First up is TTL attribute. Since this migration is not exact match,
         # we will only alter TTL status if we have a TTL attribute defined. We
         # may someday support explicit TTL deletion, but we do not yet do this.
-        if @ttl_attribute
-          unless _ttl_compatibility_check
-            client.update_time_to_live(
-              table_name: @model_class.table_name,
-              time_to_live_specification: {
-                enabled: true,
-                attribute_name: @ttl_attribute
-              }
-            )
-          end # Else TTL is compatible and we are done.
-        end # Else our work is done.
+        return unless @ttl_attribute
+        return if _ttl_compatibility_check
+
+        client.update_time_to_live(
+          table_name: @model_class.table_name,
+          time_to_live_specification: {
+            enabled: true,
+            attribute_name: @ttl_attribute
+          }
+        )
+        # Else TTL is compatible and we are done.
+        # Else our work is done.
       end
 
       # Checks the remote table for compatibility. Similar to +#exact_match?+,
@@ -382,7 +381,7 @@ module Aws
               resp_gsis = resp.table.global_secondary_indexes
               _add_global_secondary_index_throughput(opts, resp_gsis)
             end
-          end # else don't include billing mode
+          end
           opts
         elsif @billing_mode == 'PAY_PER_REQUEST'
           {
@@ -400,9 +399,7 @@ module Aws
           table_name: @model_class.table_name,
           global_secondary_index_updates: gsi_updates
         }
-        unless attribute_definitions.empty?
-          opts[:attribute_definitions] = attribute_definitions
-        end
+        opts[:attribute_definitions] = attribute_definitions unless attribute_definitions.empty?
         opts
       end
 
@@ -474,12 +471,12 @@ module Aws
             exists = attribute_definitions.any? do |ad|
               ad[:attribute_name] == attribute.database_name
             end
-            unless exists
-              attribute_definitions << {
-                attribute_name: attribute.database_name,
-                attribute_type: attribute.dynamodb_type
-              }
-            end
+            next if exists
+
+            attribute_definitions << {
+              attribute_name: attribute.database_name,
+              attribute_type: attribute.dynamodb_type
+            }
           end
         end
         attribute_definitions
@@ -566,15 +563,15 @@ module Aws
               rpt[k] == v
             end
           elsif @billing_mode == 'PAY_PER_REQUEST'
-            pt_match = lpt.nil? ? true : false
+            pt_match = lpt.nil?
           else
             raise ArgumentError, "Unsupported billing mode #{@billing_mode}"
           end
 
           rp = rgsi.projection.to_h
           lp = lgsi[:projection]
-          rp[:non_key_attributes].sort! if rp[:non_key_attributes]
-          lp[:non_key_attributes].sort! if lp[:non_key_attributes]
+          rp[:non_key_attributes]&.sort!
+          lp[:non_key_attributes]&.sort!
           p_match = rp == lp
 
           ks_match && pt_match && p_match
@@ -584,15 +581,11 @@ module Aws
       def _gsi_index_names(remote, local)
         remote_index_names = Set.new
         local_index_names = Set.new
-        if remote
-          remote.each do |gsi|
-            remote_index_names.add(gsi.index_name)
-          end
+        remote&.each do |gsi|
+          remote_index_names.add(gsi.index_name)
         end
-        if local
-          local.each do |gsi|
-            local_index_names.add(gsi[:index_name].to_s)
-          end
+        local&.each do |gsi|
+          local_index_names.add(gsi[:index_name].to_s)
         end
         [remote_index_names, local_index_names]
       end
@@ -601,17 +594,15 @@ module Aws
         gsis = []
         model_gsis = @model_class.global_secondary_indexes_for_migration
         gsi_config = @global_secondary_indexes
-        if model_gsis
-          model_gsis.each do |mgsi|
-            config = gsi_config[mgsi[:index_name]]
-            if @billing_mode == 'PROVISIONED'
-              gsis << mgsi.merge(
-                provisioned_throughput: config.provisioned_throughput
-              )
-            else
-              gsis << mgsi
-            end
-          end
+        model_gsis&.each do |mgsi|
+          config = gsi_config[mgsi[:index_name]]
+          gsis << if @billing_mode == 'PROVISIONED'
+                    mgsi.merge(
+                      provisioned_throughput: config.provisioned_throughput
+                    )
+                  else
+                    mgsi
+                  end
         end
         gsis
       end
@@ -626,15 +617,13 @@ module Aws
         if @billing_mode == 'PROVISIONED'
           missing_config << 'read_capacity_units' unless @read_capacity_units
           missing_config << 'write_capacity_units' unless @write_capacity_units
-        else
-          if @read_capacity_units || @write_capacity_units
-            raise ArgumentError, "Cannot have billing mode #{@billing_mode} with provisioned capacity."
-          end
+        elsif @read_capacity_units || @write_capacity_units
+          raise ArgumentError, "Cannot have billing mode #{@billing_mode} with provisioned capacity."
         end
-        unless missing_config.empty?
-          msg = missing_config.join(', ')
-          raise Errors::MissingRequiredConfiguration, 'Missing: ' + msg
-        end
+        return if missing_config.empty?
+
+        msg = missing_config.join(', ')
+        raise Errors::MissingRequiredConfiguration, "Missing: #{msg}"
       end
 
       # @api private

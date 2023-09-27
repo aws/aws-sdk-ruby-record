@@ -113,7 +113,7 @@ module Aws
           include(Aws::Record)
           set_table_name('TestTable')
           string_attr(:uuid, hash_key: true)
-          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new) # rubocop:disable Style/Attr
+          attr(:mt, Aws::Record::Marshalers::StringMarshaler.new)
         end
       end
 
@@ -177,7 +177,7 @@ module Aws
         end
 
         expect(ParentModel.table_name).to eq('ParentModel')
-        expect(ChildModel.table_name). to eq('ChildModel')
+        expect(ChildModel.table_name).to eq('ChildModel')
       end
     end
 
@@ -199,13 +199,13 @@ module Aws
       it 'should have child model inherit track mutations from parent model' do
         parent_model.disable_mutation_tracking
         expect(parent_model.mutation_tracking_enabled?).to be_falsy
-        expect(child_model.mutation_tracking_enabled?). to be_falsy
+        expect(child_model.mutation_tracking_enabled?).to be_falsy
       end
 
       it 'should have child model maintain its own track mutations if defined in model' do
         child_model.disable_mutation_tracking
         expect(parent_model.mutation_tracking_enabled?).to be_truthy
-        expect(child_model.mutation_tracking_enabled?). to be_falsy
+        expect(child_model.mutation_tracking_enabled?).to be_falsy
       end
     end
   end

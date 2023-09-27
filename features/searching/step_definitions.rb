@@ -5,7 +5,7 @@ When(/^we call the 'query' class method with parameter data:$/) do |string|
   @collection = @model.query(data)
 end
 
-Then(/^we should receive an aws\-record collection with members:$/) do |string|
+Then(/^we should receive an aws-record collection with members:$/) do |string|
   expected = JSON.parse(string, symbolize_names: true)
   # Ensure that we have the same number of items, and no pagination.
   expect(expected.size).to eq(@collection.to_a.size)
@@ -29,14 +29,14 @@ When(/^we take the first member of the result collection$/) do
   @instance = @collection.first
 end
 
-Then(/^we should receive an aws\-record page with 2 values from members:$/) do |string|
+Then(/^we should receive an aws-record page with 2 values from members:$/) do |string|
   expected = JSON.parse(string, symbolize_names: true)
   page = @collection.page
   @last_evaluated_key = @collection.last_evaluated_key
   # This is definitely a hack which takes advantage of an accident in test
   # design. In the future, we'll need to have some sort of shared collection
   # state to cope with the fact that scan order is not guaranteed.
-  page.size == 2 # rubocop:disable Void
+  page.size == 2 # rubocop:disable Lint/Void
   # Results do not have guaranteed order, check each expected value individually
   page.each do |item|
     h = item.to_h

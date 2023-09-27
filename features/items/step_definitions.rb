@@ -23,18 +23,18 @@ When(/^we call the 'update' class method with parameter data:$/) do |string|
   @model.update(data)
 end
 
-Then(/^we should receive an aws\-record item with attribute data:$/) do |string|
+Then(/^we should receive an aws-record item with attribute data:$/) do |string|
   data = JSON.parse(string, symbolize_names: true)
   data.each do |key, value|
     expect(@instance.send(key)).to eq(value)
   end
 end
 
-When(/^we call 'delete!' on the aws\-record item instance$/) do
+When(/^we call 'delete!' on the aws-record item instance$/) do
   @instance.delete!
 end
 
-When(/^we call 'update' on the aws\-record item instance with parameter data:$/) do |string|
+When(/^we call 'update' on the aws-record item instance with parameter data:$/) do |string|
   data = JSON.parse(string, symbolize_names: true)
   @instance.update(data)
 end
@@ -63,7 +63,7 @@ Then(/^the attribute "([^"]*)" on the item should match:$/) do |attribute, value
   expect(actual).to eq(expected)
 end
 
-When(/^we call "([^"]*)" on aws\-record item instance(?: with an integer value of "(-?\d+)")?$/) do |method, value|
+When(/^we call "([^"]*)" on aws-record item instance(?: with an integer value of "(-?\d+)")?$/) do |method, value|
   if value
     @instance.send(method, value)
   else

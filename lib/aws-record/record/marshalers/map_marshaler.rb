@@ -4,13 +4,13 @@ module Aws
   module Record
     module Marshalers
       class MapMarshaler
-        def initialize(opts = {}); end
+        def initialize(opts = {})
+          # pass
+        end
 
         def type_cast(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when Hash
             raw_value
@@ -18,8 +18,8 @@ module Aws
             if raw_value.respond_to?(:to_h)
               raw_value.to_h
             else
-              msg = "Don't know how to make #{raw_value} of type"\
-                " #{raw_value.class} into a hash!"
+              msg = "Don't know how to make #{raw_value} of type " \
+                    "#{raw_value.class} into a hash!"
               raise ArgumentError, msg
             end
           end
