@@ -10,7 +10,7 @@ module Aws
       # attempt to perform an operation against the remote end, if you have not
       # already configured a client. As such, please read and understand the
       # documentation in the AWS SDK for Ruby around
-      # {http://docs.aws.amazon.com/sdkforruby/api/index.html#Configuration configuration}
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/index.html#Configuration configuration}
       # to ensure you understand how default configuration behavior works. When
       # in doubt, call this method to ensure your client is configured the way
       # you want it to be configured.

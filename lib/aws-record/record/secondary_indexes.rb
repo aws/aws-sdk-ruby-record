@@ -34,7 +34,7 @@ module Aws
         #   key, and so that value will be filled in for you.
         # @option opts [Hash] :projection a hash which defines which attributes
         #   are copied from the table to the index. See shape details in the
-        #   {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
+        #   {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
         def local_secondary_index(name, opts)
           opts[:hash_key] = hash_key
           _validate_required_lsi_keys(opts)
@@ -55,7 +55,7 @@ module Aws
         #   secondary index.
         # @option opts [Hash] :projection a hash which defines which attributes
         #   are copied from the table to the index. See shape details in the
-        #   {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
+        #   {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Types/Projection.html AWS SDK for Ruby V2 docs}.
         def global_secondary_index(name, opts)
           _validate_required_gsi_keys(opts)
           global_secondary_indexes[name] = opts

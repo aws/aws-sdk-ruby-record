@@ -5,7 +5,7 @@ module Aws
     class TableMigration
       # @!attribute [rw] client
       #   @return [Aws::DynamoDB::Client] the
-      #     {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
+      #     {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
       #     class used by this table migration instance.
       attr_accessor :client
 
@@ -13,7 +13,7 @@ module Aws
       # @param [Hash] opts
       # @option opts [Aws::DynamoDB::Client] :client Allows you to inject your
       #  own
-      #  {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
+      #  {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html Aws::DynamoDB::Client}
       #  class. If this option is not included, a client will be constructed for
       #  you with default parameters.
       def initialize(model, opts = {})
@@ -24,7 +24,7 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#create_table-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#create_table-instance_method
       # Aws::DynamoDB::Client#create_table}, populating the attribute definitions and
       # key schema based on your model class, as well as passing through other
       # parameters as provided by you.
@@ -91,7 +91,7 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_table-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_table-instance_method
       # Aws::DynamoDB::Client#update_table} using the parameters that you provide.
       #
       # @param [Hash] opts options to pass on to the client call to
@@ -109,7 +109,7 @@ module Aws
       end
 
       # This method calls
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_table-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#delete_table-instance_method
       # Aws::DynamoDB::Client#delete_table} using the table name of your model.
       #
       # @raise [Aws::Record::Errors::TableDoesNotExist] if the table did not

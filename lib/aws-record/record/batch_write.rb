@@ -3,7 +3,8 @@
 module Aws
   module Record
     class BatchWrite
-      # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
+      # @param [Hash] opts
+      # @option opts [Aws::DynamoDB::Client] client the DynamoDB SDK client.
       def initialize(opts = {})
         @client = opts[:client]
       end

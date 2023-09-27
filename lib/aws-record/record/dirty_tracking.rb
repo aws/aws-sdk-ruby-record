@@ -258,8 +258,6 @@ module Aws
       end
 
       # @private
-      #
-      # @override save(*)
       def save(*)
         super.tap { clean! }
       end
@@ -268,15 +266,11 @@ module Aws
         private
 
         # @private
-        #
-        # @override build_item_from_resp(*)
         def build_item_from_resp(*)
           super.tap(&:clean!)
         end
 
         # @private
-        #
-        # @override define_attr_methods(*)
         def _define_attr_methods(name)
           super.tap do
             define_method("#{name}_dirty?") do

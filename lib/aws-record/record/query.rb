@@ -10,7 +10,7 @@ module Aws
 
       module QueryClassMethods
         # This method calls
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#query-instance_method
+        # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#query-instance_method
         # Aws::DynamoDB::Client#query}, populating the +:table_name+ parameter from the model
         # class, and combining this with the other parameters you provide.
         #
@@ -53,7 +53,7 @@ module Aws
         end
 
         # This method calls
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#scan-instance_method
+        # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#scan-instance_method
         # Aws::DynamoDB::Client#scan}, populating the +:table_name+ parameter from the model
         # class, and combining this with the other parameters you provide.
         #

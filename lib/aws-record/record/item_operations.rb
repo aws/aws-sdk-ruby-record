@@ -11,10 +11,10 @@ module Aws
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
       # Aws::DynamoDB::Client#put_item} call, which will not overwrite an existing
       # item. If the item only has altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
       # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
       # in order to build the request on your behalf.
       #
@@ -44,10 +44,10 @@ module Aws
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
       # as defined by having new or altered key attributes, will attempt a
       # conditional
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
       # Aws::DynamoDB::Client#put_item} call, which will not overwrite an
       # existing item. If the item only has altered non-key attributes, will perform an
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
       # Aws::DynamoDB::Client#update_item} call. Uses this item instance's attributes
       # in order to build the request on your behalf.
       #
@@ -132,7 +132,7 @@ module Aws
       #   model.dirty? # => false
       #
       #
-      # @param [Hash] new_param, contains the new parameters for the model
+      # @param [Hash] new_params Contains the new parameters for the model.
       #
       # @param [Hash] opts
       # @option opts [Boolean] :force if true, will save as a put operation and
@@ -155,7 +155,7 @@ module Aws
       # but this will be interpreted as persisting a new item to your DynamoDB
       # table
       #
-      # @param [Hash] new_param, contains the new parameters for the model
+      # @param [Hash] new_params Contains the new parameters for the model.
       #
       # @param [Hash] opts
       # @option opts [Boolean] :force if true, will save as a put operation and
@@ -172,7 +172,7 @@ module Aws
 
       # Deletes the item instance that matches the key values of this item
       # instance in Amazon DynamoDB. Uses the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#delete_item-instance_method
       # Aws::DynamoDB::Client#delete_item} API.
       def delete!
         dynamodb_client.delete_item(
@@ -183,7 +183,7 @@ module Aws
       end
 
       # Validates and generates the key values necessary for API operations such as the
-      # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#delete_item-instance_method
       # Aws::DynamoDB::Client#delete_item} operation.
       def key_values
         validate_key_values
@@ -547,7 +547,7 @@ module Aws
         #   MyModel.update(id: 1, name: "First", body: "Hello!")
         #
         # Performs an
-        # {http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
         # Aws::DynamoDB::Client#update_item} call immediately on the table,
         # using the attribute key/value pairs provided.
         #

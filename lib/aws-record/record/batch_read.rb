@@ -8,7 +8,8 @@ module Aws
       # @api private
       BATCH_GET_ITEM_LIMIT = 100
 
-      # @param [Aws::DynamoDB::Client] client the DynamoDB SDK client.
+      # @param [Hash] opts
+      # @option opts [Aws::DynamoDB::Client] client the DynamoDB SDK client.
       def initialize(opts = {})
         @client = opts[:client]
       end
