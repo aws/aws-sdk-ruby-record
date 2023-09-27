@@ -275,7 +275,8 @@ module Aws
           put_opts = {
             table_name: self.class.table_name,
             item: _build_item_for_save
-          }.merge(prevent_overwrite_expression, put_item_options)
+          }.merge(prevent_overwrite_expression)
+           .merge(put_item_options)
           begin
             dynamodb_client.put_item(put_opts)
           rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
