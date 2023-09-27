@@ -3,6 +3,8 @@ Unreleased Changes
 
 * Issue - Fix default value for String/Numeric Sets to be unset. (#133)
 
+* Feature - Set required Ruby version to >= 2.3 (#134)
+
 * Issue - Run Rubocop on all files. (#135)
 
 2.11.0 (2023-06-02)
