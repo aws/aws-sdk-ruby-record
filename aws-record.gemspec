@@ -15,4 +15,6 @@ Gem::Specification.new do |spec|
 
   # Require 1.85.0 for user_agent_frameworks config
   spec.add_dependency 'aws-sdk-dynamodb', '~> 1', '>= 1.85.0'
+
+  spec.required_ruby_version = '>= 2.3'
 end
