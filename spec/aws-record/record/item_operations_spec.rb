@@ -670,7 +670,7 @@ module Aws
 
       describe 'validations with ActiveModel::Validations' do
         let(:klass_amv) do
-          Class.new do
+          ::TEST_TABLE = Class.new do
             include(Aws::Record)
             include(ActiveModel::Validations)
             set_table_name('TestTable')
@@ -681,6 +681,8 @@ module Aws
             validates_presence_of(:id, :date)
           end
         end
+
+        after { Object.send(:remove_const, :TEST_TABLE) }
 
         it 'will use ActiveModel::Validations :valid? method' do
           klass_amv.configure_client(client: stub_client)
