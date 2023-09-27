@@ -1,7 +1,16 @@
 Unreleased Changes
 ------------------
 
-* Issue - Fix default value for String/Numeric Sets to be unset. (#133) 
+* Feature - Allow put, update, and delete item options to be passed through to
+  the underlying client calls.
+
+* Feature - Add an `original_error` accessor to `Errors::ConditionalWriteFailed`
+  which contains the `Aws::DynamoDB::Errors::ConditionalCheckFailedException`
+  error. If `:return_values_on_condition_check_failure` was provided to a put,
+  update, or delete item call, this error will contain the item data that failed
+  the condition check.
+
+* Issue - Fix default value for String/Numeric Sets to be unset. (#133)
 
 2.11.0 (2023-06-02)
 ------------------
@@ -21,7 +30,8 @@ Unreleased Changes
 2.9.0 (2022-11-16)
 ------------------
 
-* Feature - Add support for inheritance. Aws Record models can now be extended using standard ruby inheritance (#80).
+* Feature - Add support for inheritance. Aws Record models can now be extended
+  using standard ruby inheritance (#80).
 
 2.8.0 (2022-10-12)
 ------------------
@@ -46,7 +56,8 @@ Unreleased Changes
 2.5.0 (2020-10-13)
 ------------------
 
-* Feature - `Aws::Record::BuildableSearch` - Support queries yielding heterogeneous results using `multi_model_filter` (#107)
+* Feature - `Aws::Record::BuildableSearch` - Support queries yielding
+  heterogeneous results using `multi_model_filter` (#107)
 
 2.4.1 (2020-05-29)
 ------------------
@@ -57,53 +68,89 @@ Unreleased Changes
 2.4.0 (2019-07-16)
 ------------------
 
-* Feature - Aws::Record::BuildableSearch - Adds support for query and scan builders using substitution expressions. This allows for streamlined and expressive queries and scans using aws-record.
+* Feature - Aws::Record::BuildableSearch - Adds support for query and scan
+  builders using substitution expressions. This allows for streamlined and
+  expressive queries and scans using aws-record.
 
 2.3.0 (2019-02-08)
 ------------------
 
-* Feature - Aws::Record::Transactions - Adds support for transactional find and transactional get requests. You can learn more about these new APIs in the [documentation](https://docs.aws.amazon.com/awssdkrubyrecord/api/Aws/Record/Transactions.html).
+* Feature - Aws::Record::Transactions - Adds support for transactional find and
+  transactional get requests. You can learn more about these new APIs in
+  the [documentation](https://docs.aws.amazon.com/awssdkrubyrecord/api/Aws/Record/Transactions.html).
 
 2.2.0 (2018-12-05)
 ------------------
 
-* Feature - Aws::Record::TableConfig - Adds support for the "PAY_PER_REQUEST" billing mode in table configurations.
+* Feature - Aws::Record::TableConfig - Adds support for the "PAY_PER_REQUEST"
+  billing mode in table configurations.
 
 2.1.2 (2018-11-15)
 ------------------
 
-* Issue - Aws::Record::Marshalers::EpochTimeMarshaler - Fixed a bug where epoch time objects didn't properly marshal from database entries.
+* Issue - Aws::Record::Marshalers::EpochTimeMarshaler - Fixed a bug where epoch
+  time objects didn't properly marshal from database entries.
 
 2.1.1 (2018-07-10)
 ------------------
 
-* Feature - Aws::Record::TableConfig - Adds `:ttl_attribute` to the TableConfig DSL. When used with `epoch_time_attr` attributes or other attributes stored as epoch time, your TableConfig migrations will enable TTL on your DynamoDB table, and will use your specified attribute as the TTL attribute.
+* Feature - Aws::Record::TableConfig - Adds `:ttl_attribute` to the TableConfig
+  DSL. When used with `epoch_time_attr` attributes or other attributes stored as
+  epoch time, your TableConfig migrations will enable TTL on your DynamoDB
+  table, and will use your specified attribute as the TTL attribute.
 
-* Feature - Aws::Record::Marshalers::EpochTimeMarshaler - Adds the `epoch_time_attr`, which behaves much like `time_attr` except the Amazon DynamoDB storage type is numeric, and the serialized value is epoch seconds.
+* Feature - Aws::Record::Marshalers::EpochTimeMarshaler - Adds
+  the `epoch_time_attr`, which behaves much like `time_attr` except the Amazon
+  DynamoDB storage type is numeric, and the serialized value is epoch seconds.
 
 2.1.0 (2018-06-25)
 ------------------
 
-* Feature - Aws::Record - Add the `persisted?`, `new_record?`, and `destroyed?` methods to `Aws::Record`, which supports use cases where you'd like to see if a record has just been newly initialized, or has been deleted or was a preexisting record retrieved from DynamoDB. Note that these methods are present in `ActiveModel::Model` so you should require that module before `Aws::Record`
+* Feature - Aws::Record - Add the `persisted?`, `new_record?`, and `destroyed?`
+  methods to `Aws::Record`, which supports use cases where you'd like to see if
+  a record has just been newly initialized, or has been deleted or was a
+  preexisting record retrieved from DynamoDB. Note that these methods are
+  present in `ActiveModel::Model` so you should require that module
+  before `Aws::Record`
 
-* Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!` methods to `Aws::Record` which supports the use case where the user might want to mass assign or update a records attributes by hash. `update!` also ensures that a `ValidationError` is thrown on an invalid update
+* Feature - Aws::Record - Add the `assign_attributes`, `update`, and `update!`
+  methods to `Aws::Record` which supports the use case where the user might want
+  to mass assign or update a records attributes by hash. `update!` also ensures
+  that a `ValidationError` is thrown on an invalid update
 
-* Upgrading - If you already include `ActiveModel::Model` on your models the new `persisted?`, `new_record?` and `destroyed?` methods will not function properly unless you include `ActiveModel::Model` before `Aws::Record`. Additionally, new methods could lead to collisions if you happened to have attributes such as `:update` or `:assign_attributes`. In such a case, you would want to version lock below `2.1.0`, or use the `:database_attribute_name` property and change your attribute name in code.
+* Upgrading - If you already include `ActiveModel::Model` on your models the
+  new `persisted?`, `new_record?` and `destroyed?` methods will not function
+  properly unless you include `ActiveModel::Model` before `Aws::Record`.
+  Additionally, new methods could lead to collisions if you happened to have
+  attributes such as `:update` or `:assign_attributes`. In such a case, you
+  would want to version lock below `2.1.0`, or use
+  the `:database_attribute_name` property and change your attribute name in
+  code.
 
 2.0.2 (2018-06-08)
 ------------------
 
-* Feature - Aws::Record::Marshalers::TimeMarshaler - Adds the `time_attr` method to AWS Record models, which uses `Time` as the underlying type.
+* Feature - Aws::Record::Marshalers::TimeMarshaler - Adds the `time_attr` method
+  to AWS Record models, which uses `Time` as the underlying type.
 
 2.0.1 (2017-10-27)
 ------------------
 
-* Feature - Aws::Record::ItemCollection - Add the `#page` and `#last_evaluated_key` methods to `Aws::Record::ItemCollection`. This helps to support use cases where you'd like to control the result set size with the `:limit` parameter, or if you want to expose pagination capabilities to an outside caller, for example a list-type operation exposed in a web API.
+* Feature - Aws::Record::ItemCollection - Add the `#page`
+  and `#last_evaluated_key` methods to `Aws::Record::ItemCollection`. This helps
+  to support use cases where you'd like to control the result set size with
+  the `:limit` parameter, or if you want to expose pagination capabilities to an
+  outside caller, for example a list-type operation exposed in a web API.
 
 2.0.0 (2017-08-29)
 ------------------
 
-* Upgrading - Aws::Record - Support version 3 of the AWS SDK for Ruby. This is being released as major version 2 of `aws-record`, though the APIs remain the same. Do note, however, that we've changed our SDK dependency to only depend on `aws-sdk-dynamodb`. This means that if you were depending on other service clients transitively via `aws-record`, you will need to add dependencies on the appropriate service gems when upgrading.
+* Upgrading - Aws::Record - Support version 3 of the AWS SDK for Ruby. This is
+  being released as major version 2 of `aws-record`, though the APIs remain the
+  same. Do note, however, that we've changed our SDK dependency to only depend
+  on `aws-sdk-dynamodb`. This means that if you were depending on other service
+  clients transitively via `aws-record`, you will need to add dependencies on
+  the appropriate service gems when upgrading.
 
 1.1.1 (2017-06-16)
 ------------------
@@ -165,18 +212,21 @@ Unreleased Changes
 1.0.0.pre.10 (2016-08-03)
 ------------------
 
-* Feature - Aws::Record - Refactored tracking of model attributes, key attributes,
-  and item data to use internal classes over module composition. Dirty tracking is
+* Feature - Aws::Record - Refactored tracking of model attributes, key
+  attributes,
+  and item data to use internal classes over module composition. Dirty tracking
+  is
   also handled more consistently across attributes, and turning on/off of dirty
   tracking is only possible at the model level (not for individual attributes).
 
 1.0.0.pre.9 (2016-07-22)
 ------------------
 
-* Feature - Aws::Record::Attribute - Added support for default values at the attribute
-  level.
+* Feature - Aws::Record::Attribute - Added support for default values at the
+  attribute level.
 
-* Feature - Aws::Record::Marshalers - Removed the marshalers in the `Aws::Attributes`
+* Feature - Aws::Record::Marshalers - Removed the marshalers in
+  the `Aws::Attributes`
   namespace, replacing them with instantiated marshaler objects. This enables
   more functionality in marshalers such as the Date/DateTime marshalers.
 

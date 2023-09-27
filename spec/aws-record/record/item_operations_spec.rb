@@ -68,6 +68,31 @@ module Aws
           )
         end
 
+        it 'passes through api options' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          # new record
+          item.save!(put_item_options: { return_values: 'ALL_OLD' })
+          # forced
+          item.save!(force: true, put_item_options: { return_values: 'UPDATED_OLD' })
+          # not updated tuple
+          item.save!(update_item_options: { return_values: 'ALL_NEW' })
+          # updated tuple
+          item.clean!
+          item.body = 'Goodbye!'
+          item.save!(update_item_options: { return_values: 'UPDATED_NEW' })
+
+          expect(api_requests).to include(
+            hash_including(:return_values => 'ALL_OLD'),
+            hash_including(:return_values => 'UPDATED_OLD'),
+            hash_including(:return_values => 'ALL_NEW'),
+            hash_including(:return_values => 'UPDATED_NEW')
+          )
+        end
+
         it 'raises an error when you try to save! without setting keys' do
           klass.configure_client(client: stub_client)
           no_keys = klass.new
@@ -176,6 +201,31 @@ module Aws
           )
         end
 
+        it 'passes through api options' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          # new record
+          item.save(put_item_options: { return_values: 'ALL_OLD' })
+          # forced
+          item.save(force: true, put_item_options: { return_values: 'UPDATED_OLD' })
+          # not updated tuple
+          item.save(update_item_options: { return_values: 'ALL_NEW' })
+          # updated tuple
+          item.clean!
+          item.body = 'Goodbye!'
+          item.save(update_item_options: { return_values: 'UPDATED_NEW' })
+
+          expect(api_requests).to include(
+            hash_including(:return_values => 'ALL_OLD'),
+            hash_including(:return_values => 'UPDATED_OLD'),
+            hash_including(:return_values => 'ALL_NEW'),
+            hash_including(:return_values => 'UPDATED_NEW')
+          )
+        end
+
         it 'raises an exception when the conditional check fails' do
           stub_client.stub_responses(
             :put_item,
@@ -186,7 +236,12 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
-          expect { item.save }.to raise_error(Errors::ConditionalWriteFailed)
+          expect { item.save }.to raise_error do |error|
+            expect(error).to be_a(Errors::ConditionalWriteFailed)
+            expect(error.original_error).to be_a(
+              Aws::DynamoDB::Errors::ConditionalCheckFailedException
+            )
+          end
           expect(api_requests).to eq(
             [
               {
@@ -480,6 +535,17 @@ module Aws
           )
         end
 
+        it 'passes through api options' do
+          klass.configure_client(client: stub_client)
+          klass.update(
+            id: 1, date: '2016-05-18',
+            update_item_options: { return_values: 'ALL_NEW' }
+          )
+          expect(api_requests).to include(
+            hash_including(:return_values => 'ALL_NEW')
+          )
+        end
+
         it 'raises if any key attributes are missing' do
           klass.configure_client(client: stub_client)
           update_opts = { id: 5, body: 'Fail' }
@@ -507,6 +573,17 @@ module Aws
                 }
               }
             ]
+          )
+        end
+
+        it 'passes through api options' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 3
+          item.date = '2015-12-17'
+          item.delete!(delete_item_options: { return_values: 'ALL_OLD' })
+          expect(api_requests).to include(
+            hash_including(:return_values => 'ALL_OLD')
           )
         end
       end

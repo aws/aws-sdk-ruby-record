@@ -25,6 +25,15 @@ module Aws
       # @option opts [Boolean] :force if true, will save as a put operation and
       #  overwrite any existing item on the remote end. Otherwise, and by
       #  default, will either perform a conditional put or an update call.
+      # @option opts [Hash] :put_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call. This option is only used when
+      # `:force` is true or when the item is new.
+      # @option opts [Hash] :update_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. This option is only used when
+      # `:force` is false and when the item is not new.
+      #
       # @raise [Aws::Record::Errors::KeyMissing] if a required key attribute
       #  does not have a value within this item instance.
       # @raise [Aws::Record::Errors::ConditionalWriteFailed] if a conditional
@@ -58,6 +67,15 @@ module Aws
       # @option opts [Boolean] :force if true, will save as a put operation and
       #  overwrite any existing item on the remote end. Otherwise, and by
       #  default, will either perform a conditional put or an update call.
+      # @option opts [Hash] :put_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call. This option is only used when
+      # `:force` is true or when the item is new.
+      # @option opts [Hash] :update_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. This option is only used when
+      # `:force` is false and when the item is not new.
+      #
       # @return false if the record is invalid as defined by an attempt to call
       #  +valid?+ on this item, if that method exists. Otherwise, returns client
       #  call return value.
@@ -138,6 +156,15 @@ module Aws
       # @option opts [Boolean] :force if true, will save as a put operation and
       #  overwrite any existing item on the remote end. Otherwise, and by
       #  default, will either perform a conditional put or an update call.
+      # @option opts [Hash] :put_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call. This option is only used when
+      # `:force` is true or when the item is new.
+      # @option opts [Hash] :update_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. This option is only used when
+      # `:force` is false and when the item is not new.
+      #
       # @return false if the record is invalid as defined by an attempt to call
       #  +valid?+ on this item, if that method exists. Otherwise, returns client
       #  call return value.
@@ -161,6 +188,15 @@ module Aws
       # @option opts [Boolean] :force if true, will save as a put operation and
       #  overwrite any existing item on the remote end. Otherwise, and by
       #  default, will either perform a conditional put or an update call.
+      # @option opts [Hash] :put_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#put_item-instance_method
+      # Aws::DynamoDB::Client#put_item} call. This option is only used when
+      # `:force` is true or when the item is new.
+      # @option opts [Hash] :update_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+      # Aws::DynamoDB::Client#update_item} call. This option is only used when
+      # `:force` is false and when the item is not new.
+      #
       # @return The update mode if the update is successful
       #
       # @raise [Aws::Record::Errors::ValidationError] if any new values
@@ -174,11 +210,18 @@ module Aws
       # instance in Amazon DynamoDB. Uses the
       # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#delete_item-instance_method
       # Aws::DynamoDB::Client#delete_item} API.
-      def delete!
-        dynamodb_client.delete_item(
+      #
+      # @param [Hash] opts
+      # @option opts [Hash] :delete_item_options Options to pass to the
+      # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#delete_item-instance_method
+      # Aws::DynamoDB::Client#delete_item} call.
+      def delete!(opts = {})
+        delete_item_options = opts.delete(:delete_item_options) || {}
+        delete_opts = {
           table_name: self.class.table_name,
           key: key_values
-        )
+        }.merge(delete_item_options)
+        dynamodb_client.delete_item(delete_opts)
         instance_variable_get('@data').destroyed = true
       end
 
@@ -219,24 +262,29 @@ module Aws
 
       def _perform_save(opts)
         force = opts[:force]
+        put_item_options = opts.delete(:put_item_options) || {}
+        update_item_options = opts.delete(:update_item_options) || {}
         expect_new = expect_new_item?
         if force
-          dynamodb_client.put_item(
+          put_opts = {
             table_name: self.class.table_name,
             item: _build_item_for_save
-          )
+          }.merge(put_item_options)
+          dynamodb_client.put_item(put_opts)
         elsif expect_new
           put_opts = {
             table_name: self.class.table_name,
             item: _build_item_for_save
-          }.merge(prevent_overwrite_expression)
+          }.merge(prevent_overwrite_expression, put_item_options)
           begin
             dynamodb_client.put_item(put_opts)
-          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
-            raise Errors::ConditionalWriteFailed,
+          rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException => e
+            raise Errors::ConditionalWriteFailed.new(
                   'Conditional #put_item call failed! Check that conditional write'\
                   ' conditions are met, or include the :force option to clobber'\
-                  ' the remote item.'
+                  ' the remote item.',
+                  e
+            )
           end
         else
           update_pairs = _dirty_changes_for_update
@@ -246,19 +294,23 @@ module Aws
           )
           if update_tuple
             uex, exp_attr_names, exp_attr_values = update_tuple
-            request_opts = {
+            upload_opts = {
               table_name: self.class.table_name,
               key: key_values,
               update_expression: uex,
               expression_attribute_names: exp_attr_names
-            }
-            request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-            dynamodb_client.update_item(request_opts)
+            }.tap do |h|
+              unless exp_attr_values.empty?
+                h[:expression_attribute_values] = exp_attr_values
+              end
+            end.merge(update_item_options)
+            dynamodb_client.update_item(upload_opts)
           else
-            dynamodb_client.update_item(
+            upload_opts = {
               table_name: self.class.table_name,
               key: key_values
-            )
+            }.merge(update_item_options)
+            dynamodb_client.update_item(upload_opts)
           end
         end
         data = instance_variable_get('@data')
@@ -487,11 +539,11 @@ module Aws
             request_key[attr_name] = attributes.attribute_for(attr_sym)
                                                .serialize(key[attr_sym])
           end
-          request_opts = {
+          get_opts = {
             table_name: table_name,
             key: request_key
           }.merge(opts)
-          resp = dynamodb_client.get_item(request_opts)
+          resp = dynamodb_client.get_item(get_opts)
           if resp.item.nil?
             nil
           else
@@ -555,10 +607,15 @@ module Aws
         #  wish to perform. You must include all key attributes for a valid
         #  call, then you may optionally include any other attributes that you
         #  wish to update.
+        # @option opts [Hash] :update_item_options Options to pass to the
+        # {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        # Aws::DynamoDB::Client#update_item} call.
+        #
         # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
         #  not include all table keys.
         def update(opts)
           key = {}
+          update_item_options = opts.delete(:update_item_options) || {}
           @keys.keys.each_value do |attr_sym|
             unless (value = opts.delete(attr_sym))
               raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
@@ -567,18 +624,19 @@ module Aws
             attr_name = attributes.storage_name_for(attr_sym)
             key[attr_name] = attributes.attribute_for(attr_sym).serialize(value)
           end
-          request_opts = {
+          update_opts = {
             table_name: table_name,
             key: key
           }
           update_tuple = _build_update_expression(opts)
           unless update_tuple.nil?
             uex, exp_attr_names, exp_attr_values = update_tuple
-            request_opts[:update_expression] = uex
-            request_opts[:expression_attribute_names] = exp_attr_names
-            request_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
+            update_opts[:update_expression] = uex
+            update_opts[:expression_attribute_names] = exp_attr_names
+            update_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
           end
-          dynamodb_client.update_item(request_opts)
+          update_opts = update_opts.merge(update_item_options)
+          dynamodb_client.update_item(update_opts)
         end
 
         private

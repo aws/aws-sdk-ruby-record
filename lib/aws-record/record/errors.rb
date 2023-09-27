@@ -16,7 +16,17 @@ module Aws
       class NotFound < RecordError; end
 
       # Raised when a conditional write fails.
-      class ConditionalWriteFailed < RecordError; end
+      # Provides access to the original ConditionalCheckFailedException error
+      # which may have item data if the return values option was used.
+      class ConditionalWriteFailed < RecordError
+        def initialize(message, original_error)
+          @original_error = original_error
+          super(message)
+        end
+
+        # @return [Aws::DynamoDB::Errors::ConditionalCheckFailedException]
+        attr_reader :original_error
+      end
 
       # Raised when a validation hook call to +:valid?+ fails.
       class ValidationError < RecordError; end
