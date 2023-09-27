@@ -4,13 +4,13 @@ module Aws
   module Record
     module Marshalers
       class BooleanMarshaler
-        def initialize(opts = {}); end
+        def initialize(opts = {})
+          # pass
+        end
 
         def type_cast(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when false, 'false', '0', 0
             false

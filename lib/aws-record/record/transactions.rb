@@ -236,7 +236,7 @@ module Aws
             elsif (check_record = item.delete(:check))
               _transform_check_record(check_record, item)
             else
-              raise ArgumentError, 'Invalid transact write item, must include an operation of '\
+              raise ArgumentError, 'Invalid transact write item, must include an operation of ' \
                                    "type :save, :update, :delete, :update, or :check - #{item}"
 
             end
@@ -250,13 +250,13 @@ module Aws
             safety_expression = save_record.send(:prevent_overwrite_expression)
             if opts.include?(:condition_expression)
               raise Errors::TransactionalSaveConditionCollision,
-                    'Transactional write includes a :save operation that would '\
-                    "result in a 'safe put' for the given item, yet a "\
-                    'condition expression was also provided. This is not '\
-                    'currently supported. You should rewrite this case to use '\
-                    'a :put transaction, adding the existence check to your '\
-                    "own condition expression if desired.\n"\
-                    "\tItem: #{JSON.pretty_unparse(save_record.to_h)}\n"\
+                    'Transactional write includes a :save operation that would ' \
+                    "result in a 'safe put' for the given item, yet a " \
+                    'condition expression was also provided. This is not ' \
+                    'currently supported. You should rewrite this case to use ' \
+                    'a :put transaction, adding the existence check to your ' \
+                    "own condition expression if desired.\n" \
+                    "\tItem: #{JSON.pretty_unparse(save_record.to_h)}\n" \
                     "\tExtra Options: #{JSON.pretty_unparse(opts)}"
             else
               opts = opts.merge(safety_expression)
@@ -293,16 +293,16 @@ module Aws
           opts[:key] = update_record.send(:key_values)
           opts[:update_expression] = uex
           # need to combine expression attribute names and values
-          if (names = opts[:expression_attribute_names])
-            opts[:expression_attribute_names] = exp_attr_names.merge(names)
-          else
-            opts[:expression_attribute_names] = exp_attr_names
-          end
-          if (values = opts[:expression_attribute_values])
-            opts[:expression_attribute_values] = exp_attr_values.merge(values)
-          else
-            opts[:expression_attribute_values] = exp_attr_values
-          end
+          opts[:expression_attribute_names] = if (names = opts[:expression_attribute_names])
+                                                exp_attr_names.merge(names)
+                                              else
+                                                exp_attr_names
+                                              end
+          opts[:expression_attribute_values] = if (values = opts[:expression_attribute_values])
+                                                 exp_attr_values.merge(values)
+                                               else
+                                                 exp_attr_values
+                                               end
           { update: opts }
         end
 

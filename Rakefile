@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rspec/core/rake_task'
 
 $REPO_ROOT = File.dirname(__FILE__)
@@ -13,7 +15,7 @@ RSpec::Core::RakeTask.new do |t|
   t.rspec_opts = "-I #{$REPO_ROOT}/lib -I #{$REPO_ROOT}/spec"
   t.pattern = "#{$REPO_ROOT}/spec"
 end
-task :spec => 'test:coverage:clear'
+task spec: 'test:coverage:clear'
 task 'test:unit' => :spec # alias old names
 
 task 'cucumber' do
@@ -22,7 +24,7 @@ end
 
 # Ensure the test:integration task behaves as it always has
 desc 'run integration tests'
-task 'test:integration' do |t|
+task 'test:integration' do |_t|
   if ENV['AWS_INTEGRATION']
     Rake::Task['cucumber'].invoke
   else
@@ -33,8 +35,8 @@ end
 
 # Setup alias for old task names
 task 'test:unit' => :spec
-task :test => %w[test:unit test:integration]
-task :default => :test
+task test: %w[test:unit test:integration]
+task default: :test
 
 task 'release:test' => :spec
 

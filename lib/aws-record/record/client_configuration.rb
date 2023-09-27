@@ -26,12 +26,12 @@ module Aws
       #  own pre-configured client.
       def configure_client(opts = {})
         # rubocop:disable Style/RedundantSelf
-        if self.class != Module && Aws::Record.extends_record?(self) && opts.empty? &&
-           self.superclass.instance_variable_get('@dynamodb_client')
-          @dynamodb_client = self.superclass.instance_variable_get('@dynamodb_client')
-        else
-          @dynamodb_client = _build_client(opts)
-        end
+        @dynamodb_client = if self.class != Module && Aws::Record.extends_record?(self) && opts.empty? &&
+                              self.superclass.instance_variable_get('@dynamodb_client')
+                             self.superclass.instance_variable_get('@dynamodb_client')
+                           else
+                             _build_client(opts)
+                           end
         # rubocop:enable Style/RedundantSelf
       end
 

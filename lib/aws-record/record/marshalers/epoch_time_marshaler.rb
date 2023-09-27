@@ -35,15 +35,11 @@ module Aws
 
         def _format(raw_value)
           case raw_value
-          when nil
-            nil
-          when ''
+          when nil, ''
             nil
           when ::Time
             raw_value
-          when Integer # timestamp
-            ::Time.at(raw_value)
-          when BigDecimal
+          when Integer, BigDecimal # timestamp
             ::Time.at(raw_value)
           else # Date, DateTime, or String
             ::Time.parse(raw_value.to_s)

@@ -113,8 +113,8 @@ module Aws
             )
           end
 
-          it 'allows specifying on-demand billing instead of provisioned'\
-             ' througput' do
+          it 'allows specifying on-demand billing instead of provisioned ' \
+             'througput' do
             create_opts = { billing_mode: 'PAY_PER_REQUEST' }
             migration.client = stub_client
             migration.create!(create_opts)
@@ -148,8 +148,8 @@ module Aws
             )
           end
 
-          it 'accepts a value of PROVISIONED for billing_mode if'\
-               ' provisioned throughput is also specified' do
+          it 'accepts a value of PROVISIONED for billing_mode if ' \
+             'provisioned throughput is also specified' do
             create_opts = {
               billing_mode: 'PROVISIONED',
               provisioned_throughput: {
@@ -193,8 +193,8 @@ module Aws
             )
           end
 
-          it 'requires billing_mode be PROVISIONED if specified'\
-               ' and provisioned throughput is provided' do
+          it 'requires billing_mode be PROVISIONED if specified ' \
+             'and provisioned throughput is provided' do
             create_opts = {
               billing_mode: 'INVALID',
               provisioned_throughput: {
@@ -210,8 +210,8 @@ module Aws
             expect(api_requests).to eq([])
           end
 
-          it 'requires billing_mode be PAY_PER_REQUEST if specified'\
-               ' and no provisioned throughput is provided' do
+          it 'requires billing_mode be PAY_PER_REQUEST if specified ' \
+             'and no provisioned throughput is provided' do
             create_opts = { billing_mode: 'INVALID' }
             migration.client = stub_client
             expect { migration.create!(create_opts) }.to raise_error(
@@ -221,8 +221,8 @@ module Aws
             expect(api_requests).to eq([])
           end
 
-          it 'requires billing_mode be specified and have value PAY_PER_REQUEST'\
-               ' if no provisioned throughput is provided' do
+          it 'requires billing_mode be specified and have value PAY_PER_REQUEST ' \
+             'if no provisioned throughput is provided' do
             create_opts = {}
             migration.client = stub_client
             expect { migration.create!(create_opts) }.to raise_error(

@@ -10,11 +10,10 @@ module Aws
       def initialize(opts)
         operation = opts[:operation]
         model = opts[:model]
-        if SUPPORTED_OPERATIONS.include?(operation)
-          @operation = operation
-        else
-          raise ArgumentError, "Unsupported operation: #{operation}"
-        end
+        raise ArgumentError, "Unsupported operation: #{operation}" unless SUPPORTED_OPERATIONS.include?(operation)
+
+        @operation = operation
+
         @model = model
         @params = {}
         @next_name = 'BUILDERA'
@@ -41,12 +40,11 @@ module Aws
       # builder method to provide the :total_segments of your parallel scan and
       # the :segment number of this scan.
       def parallel_scan(opts)
-        unless @operation == :scan
-          raise ArgumentError, 'parallel_scan is only supported for scans'
-        end
+        raise ArgumentError, 'parallel_scan is only supported for scans' unless @operation == :scan
         unless opts[:total_segments] && opts[:segment]
           raise ArgumentError, 'Must specify :total_segments and :segment in a parallel scan.'
         end
+
         @params[:total_segments] = opts[:total_segments]
         @params[:segment] = opts[:segment]
         self
@@ -56,9 +54,8 @@ module Aws
       # ascending or descending order on your range key. By default, a query is
       # run in ascending order.
       def scan_ascending(b)
-        unless @operation == :query
-          raise ArgumentError, 'scan_ascending is only supported for queries.'
-        end
+        raise ArgumentError, 'scan_ascending is only supported for queries.' unless @operation == :query
+
         @params[:scan_index_forward] = b
         self
       end
@@ -90,9 +87,8 @@ module Aws
       #       ).complete!
       #   q.to_a # You can use this like any other query result in aws-record
       def key_expr(statement_str, *subs)
-        unless @operation == :query
-          raise ArgumentError, 'key_expr is only supported for queries.'
-        end
+        raise ArgumentError, 'key_expr is only supported for queries.' unless @operation == :query
+
         names = @params[:expression_attribute_names]
         if names.nil?
           @params[:expression_attribute_names] = {}
@@ -252,28 +248,27 @@ module Aws
 
       def _apply_values(statement, subs, values)
         count = 0
-        result = statement.gsub(/[?]/) do ||
+        result = statement.gsub(/[?]/) do
           sub_value = _next_value
           raise 'Substitution collision!' if values[sub_value]
+
           values[sub_value] = subs[count]
           count += 1
           sub_value
         end
         result.tap do
-          unless count == subs.size
-            raise "Expected #{count} values in the substitution set, but found #{subs.size}"
-          end
+          raise "Expected #{count} values in the substitution set, but found #{subs.size}" unless count == subs.size
         end
       end
 
       def _next_name
-        ret = '#' + @next_name
+        ret = "##{@next_name}"
         @next_name = @next_name.next
         ret
       end
 
       def _next_value
-        ret = ':' + @next_value
+        ret = ":#{@next_value}"
         @next_value = @next_value.next
         ret
       end

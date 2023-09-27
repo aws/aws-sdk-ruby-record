@@ -47,11 +47,11 @@ module Aws
         @model_attributes.attributes.each_key do |name|
           populate_default_values
           value = get_attribute(name)
-          if @track_mutations
-            @clean_copies[name] = _deep_copy(value)
-          else
-            @clean_copies[name] = value
-          end
+          @clean_copies[name] = if @track_mutations
+                                  _deep_copy(value)
+                                else
+                                  value
+                                end
         end
       end
 
@@ -80,7 +80,7 @@ module Aws
       end
 
       def dirty?
-        dirty.empty? ? false : true
+        !dirty.empty?
       end
 
       def rollback_attribute!(name)
@@ -109,11 +109,10 @@ module Aws
 
       def populate_default_values
         @model_attributes.attributes.each do |name, attribute|
-          unless (default_value = attribute.default_value).nil?
-            if @data[name].nil? && @data[name].nil?
-              @data[name] = default_value
-            end
-          end
+          next if (default_value = attribute.default_value).nil?
+          next unless @data[name].nil?
+
+          @data[name] = default_value
         end
       end
 

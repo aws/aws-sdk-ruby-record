@@ -34,11 +34,9 @@ module Aws
       #  cause is dependent on the validation library you are using.
       def save!(opts = {})
         ret = save(opts)
-        if ret
-          ret
-        else
-          raise Errors::ValidationError, 'Validation hook returned false!'
-        end
+        raise Errors::ValidationError, 'Validation hook returned false!' unless ret
+
+        ret
       end
 
       # Saves this instance of an item to Amazon DynamoDB. If this item is "new"
@@ -98,6 +96,7 @@ module Aws
           field = field.to_sym
           setter = "#{field}="
           raise ArgumentError, "Invalid field: #{field} for model" unless respond_to?(setter)
+
           public_send(setter, new_value)
         end
       end
@@ -207,11 +206,7 @@ module Aws
 
       def _invalid_record?(_opts)
         if respond_to?(:valid?)
-          if !valid?
-            true
-          else
-            false
-          end
+          !valid?
         else
           false
         end
@@ -234,9 +229,9 @@ module Aws
             dynamodb_client.put_item(put_opts)
           rescue Aws::DynamoDB::Errors::ConditionalCheckFailedException
             raise Errors::ConditionalWriteFailed,
-                  'Conditional #put_item call failed! Check that conditional write'\
-                  ' conditions are met, or include the :force option to clobber'\
-                  ' the remote item.'
+                  'Conditional #put_item call failed! Check that conditional write ' \
+                  'conditions are met, or include the :force option to clobber ' \
+                  'the remote item.'
           end
         else
           update_pairs = _dirty_changes_for_update
@@ -311,11 +306,10 @@ module Aws
       end
 
       def _dirty_changes_for_update
-        ret = dirty.each_with_object({}) do |attr_name, acc|
+        dirty.each_with_object({}) do |attr_name, acc|
           acc[attr_name] = @data.raw_value(attr_name)
           acc
         end
-        ret
       end
 
       module ItemOperationsClassMethods
@@ -350,9 +344,8 @@ module Aws
           key = opts.delete(:key)
           check_key = {}
           @keys.keys.each_value do |attr_sym|
-            unless key[attr_sym]
-              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
-            end
+            raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}" unless key[attr_sym]
+
             attr_name = attributes.storage_name_for(attr_sym)
             check_key[attr_name] = attributes.attribute_for(attr_sym)
                                              .serialize(key[attr_sym])
@@ -374,9 +367,8 @@ module Aws
           key = opts.delete(:key)
           request_key = {}
           @keys.keys.each_value do |attr_sym|
-            unless key[attr_sym]
-              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
-            end
+            raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}" unless key[attr_sym]
+
             attr_name = attributes.storage_name_for(attr_sym)
             request_key[attr_name] = attributes.attribute_for(attr_sym)
                                                .serialize(key[attr_sym])
@@ -480,9 +472,8 @@ module Aws
           key = opts.delete(:key)
           request_key = {}
           @keys.keys.each_value do |attr_sym|
-            unless key[attr_sym]
-              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}"
-            end
+            raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{key}" unless key[attr_sym]
+
             attr_name = attributes.storage_name_for(attr_sym)
             request_key[attr_name] = attributes.attribute_for(attr_sym)
                                                .serialize(key[attr_sym])
@@ -564,6 +555,7 @@ module Aws
               raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
 
             end
+
             attr_name = attributes.storage_name_for(attr_sym)
             key[attr_name] = attributes.attribute_for(attr_sym).serialize(value)
           end
@@ -591,8 +583,8 @@ module Aws
           name_sub_token = 'UE_A'
           value_sub_token = 'ue_a'
           attr_value_pairs.each do |attr_sym, value|
-            name_sub = '#' + name_sub_token
-            value_sub = ':' + value_sub_token
+            name_sub = "##{name_sub_token}"
+            value_sub = ":#{value_sub_token}"
             name_sub_token = name_sub_token.succ
             value_sub_token = value_sub_token.succ
 
@@ -607,12 +599,8 @@ module Aws
             end
           end
           update_expressions = []
-          unless set_expressions.empty?
-            update_expressions << 'SET ' + set_expressions.join(', ')
-          end
-          unless remove_expressions.empty?
-            update_expressions << 'REMOVE ' + remove_expressions.join(', ')
-          end
+          update_expressions << ("SET #{set_expressions.join(', ')}") unless set_expressions.empty?
+          update_expressions << ("REMOVE #{remove_expressions.join(', ')}") unless remove_expressions.empty?
           if update_expressions.empty?
             nil
           else

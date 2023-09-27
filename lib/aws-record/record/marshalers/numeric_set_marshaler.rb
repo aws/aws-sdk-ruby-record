@@ -3,14 +3,14 @@
 module Aws
   module Record
     module Marshalers
-      class NumericSetMarshaler
-        def initialize(opts = {}); end
+      def initialize(opts = {})
+        # pass
+      end
 
+      class NumericSetMarshaler
         def type_cast(raw_value)
           case raw_value
-          when nil
-            Set.new
-          when ''
+          when nil, ''
             Set.new
           when Set
             _as_numeric(raw_value)
@@ -18,8 +18,8 @@ module Aws
             if raw_value.respond_to?(:to_set)
               _as_numeric(raw_value.to_set)
             else
-              msg = "Don't know how to make #{raw_value} of type"\
-                " #{raw_value.class} into a Numeric Set!"
+              msg = "Don't know how to make #{raw_value} of type " \
+                    "#{raw_value.class} into a Numeric Set!"
               raise ArgumentError, msg
             end
           end

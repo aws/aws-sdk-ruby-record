@@ -1,8 +1,16 @@
-AllCops:
-  TargetRubyVersion: 2.0.0
+inherit_from: .rubocop_todo.yml
 
-Documentation:
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'tasks/release/**/*'
+
+Gemspec/RequireMFA:
   Enabled: false
+
+Layout/LineLength:
+  Max: 120
 
 Metrics/AbcSize:
   Enabled: false
@@ -14,9 +22,6 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Enabled: false
-
-Metrics/LineLength:
-  Max: 120
 
 Metrics/MethodLength:
   Enabled: false
@@ -35,6 +40,12 @@ Style/Attr:
 Style/BlockDelimiters:
   Exclude:
     - 'spec/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Style/GlobalVars:
+  Enabled: false
 
 Style/TrivialAccessors:
   Enabled: false

@@ -75,9 +75,9 @@ module Aws
         end
         if (gsis = @model.global_secondary_indexes_for_migration)
           unless gsit || opts[:billing_mode] == 'PAY_PER_REQUEST'
-            raise ArgumentError, 'If you define global secondary indexes, you must also define'\
-                                 ' :global_secondary_index_throughput on table creation,'\
-                                 " unless :billing_mode is set to 'PAY_PER_REQUEST'."
+            raise ArgumentError, 'If you define global secondary indexes, you must also define ' \
+                                 ':global_secondary_index_throughput on table creation, ' \
+                                 "unless :billing_mode is set to 'PAY_PER_REQUEST'."
           end
           gsis_opts = if opts[:billing_mode] == 'PAY_PER_REQUEST'
                         gsis
@@ -136,29 +136,25 @@ module Aws
       end
 
       def _assert_required_include(model)
-        unless model.include?(::Aws::Record)
-          raise Errors::InvalidModel, 'Table models must include Aws::Record'
-        end
+        return if model.include?(::Aws::Record)
+
+        raise Errors::InvalidModel, 'Table models must include Aws::Record'
       end
 
       def _validate_billing(opts)
         valid_modes = %w[PAY_PER_REQUEST PROVISIONED]
-        if opts.key?(:billing_mode)
-          unless valid_modes.include?(opts[:billing_mode])
-            raise ArgumentError, ":billing_mode option must be one of #{valid_modes.join(', ')}"\
-                                 " current value is: #{opts[:billing_mode]}"
-          end
+        if opts.key?(:billing_mode) && !valid_modes.include?(opts[:billing_mode])
+          raise ArgumentError, ":billing_mode option must be one of #{valid_modes.join(', ')} " \
+                               "current value is: #{opts[:billing_mode]}"
         end
         if opts.key?(:provisioned_throughput)
           if opts[:billing_mode] == 'PAY_PER_REQUEST'
-            raise ArgumentError, 'when :provisioned_throughput option is specified, :billing_mode'\
-                                 " must either be unspecified or have a value of 'PROVISIONED'"
+            raise ArgumentError, 'when :provisioned_throughput option is specified, :billing_mode ' \
+                                 "must either be unspecified or have a value of 'PROVISIONED'"
           end
-        else
-          if opts[:billing_mode] != 'PAY_PER_REQUEST'
-            raise ArgumentError, 'when :provisioned_throughput option is not specified,'\
-                                 " :billing_mode must be set to 'PAY_PER_REQUEST'"
-          end
+        elsif opts[:billing_mode] != 'PAY_PER_REQUEST'
+          raise ArgumentError, 'when :provisioned_throughput option is not specified, ' \
+                               ":billing_mode must be set to 'PAY_PER_REQUEST'"
         end
       end
 
@@ -179,15 +175,15 @@ module Aws
             exists = attr_def.find do |a|
               a[:attribute_name] == key_schema[:attribute_name]
             end
-            unless exists
-              attr = attributes.attribute_for(
-                attributes.db_to_attribute_name(key_schema[:attribute_name])
-              )
-              attr_def << {
-                attribute_name: attr.database_name,
-                attribute_type: attr.dynamodb_type
-              }
-            end
+            next if exists
+
+            attr = attributes.attribute_for(
+              attributes.db_to_attribute_name(key_schema[:attribute_name])
+            )
+            attr_def << {
+              attribute_name: attr.database_name,
+              attribute_type: attr.dynamodb_type
+            }
           end
         end
         create_opts[:attribute_definitions] = attr_def
@@ -202,10 +198,10 @@ module Aws
           params.merge(provisioned_throughput: throughput)
         end
         unless missing_throughput.empty?
-          raise ArgumentError, 'Missing provisioned throughput for the following global secondary'\
-                               " indexes: #{missing_throughput.join(', ')}. GSIs:"\
-                               " #{global_secondary_indexes} and defined throughput:"\
-                               " #{gsi_throughput}"
+          raise ArgumentError, 'Missing provisioned throughput for the following global secondary ' \
+                               "indexes: #{missing_throughput.join(', ')}. GSIs: " \
+                               "#{global_secondary_indexes} and defined throughput: " \
+                               "#{gsi_throughput}"
         end
         ret
       end

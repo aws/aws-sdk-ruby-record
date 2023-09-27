@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gemspec
@@ -5,16 +7,14 @@ gemspec
 gem 'rake', require: false
 
 group :test do
-  gem 'rspec'
   gem 'cucumber'
-  
+  gem 'rspec'
+
   gem 'simplecov', require: false
 
-  if RUBY_VERSION >= '3.0'
-    gem 'rexml'
-  end
+  gem 'rexml' if RUBY_VERSION >= '3.0'
 
-  if ENV["NEW_RAILS"]
+  if ENV['NEW_RAILS']
     gem 'activemodel'
   else
     gem 'activemodel', '< 5.0'
@@ -31,7 +31,5 @@ group :release do
 end
 
 group :development do
-  # rubocop's TargetRubyVersion is 2.0.0
-  # Ruby version required less than 3.0
-  # gem 'rubocop', '0.50.0'
+  gem 'rubocop'
 end

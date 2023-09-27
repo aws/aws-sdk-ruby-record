@@ -123,7 +123,7 @@ module Aws
           q = klass
               .build_query
               .key_expr(
-                ':id = ? AND begins_with(date, ?)'.freeze,
+                ':id = ? AND begins_with(date, ?)',
                 'my-id',
                 '2019-07-15'
               )
