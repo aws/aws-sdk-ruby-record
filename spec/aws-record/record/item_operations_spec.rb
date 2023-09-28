@@ -68,6 +68,31 @@ module Aws
           )
         end
 
+        it 'passes through options to #update_item and #put_item' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          # new record
+          item.save!(table_name: 'notused', return_values: 'ALL_OLD')
+          # forced
+          item.save!(force: true, table_name: 'notused', return_values: 'UPDATED_OLD')
+          # not updated tuple
+          item.save!(table_name: 'notused', return_values: 'ALL_NEW')
+          # updated tuple
+          item.clean!
+          item.body = 'Goodbye!'
+          item.save!(table_name: 'notused', return_values: 'UPDATED_NEW')
+
+          expect(api_requests).to match [
+            hash_including(table_name: 'TestTable', return_values: 'ALL_OLD'),
+            hash_including(table_name: 'TestTable', return_values: 'UPDATED_OLD'),
+            hash_including(table_name: 'TestTable', return_values: 'ALL_NEW'),
+            hash_including(table_name: 'TestTable', return_values: 'UPDATED_NEW')
+          ]
+        end
+
         it 'raises an error when you try to save! without setting keys' do
           klass.configure_client(client: stub_client)
           no_keys = klass.new
@@ -176,6 +201,31 @@ module Aws
           )
         end
 
+        it 'passes through options to #update_item and #put_item' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          # new record
+          item.save(table_name: 'notused', return_values: 'ALL_OLD')
+          # forced
+          item.save(force: true, table_name: 'notused', return_values: 'UPDATED_OLD')
+          # not updated tuple
+          item.save(table_name: 'notused', return_values: 'ALL_NEW')
+          # updated tuple
+          item.clean!
+          item.body = 'Goodbye!'
+          item.save(table_name: 'notused', return_values: 'UPDATED_NEW')
+
+          expect(api_requests).to match [
+            hash_including(table_name: 'TestTable', return_values: 'ALL_OLD'),
+            hash_including(table_name: 'TestTable', return_values: 'UPDATED_OLD'),
+            hash_including(table_name: 'TestTable', return_values: 'ALL_NEW'),
+            hash_including(table_name: 'TestTable', return_values: 'UPDATED_NEW')
+          ]
+        end
+
         it 'raises an exception when the conditional check fails' do
           stub_client.stub_responses(
             :put_item,
@@ -186,7 +236,12 @@ module Aws
           item.id = 1
           item.date = '2015-12-14'
           item.body = 'Hello!'
-          expect { item.save }.to raise_error(Errors::ConditionalWriteFailed)
+          expect { item.save }.to raise_error do |error|
+            expect(error).to be_a(Errors::ConditionalWriteFailed)
+            expect(error.original_error).to be_a(
+              Aws::DynamoDB::Errors::ConditionalCheckFailedException
+            )
+          end
           expect(api_requests).to eq(
             [
               {
@@ -359,18 +414,7 @@ module Aws
             consistent_read: true
           }
           klass.find_with_opts(find_opts)
-          expect(api_requests).to eq(
-            [
-              {
-                table_name: 'TestTable',
-                key: {
-                  'id' => { n: '5' },
-                  'MyDate' => { s: '2015-12-15' }
-                },
-                consistent_read: true
-              }
-            ]
-          )
+          expect(api_requests).to match([hash_including(consistent_read: true)])
         end
       end
 
@@ -394,7 +438,7 @@ module Aws
         end
       end
 
-      describe '#update' do
+      describe '.update' do
         it 'can find and update an item from Amazon DynamoDB' do
           klass.configure_client(client: stub_client)
           klass.update(id: 1, date: '2016-05-18', body: 'New', bool: true)
@@ -507,6 +551,17 @@ module Aws
                 }
               }
             ]
+          )
+        end
+
+        it 'passes through options to #delete_item' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 3
+          item.date = '2015-12-17'
+          item.delete!(table_name: 'notused', return_values: 'ALL_OLD')
+          expect(api_requests).to include(
+            hash_including(table_name: 'TestTable', return_values: 'ALL_OLD')
           )
         end
       end
