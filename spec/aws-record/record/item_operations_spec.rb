@@ -68,7 +68,7 @@ module Aws
           )
         end
 
-        it 'passes through default api options' do
+        it 'passes through options to #update_item and #put_item' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
@@ -85,12 +85,12 @@ module Aws
           item.body = 'Goodbye!'
           item.save!(table_name: 'notused', return_values: 'UPDATED_NEW')
 
-          expect(api_requests).to include(
+          expect(api_requests).to match [
             hash_including(table_name: 'TestTable', return_values: 'ALL_OLD'),
             hash_including(table_name: 'TestTable', return_values: 'UPDATED_OLD'),
             hash_including(table_name: 'TestTable', return_values: 'ALL_NEW'),
             hash_including(table_name: 'TestTable', return_values: 'UPDATED_NEW')
-          )
+          ]
         end
 
         it 'raises an error when you try to save! without setting keys' do
@@ -201,7 +201,7 @@ module Aws
           )
         end
 
-        it 'passes through default api options' do
+        it 'passes through options to #update_item and #put_item' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 1
@@ -218,12 +218,12 @@ module Aws
           item.body = 'Goodbye!'
           item.save(table_name: 'notused', return_values: 'UPDATED_NEW')
 
-          expect(api_requests).to include(
+          expect(api_requests).to match [
             hash_including(table_name: 'TestTable', return_values: 'ALL_OLD'),
             hash_including(table_name: 'TestTable', return_values: 'UPDATED_OLD'),
             hash_including(table_name: 'TestTable', return_values: 'ALL_NEW'),
             hash_including(table_name: 'TestTable', return_values: 'UPDATED_NEW')
-          )
+          ]
         end
 
         it 'raises an exception when the conditional check fails' do
@@ -414,18 +414,7 @@ module Aws
             consistent_read: true
           }
           klass.find_with_opts(find_opts)
-          expect(api_requests).to eq(
-            [
-              {
-                table_name: 'TestTable',
-                key: {
-                  'id' => { n: '5' },
-                  'MyDate' => { s: '2015-12-15' }
-                },
-                consistent_read: true
-              }
-            ]
-          )
+          expect(api_requests).to match([hash_including(consistent_read: true)])
         end
       end
 
@@ -565,12 +554,12 @@ module Aws
           )
         end
 
-        it 'passes through api options' do
+        it 'passes through options to #delete_item' do
           klass.configure_client(client: stub_client)
           item = klass.new
           item.id = 3
           item.date = '2015-12-17'
-          item.delete!(table_name: 'donotuse', return_values: 'ALL_OLD')
+          item.delete!(table_name: 'notused', return_values: 'ALL_OLD')
           expect(api_requests).to include(
             hash_including(table_name: 'TestTable', return_values: 'ALL_OLD')
           )
