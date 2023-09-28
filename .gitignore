@@ -7,3 +7,5 @@ vendor/bundle
 .bundle
 .idea
 .DS_Store
+docs.zip
+*.gem
