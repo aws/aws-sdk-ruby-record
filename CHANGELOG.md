@@ -1,4 +1,4 @@
-Unreleased Changes
+2.12.0 (2023-09-28)
 ------------------
 
 * Feature - Allow put, update, and delete item options to be passed through to
