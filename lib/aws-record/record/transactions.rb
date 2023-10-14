@@ -294,12 +294,12 @@ module Aws
             if opts.include?(:update_expression)
               raise Errors::UpdateExpressionCollision,
                     'Transactional write includes updated attributes, yet an' \
-                      'update expression was also provided. This is not ' \
-                      'currently supported. You should rewrite this case to ' \
-                      'add any attribute updates to your own update ' \
-                      "expression if desired.\n" \
-                      "\tItem: #{JSON.pretty_unparse(update_record.to_h)}\n" \
-                      "\tExtra Options: #{JSON.pretty_unparse(opts)}"
+                    'update expression was also provided. This is not ' \
+                    'currently supported. You should rewrite this case to ' \
+                    'add any attribute updates to your own update ' \
+                    "expression if desired.\n" \
+                    "\tItem: #{JSON.pretty_unparse(update_record.to_h)}\n" \
+                    "\tExtra Options: #{JSON.pretty_unparse(opts)}"
             end
             uex, exp_attr_names, exp_attr_values = update_tuple
             opts[:update_expression] = uex
