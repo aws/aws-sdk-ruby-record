@@ -284,25 +284,36 @@ module Aws
         def _transform_update_record(update_record, opts)
           # extract dirty attribute changes to perform an update
           opts[:table_name] = update_record.class.table_name
+          opts[:key] = update_record.send(:key_values)
           dirty_changes = update_record.send(:_dirty_changes_for_update)
           update_tuple = update_record.class.send(
             :_build_update_expression,
             dirty_changes
           )
-          uex, exp_attr_names, exp_attr_values = update_tuple
-          opts[:key] = update_record.send(:key_values)
-          opts[:update_expression] = uex
-          # need to combine expression attribute names and values
-          opts[:expression_attribute_names] = if (names = opts[:expression_attribute_names])
-                                                exp_attr_names.merge(names)
-                                              else
-                                                exp_attr_names
-                                              end
-          opts[:expression_attribute_values] = if (values = opts[:expression_attribute_values])
-                                                 exp_attr_values.merge(values)
-                                               else
-                                                 exp_attr_values
-                                               end
+          if update_tuple
+            if opts.include?(:update_expression)
+              raise Errors::UpdateExpressionCollision,
+                    'Transactional write includes updated attributes, yet an' \
+                      'update expression was also provided. This is not ' \
+                      'currently supported. You should rewrite this case to ' \
+                      'add any attribute updates to your own update ' \
+                      "expression if desired.\n" \
+                      "\tItem: #{JSON.pretty_unparse(update_record.to_h)}\n" \
+                      "\tExtra Options: #{JSON.pretty_unparse(opts)}"
+            end
+            uex, exp_attr_names, exp_attr_values = update_tuple
+            opts[:update_expression] = uex
+            # need to combine expression attribute names and values
+            opts[:expression_attribute_names] = [
+              exp_attr_names,
+              opts[:expression_attribute_names]
+            ].compact.reduce(&:merge)
+
+            opts[:expression_attribute_values] = [
+              exp_attr_values,
+              opts[:expression_attribute_values]
+            ].compact.reduce(&:merge)
+          end
           { update: opts }
         end
 

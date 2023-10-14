@@ -269,27 +269,35 @@ module Aws
             )
           end
         else
+          update_opts = {
+            table_name: self.class.table_name,
+            key: key_values
+          }
           update_pairs = _dirty_changes_for_update
           update_tuple = self.class.send(
             :_build_update_expression,
             update_pairs
           )
           if update_tuple
+            if opts.include?(:update_expression)
+              raise Errors::UpdateExpressionCollision,
+                    'Attributes need to be saved before custom update expression can be used.'
+            end
             uex, exp_attr_names, exp_attr_values = update_tuple
-            update_opts = {
-              table_name: self.class.table_name,
-              key: key_values,
-              update_expression: uex,
-              expression_attribute_names: exp_attr_names
-            }
-            update_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-          else
-            update_opts = {
-              table_name: self.class.table_name,
-              key: key_values
-            }
+            update_opts[:update_expression] = uex
+            # need to combine expression attribute names and values
+            update_opts[:expression_attribute_names] = [
+              exp_attr_names,
+              opts[:expression_attribute_names]
+            ].compact.reduce(&:merge)
+
+            update_opts[:expression_attribute_values] = [
+              exp_attr_values,
+              opts[:expression_attribute_values]
+            ].compact.reduce(&:merge)
           end
-          dynamodb_client.update_item(opts.merge(update_opts))
+          resp = dynamodb_client.update_item(opts.merge(update_opts))
+          assign_attributes(resp[:attributes]) if resp[:attributes]
         end
         data = instance_variable_get('@data')
         data.destroyed = false
@@ -581,19 +589,21 @@ module Aws
         # Aws::DynamoDB::Client#update_item} call immediately on the table,
         # using the attribute key/value pairs provided.
         #
-        # @param [Hash] opts attribute-value pairs for the update operation you
-        #  wish to perform. You must include all key attributes for a valid
+        # @param [Hash] new_params attribute-value pairs for the update operation
+        #  you wish to perform. You must include all key attributes for a valid
         #  call, then you may optionally include any other attributes that you
         #  wish to update.
+        # @param [Hash] opts Options to pass through to the
+        #  {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        #  Aws::DynamoDB::Client#update_item} call.
         #
         # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
         #  not include all table keys.
-        def update(opts)
+        def update(new_params, opts = {})
           key = {}
           @keys.keys.each_value do |attr_sym|
-            unless (value = opts.delete(attr_sym))
-              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
-
+            unless (value = new_params.delete(attr_sym))
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{new_params}"
             end
 
             attr_name = attributes.storage_name_for(attr_sym)
@@ -603,14 +613,26 @@ module Aws
             table_name: table_name,
             key: key
           }
-          update_tuple = _build_update_expression(opts)
+          update_tuple = _build_update_expression(new_params)
           unless update_tuple.nil?
+            if opts.include?(:update_expression)
+              raise Errors::UpdateExpressionCollision,
+                    'Using custom update expression with attribute updates is not currently supported.'
+            end
             uex, exp_attr_names, exp_attr_values = update_tuple
             update_opts[:update_expression] = uex
-            update_opts[:expression_attribute_names] = exp_attr_names
-            update_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
+            # need to combine expression attribute names and values
+            update_opts[:expression_attribute_names] = [
+              exp_attr_names,
+              opts[:expression_attribute_names]
+            ].compact.reduce(&:merge)
+
+            update_opts[:expression_attribute_values] = [
+              exp_attr_values,
+              opts[:expression_attribute_values]
+            ].compact.reduce(&:merge)
           end
-          dynamodb_client.update_item(update_opts)
+          dynamodb_client.update_item(opts.merge(update_opts))
         end
 
         private
@@ -644,6 +666,7 @@ module Aws
           if update_expressions.empty?
             nil
           else
+            exp_attr_values = nil if exp_attr_values.empty?
             [update_expressions.join(' '), exp_attr_names, exp_attr_values]
           end
         end
