@@ -274,28 +274,15 @@ module Aws
             key: key_values
           }
           update_pairs = _dirty_changes_for_update
-          update_tuple = self.class.send(
+          update_expression_opts = self.class.send(
             :_build_update_expression,
             update_pairs
           )
-          if update_tuple
-            if opts.include?(:update_expression)
-              raise Errors::UpdateExpressionCollision,
-                    'Attributes need to be saved before custom update expression can be used.'
-            end
-            uex, exp_attr_names, exp_attr_values = update_tuple
-            update_opts[:update_expression] = uex
-            # need to combine expression attribute names and values
-            update_opts[:expression_attribute_names] = [
-              exp_attr_names,
-              opts[:expression_attribute_names]
-            ].compact.reduce(&:merge)
-
-            update_opts[:expression_attribute_values] = [
-              exp_attr_values,
-              opts[:expression_attribute_values]
-            ].compact.reduce(&:merge)
-          end
+          opts = self.class.send(
+            :_merge_update_expression_opts,
+            update_expression_opts,
+            opts
+          )
           resp = dynamodb_client.update_item(opts.merge(update_opts))
           assign_attributes(resp[:attributes]) if resp[:attributes]
         end
@@ -613,25 +600,8 @@ module Aws
             table_name: table_name,
             key: key
           }
-          update_tuple = _build_update_expression(new_params)
-          unless update_tuple.nil?
-            if opts.include?(:update_expression)
-              raise Errors::UpdateExpressionCollision,
-                    'Using custom update expression with attribute updates is not currently supported.'
-            end
-            uex, exp_attr_names, exp_attr_values = update_tuple
-            update_opts[:update_expression] = uex
-            # need to combine expression attribute names and values
-            update_opts[:expression_attribute_names] = [
-              exp_attr_names,
-              opts[:expression_attribute_names]
-            ].compact.reduce(&:merge)
-
-            update_opts[:expression_attribute_values] = [
-              exp_attr_values,
-              opts[:expression_attribute_values]
-            ].compact.reduce(&:merge)
-          end
+          update_expression_opts = _build_update_expression(new_params)
+          opts = _merge_update_expression_opts(update_expression_opts, opts)
           dynamodb_client.update_item(opts.merge(update_opts))
         end
 
@@ -663,11 +633,22 @@ module Aws
           update_expressions = []
           update_expressions << ("SET #{set_expressions.join(', ')}") unless set_expressions.empty?
           update_expressions << ("REMOVE #{remove_expressions.join(', ')}") unless remove_expressions.empty?
-          if update_expressions.empty?
-            nil
-          else
-            exp_attr_values = nil if exp_attr_values.empty?
-            [update_expressions.join(' '), exp_attr_names, exp_attr_values]
+          {
+            update_expression: update_expressions.join(' '),
+            expression_attribute_names: exp_attr_names,
+            expression_attribute_values: exp_attr_values
+          }.reject { |_, value| value.nil? || value.empty? }
+        end
+
+        def _merge_update_expression_opts(update_expression_opts, pass_through_opts)
+          update_expression_opts.merge(pass_through_opts) do |key, expression_value, pass_through_value|
+            case key
+            when :update_expression
+              msg = 'Using pass-through update expression with attribute updates is not currently supported.'
+              raise Errors::UpdateExpressionCollision, msg
+            else
+              expression_value.merge(pass_through_value)
+            end
           end
         end
 

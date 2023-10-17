@@ -584,7 +584,6 @@ module Aws
                 expression_attribute_names: {
                   '#UE_A' => 'body'
                 },
-                expression_attribute_values: nil
               }
             ]
           )
