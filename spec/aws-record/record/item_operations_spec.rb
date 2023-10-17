@@ -583,7 +583,7 @@ module Aws
                 update_expression: 'REMOVE #UE_A',
                 expression_attribute_names: {
                   '#UE_A' => 'body'
-                },
+                }
               }
             ]
           )
