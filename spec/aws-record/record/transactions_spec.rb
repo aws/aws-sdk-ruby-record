@@ -433,6 +433,45 @@ module Aws
           )
         end
 
+        it 'supports custom update expressions' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          update_item = table_two.new(uuid: 'foo')
+          update_item.clean! # like we got it from #find
+          Aws::Record::Transactions.transact_write(
+            transact_items: [
+              {
+                update: update_item,
+                update_expression: 'SET #S = if_not_exists(#S, :s)',
+                expression_attribute_names: {
+                  '#S' => 'body'
+                },
+                expression_attribute_values: {
+                  ':s' => 'Content'
+                }
+              }
+            ]
+          )
+          expect(stub_client.api_requests.size).to eq(1)
+          request_params = stub_client.api_requests.first[:params]
+          expect(request_params[:transact_items]).to eq(
+            [
+              {
+                update: {
+                  table_name: 'TableTwo',
+                  key: { 'uuid' => { s: 'foo' } },
+                  update_expression: 'SET #S = if_not_exists(#S, :s)',
+                  expression_attribute_names: {
+                    '#S' => 'body'
+                  },
+                  expression_attribute_values: {
+                    ':s' => { s: 'Content' }
+                  }
+                }
+              }
+            ]
+          )
+        end
+
         it 'raises a validation exception when safe put collides with a condition expression' do
           Aws::Record::Transactions.configure_client(client: stub_client)
           save_item = table_two.new(uuid: 'bar', body: 'Content')
@@ -456,6 +495,31 @@ module Aws
             Aws::Record::Errors::TransactionalSaveConditionCollision
           )
           expect(save_item.dirty?).to be_truthy
+        end
+
+        it 'raises an exception when attribute updates collide with an update expression' do
+          Aws::Record::Transactions.configure_client(client: stub_client)
+          update_item = table_two.new(uuid: 'foo')
+          update_item.clean! # like we got it from #find
+          update_item.body = 'Content'
+          expect {
+            Aws::Record::Transactions.transact_write(
+              transact_items: [
+                {
+                  update: update_item,
+                  update_expression: 'SET #H = :v',
+                  expression_attribute_names: {
+                    '#H' => 'has_default'
+                  },
+                  expression_attribute_values: {
+                    ':v' => 'other'
+                  }
+                }
+              ]
+            )
+          }.to raise_error(
+            Aws::Record::Errors::UpdateExpressionCollision
+          )
         end
 
         it 'does not clean items when the transaction fails' do

@@ -201,6 +201,38 @@ module Aws
           )
         end
 
+        it 'will call #update_item with pass through update expression for existing items' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.clean! # I'm claiming that it is this way in the DB now.
+          item.save(
+            update_expression: 'SET #S = if_not_exists(#S, :s)',
+            expression_attribute_names: { '#S' => 'body' },
+            expression_attribute_values: { ':s' => 'Goodbye!' }
+          )
+          expect(api_requests).to eq(
+            [
+              {
+                table_name: 'TestTable',
+                key: {
+                  'id' => { n: '1' },
+                  'MyDate' => { s: '2015-12-14' }
+                },
+                update_expression: 'SET #S = if_not_exists(#S, :s)',
+                expression_attribute_names: {
+                  '#S' => 'body'
+                },
+                expression_attribute_values: {
+                  ':s' => { s: 'Goodbye!' }
+                }
+              }
+            ]
+          )
+        end
+
         it 'passes through options to #update_item and #put_item' do
           klass.configure_client(client: stub_client)
           item = klass.new
@@ -288,6 +320,23 @@ module Aws
 
           # None of this should have reached the API
           expect(api_requests).to eq([])
+        end
+
+        it 'raises an exception when attribute updates collide with an update expression' do
+          klass.configure_client(client: stub_client)
+          item = klass.new
+          item.id = 1
+          item.date = '2015-12-14'
+          item.body = 'Hello!'
+          item.clean! # I'm claiming that it is this way in the DB now.
+          item.body = 'Goodbye!'
+          expect {
+            item.save(
+              update_expression: 'SET #S = if_not_exists(#S, :s)',
+              expression_attribute_names: { '#S' => 'body' },
+              expression_attribute_values: { ':s' => 'Goodbye!' }
+            )
+          }.to raise_error(Aws::Record::Errors::UpdateExpressionCollision)
         end
 
         context 'modifications to default values' do
@@ -464,6 +513,38 @@ module Aws
           )
         end
 
+        it 'can find item and apply update if update expression provided' do
+          klass.configure_client(client: stub_client)
+          opts = {
+            update_expression: 'SET #S = if_not_exists(#S, :s)',
+            expression_attribute_names: {
+              '#S' => 'body'
+            },
+            expression_attribute_values: {
+              ':s' => 'Content'
+            }
+          }
+          klass.update({ id: 1, date: '2016-05-18' }, opts)
+          expect(api_requests).to eq(
+            [
+              {
+                table_name: 'TestTable',
+                key: {
+                  'id' => { n: '1' },
+                  'MyDate' => { s: '2016-05-18' }
+                },
+                update_expression: 'SET #S = if_not_exists(#S, :s)',
+                expression_attribute_names: {
+                  '#S' => 'body'
+                },
+                expression_attribute_values: {
+                  ':s' => { s: 'Content' }
+                }
+              }
+            ]
+          )
+        end
+
         it 'will recognize nil as a removal operation if nil not persisted' do
           klass.configure_client(client: stub_client)
           klass.update(id: 1, date: '2016-07-20', body: nil, persist_on_nil: nil)
@@ -529,6 +610,22 @@ module Aws
           update_opts = { id: 5, body: 'Fail' }
           expect { klass.update(update_opts) }.to raise_error(
             Aws::Record::Errors::KeyMissing
+          )
+        end
+
+        it 'raises if both attribute updates and update expression provided' do
+          klass.configure_client(client: stub_client)
+          opts = {
+            update_expression: 'SET #S = if_not_exists(#S, :s)',
+            expression_attribute_names: {
+              '#S' => 'body'
+            },
+            expression_attribute_values: {
+              ':s' => 'Content'
+            }
+          }
+          expect { klass.update({ id: 1, date: '2016-05-18', bool: false }, opts) }.to raise_error(
+            Aws::Record::Errors::UpdateExpressionCollision
           )
         end
       end

@@ -284,25 +284,17 @@ module Aws
         def _transform_update_record(update_record, opts)
           # extract dirty attribute changes to perform an update
           opts[:table_name] = update_record.class.table_name
+          opts[:key] = update_record.send(:key_values)
           dirty_changes = update_record.send(:_dirty_changes_for_update)
-          update_tuple = update_record.class.send(
+          update_expression_opts = update_record.class.send(
             :_build_update_expression,
             dirty_changes
           )
-          uex, exp_attr_names, exp_attr_values = update_tuple
-          opts[:key] = update_record.send(:key_values)
-          opts[:update_expression] = uex
-          # need to combine expression attribute names and values
-          opts[:expression_attribute_names] = if (names = opts[:expression_attribute_names])
-                                                exp_attr_names.merge(names)
-                                              else
-                                                exp_attr_names
-                                              end
-          opts[:expression_attribute_values] = if (values = opts[:expression_attribute_values])
-                                                 exp_attr_values.merge(values)
-                                               else
-                                                 exp_attr_values
-                                               end
+          opts = update_record.class.send(
+            :_merge_update_expression_opts,
+            update_expression_opts,
+            opts
+          )
           { update: opts }
         end
 

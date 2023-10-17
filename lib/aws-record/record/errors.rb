@@ -60,6 +60,13 @@ module Aws
       # the key existance check yourself in your condition expression if you
       # wish to do so.
       class TransactionalSaveConditionCollision < RuntimeError; end
+
+      # Raised when you attempt to combine your own update expression with
+      # the update expression auto-generated from updates to an item's
+      # attributes. The path forward until this case is supported is to
+      # perform attribute updates yourself in your update expression if you
+      # wish to do so.
+      class UpdateExpressionCollision < RuntimeError; end
     end
   end
 end

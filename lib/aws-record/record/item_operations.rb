@@ -269,27 +269,22 @@ module Aws
             )
           end
         else
+          update_opts = {
+            table_name: self.class.table_name,
+            key: key_values
+          }
           update_pairs = _dirty_changes_for_update
-          update_tuple = self.class.send(
+          update_expression_opts = self.class.send(
             :_build_update_expression,
             update_pairs
           )
-          if update_tuple
-            uex, exp_attr_names, exp_attr_values = update_tuple
-            update_opts = {
-              table_name: self.class.table_name,
-              key: key_values,
-              update_expression: uex,
-              expression_attribute_names: exp_attr_names
-            }
-            update_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-          else
-            update_opts = {
-              table_name: self.class.table_name,
-              key: key_values
-            }
-          end
-          dynamodb_client.update_item(opts.merge(update_opts))
+          opts = self.class.send(
+            :_merge_update_expression_opts,
+            update_expression_opts,
+            opts
+          )
+          resp = dynamodb_client.update_item(opts.merge(update_opts))
+          assign_attributes(resp[:attributes]) if resp[:attributes]
         end
         data = instance_variable_get('@data')
         data.destroyed = false
@@ -581,19 +576,21 @@ module Aws
         # Aws::DynamoDB::Client#update_item} call immediately on the table,
         # using the attribute key/value pairs provided.
         #
-        # @param [Hash] opts attribute-value pairs for the update operation you
-        #  wish to perform. You must include all key attributes for a valid
+        # @param [Hash] new_params attribute-value pairs for the update operation
+        #  you wish to perform. You must include all key attributes for a valid
         #  call, then you may optionally include any other attributes that you
         #  wish to update.
+        # @param [Hash] opts Options to pass through to the
+        #  {http://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/DynamoDB/Client.html#update_item-instance_method
+        #  Aws::DynamoDB::Client#update_item} call.
         #
         # @raise [Aws::Record::Errors::KeyMissing] if your option parameters do
         #  not include all table keys.
-        def update(opts)
+        def update(new_params, opts = {})
           key = {}
           @keys.keys.each_value do |attr_sym|
-            unless (value = opts.delete(attr_sym))
-              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{opts}"
-
+            unless (value = new_params.delete(attr_sym))
+              raise Errors::KeyMissing, "Missing required key #{attr_sym} in #{new_params}"
             end
 
             attr_name = attributes.storage_name_for(attr_sym)
@@ -603,14 +600,9 @@ module Aws
             table_name: table_name,
             key: key
           }
-          update_tuple = _build_update_expression(opts)
-          unless update_tuple.nil?
-            uex, exp_attr_names, exp_attr_values = update_tuple
-            update_opts[:update_expression] = uex
-            update_opts[:expression_attribute_names] = exp_attr_names
-            update_opts[:expression_attribute_values] = exp_attr_values unless exp_attr_values.empty?
-          end
-          dynamodb_client.update_item(update_opts)
+          update_expression_opts = _build_update_expression(new_params)
+          opts = _merge_update_expression_opts(update_expression_opts, opts)
+          dynamodb_client.update_item(opts.merge(update_opts))
         end
 
         private
@@ -641,10 +633,22 @@ module Aws
           update_expressions = []
           update_expressions << ("SET #{set_expressions.join(', ')}") unless set_expressions.empty?
           update_expressions << ("REMOVE #{remove_expressions.join(', ')}") unless remove_expressions.empty?
-          if update_expressions.empty?
-            nil
-          else
-            [update_expressions.join(' '), exp_attr_names, exp_attr_values]
+          {
+            update_expression: update_expressions.join(' '),
+            expression_attribute_names: exp_attr_names,
+            expression_attribute_values: exp_attr_values
+          }.reject { |_, value| value.nil? || value.empty? }
+        end
+
+        def _merge_update_expression_opts(update_expression_opts, pass_through_opts)
+          update_expression_opts.merge(pass_through_opts) do |key, expression_value, pass_through_value|
+            case key
+            when :update_expression
+              msg = 'Using pass-through update expression with attribute updates is not supported.'
+              raise Errors::UpdateExpressionCollision, msg
+            else
+              expression_value.merge(pass_through_value)
+            end
           end
         end
 
