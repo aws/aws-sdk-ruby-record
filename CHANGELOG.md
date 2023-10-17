@@ -1,4 +1,4 @@
-Unreleased Changes
+2.13.0 (2023-10-17)
 ------------------
 
 * Feature - Allow custom `update_expression` to be passed through to the 
