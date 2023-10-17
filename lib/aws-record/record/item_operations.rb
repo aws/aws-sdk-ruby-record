@@ -644,7 +644,7 @@ module Aws
           update_expression_opts.merge(pass_through_opts) do |key, expression_value, pass_through_value|
             case key
             when :update_expression
-              msg = 'Using pass-through update expression with attribute updates is not currently supported.'
+              msg = 'Using pass-through update expression with attribute updates is not supported.'
               raise Errors::UpdateExpressionCollision, msg
             else
               expression_value.merge(pass_through_value)
