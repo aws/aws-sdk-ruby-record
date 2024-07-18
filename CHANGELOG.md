@@ -1,7 +1,7 @@
 Unreleased Changes
 ------------------
 
-* Issue - Do not try to hydrate undeclared attributes from storage on `batch_read`.
+* Issue - Do not try to hydrate undeclared attributes from storage on `batch_read`. (#139)
 
 2.13.0 (2023-10-17)
 ------------------
