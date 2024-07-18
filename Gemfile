@@ -31,5 +31,6 @@ group :release do
 end
 
 group :development do
+  gem 'pry'
   gem 'rubocop'
 end

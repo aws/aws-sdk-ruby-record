@@ -1,10 +1,12 @@
 Unreleased Changes
 ------------------
 
+* Issue - Do not try to hydrate undeclared attributes from storage on `batch_read`. (#139)
+
 2.13.0 (2023-10-17)
 ------------------
 
-* Feature - Allow custom `update_expression` to be passed through to the 
+* Feature - Allow custom `update_expression` to be passed through to the
   underlying client calls. (#137)
 
 2.12.0 (2023-09-28)

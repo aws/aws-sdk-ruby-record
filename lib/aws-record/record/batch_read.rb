@@ -173,6 +173,9 @@ module Aws
         new_item_opts = {}
         item.each do |db_name, value|
           name = item_class.attributes.db_to_attribute_name(db_name)
+
+          next unless name
+
           new_item_opts[name] = value
         end
         item = item_class.new(new_item_opts)

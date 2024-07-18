@@ -124,7 +124,7 @@ describe Aws::Record::Batch do
               { 'Food ID' => 2, 'dish' => 'Waffles', 'spicy' => false, 'gluten_free' => true }
             ],
             'DrinkTable' => [
-              { 'id' => 1, 'drink' => 'Hot Chocolate' }
+              { 'id' => 1, 'drink' => 'Hot Chocolate', 'gluten_free' => true }
             ]
           }
         )
@@ -138,19 +138,27 @@ describe Aws::Record::Batch do
         end
       end
 
+      let(:actual_food) { result.items[0] }
+      let(:actual_breakfast) { result.items[1] }
+      let(:actual_drink) { result.items[2] }
+
       it 'reads a batch of operations and returns modeled items' do
         expect(result).to be_an(Aws::Record::BatchRead)
         expect(result.items.size).to eq(3)
-        expect(result.items[0].class).to eq(food)
-        expect(result.items[1].class).to eq(breakfast)
-        expect(result.items[2].class).to eq(drink)
-        expect(result.items[0].dirty?).to be_falsey
-        expect(result.items[1].dirty?).to be_falsey
-        expect(result.items[2].dirty?).to be_falsey
-        expect(result.items[0].spicy).to be_falsey
-        expect(result.items[1].spicy).to be_falsey
-        expect(result.items[1].gluten_free).to be_truthy
-        expect(result.items[2].drink).to eq('Hot Chocolate')
+
+        expect(actual_food).to be_a(food)
+        expect(actual_food).to_not be_dirty
+        expect(actual_food.spicy).to be_falsey
+
+        expect(actual_breakfast).to be_a(breakfast)
+        expect(actual_breakfast).to_not be_dirty
+        expect(actual_breakfast.spicy).to be_falsey
+        expect(actual_breakfast.gluten_free).to be_truthy
+
+        expect(actual_drink).to be_a(drink)
+        expect(actual_drink).to_not be_dirty
+        expect(actual_drink.drink).to eq('Hot Chocolate')
+        expect(actual_drink).to_not respond_to(:gluten_free)
       end
 
       it 'is complete' do
