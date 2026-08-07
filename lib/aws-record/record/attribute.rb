@@ -84,12 +84,22 @@ module Aws
       def default_value
         if _is_lambda?(@default_value_or_lambda)
           type_cast(@default_value_or_lambda.call)
+        elsif _immutable?(@default_value_or_lambda)
+          @default_value_or_lambda
         else
           _deep_copy(@default_value_or_lambda)
         end
       end
 
       private
+
+      def _immutable?(value)
+        value.nil? ||
+          value.equal?(true) ||
+          value.equal?(false) ||
+          value.is_a?(Symbol) ||
+          value.is_a?(Numeric)
+      end
 
       def _deep_copy(obj)
         Marshal.load(Marshal.dump(obj))
