@@ -1,5 +1,6 @@
 Unreleased Changes
 ------------------
+* Issue - Optimize default value handling.
 
 2.15.0 (2026-04-20)
 ------------------
