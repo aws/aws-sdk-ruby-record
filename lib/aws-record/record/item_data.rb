@@ -44,8 +44,8 @@ module Aws
 
       def clean!
         @dirty_flags = {}
+        populate_default_values
         @model_attributes.attributes.each_key do |name|
-          populate_default_values
           value = get_attribute(name)
           @clean_copies[name] = if @track_mutations
                                   _deep_copy(value)
