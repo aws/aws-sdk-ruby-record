@@ -98,7 +98,7 @@ module Aws
           value.equal?(true) ||
           value.equal?(false) ||
           value.is_a?(Symbol) ||
-          value.is_a?(Numeric)
+          (value.is_a?(Numeric) && value.frozen?)
       end
 
       def _deep_copy(obj)
