@@ -1,5 +1,6 @@
 Unreleased Changes
 ------------------
+* Issue - Ensure a mutable `Numeric` subclass used as a `default_value` is not shared across record instances.
 
 2.15.1 (2026-08-10)
 ------------------
